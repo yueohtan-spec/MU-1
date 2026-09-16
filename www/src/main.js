@@ -94,7 +94,7 @@ class SoundController {
 
 const audio = new SoundController();
 
-// 10 VÙNG ĐẤT KINH ĐIỂN CỦA MU ONLINE
+// 10 MU MAPS WITH DETAILED MONSTER ROSTER & REQUIREMENTS
 const MAPS = [
   { id: 1, name: "Lorencia", reqLv: 1, reqRs: 0, tier: 1, mobDmg: [15, 30], mobs: ["Nhện Độc", "Rồng Con", "Trâu Rừng", "Người Xương"], boss: "Chúa Tể Rồng Đen" },
   { id: 2, name: "Noria", reqLv: 50, reqRs: 0, tier: 2, mobDmg: [60, 120], mobs: ["Bọ Khổng Lồ", "Ma Cây Agon", "Thợ Săn Rừng", "Yêu Tinh Đá"], boss: "Quái Thú Rừng Xanh" },
@@ -148,7 +148,7 @@ const OPTION_POOL = [
   "+Hồi sinh 40% HP khi nhận đòn chí tử"
 ];
 
-// ICON VECTOR SVG CHO 11 VỊ TRÍ TRANG BỊ
+// SVG Vector Icons for each equipment slot
 const SVG_ICONS = {
   helm: `<svg class="slot-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9a7 7 0 0 0-7-7z"/><path d="M4 14h16M12 2v12"/></svg>`,
   armor: `<svg class="slot-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8-2 8 2v8c0 5-3.5 9-8 10-4.5-1-8-5-8-10V4z"/><path d="M12 2v20"/></svg>`,
@@ -186,7 +186,7 @@ let state = {
   rs: 0,
   srs: 0,
   freePoints: 0,
-  autoStats: true,
+  autoStats: true, // Mặc định BẬT
   currentMapId: 1,
   stats: { str: 25, agi: 20, vit: 25, ene: 15 },
   zen: 10000,
@@ -227,9 +227,9 @@ function generateItem(targetTier = null, forceRarity = null) {
   } else {
     const roll = Math.random() * 100;
     if (roll < 45) rarityObj = RARITIES[0];
-    else if (roll < 72) rarityObj = RARITIES;
-    else if (roll < 88) rarityObj = RARITIES;
-    else if (roll < 95) rarityObj = RARITIES;
+    else if (roll < 72) rarityObj = RARITIES[1];
+    else if (roll < 88) rarityObj = RARITIES[2];
+    else if (roll < 95) rarityObj = RARITIES[3];
     else if (roll < 98.2) rarityObj = RARITIES[4];
     else if (roll < 99.6) rarityObj = RARITIES[5];
     else rarityObj = RARITIES[6];
@@ -333,6 +333,7 @@ function calculateStats() {
   return { totalAtk: Math.floor(totalAtk), totalDef: Math.floor(totalDef), maxHp: Math.floor(maxHp), maxMp: Math.floor(maxMp), cp, activeSetTier };
 }
 
+// Combat Engine (0.5s/action)
 let combatInterval = null;
 function startCombatLoop() {
   if (combatInterval) clearInterval(combatInterval);
@@ -343,11 +344,13 @@ function runCombatTick() {
   const currentMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
   const stats = calculateStats();
 
+  // Natural regeneration
   state.currentHp = Math.min(stats.maxHp, state.currentHp + Math.floor(state.stats.vit * 0.8) + 10);
   state.currentMp = Math.min(stats.maxMp, state.currentMp + Math.floor(state.stats.ene * 0.5) + 5);
 
   state.mobsKilled++;
 
+  // 3 Monster Tiers roll
   let mobCategory = "normal";
   let mobMult = 1;
   let mobColorClass = "log-norm";
@@ -363,6 +366,7 @@ function runCombatTick() {
     mobColorClass = "log-elite";
   }
 
+  // Monster Name
   let mobName = "";
   if (mobCategory === "boss") {
     mobName = `[BOSS THỦ LĨNH] ${currentMap.boss}`;
@@ -373,7 +377,7 @@ function runCombatTick() {
     mobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
   }
 
-  // 1. Outgoing Damage
+  // 1. Outgoing Damage (Bạn đánh quái)
   const isCrit = Math.random() < (0.2 + (state.stats.agi / 10000) * 0.4);
   const dmg = isCrit ? Math.floor(stats.totalAtk * 1.7) : stats.totalAtk;
 
@@ -385,8 +389,8 @@ function runCombatTick() {
     addLog(`⚔ [TẤN CÔNG] Bạn đánh ${mobName} gây ${dmg.toLocaleString()} sát thương.`, mobColorClass);
   }
 
-  // 2. Incoming Damage
-  const rawMobDmg = Math.floor(Math.random() * (currentMap.mobDmg - currentMap.mobDmg[0]) + currentMap.mobDmg[0]) * mobMult;
+  // 2. Incoming Damage (Quái đánh bạn)
+  const rawMobDmg = Math.floor(Math.random() * (currentMap.mobDmg[1] - currentMap.mobDmg[0]) + currentMap.mobDmg[0]) * mobMult;
   const takenDmg = Math.max(5, Math.floor(rawMobDmg - (stats.totalDef * 0.6)));
   state.currentHp -= takenDmg;
 
@@ -395,12 +399,12 @@ function runCombatTick() {
   if (state.currentHp <= 0) {
     addLog(`💀 [TỬ VONG] Bạn đã bị ${mobName} hạ gục! Đang hồi phục tại Lorencia...`, "log-boss");
     state.currentHp = Math.floor(stats.maxHp * 0.5);
-    state.currentMapId = 1;
+    state.currentMapId = 1; // Lui về map 1
     updateUI();
     return;
   }
 
-  // 3. Guaranteed 100% Zen Drop
+  // 3. Guaranteed 100% Zen Drop (Random * Tier * Multiplier)
   const earnedZen = Math.floor(Math.random() * 70 + 50) * currentMap.tier * mobMult;
   state.zen += earnedZen;
   addLog(`[NHẶT ZEN] +${earnedZen.toLocaleString()} Zen! (Tỷ lệ 100%)`, "log-zen");
@@ -429,7 +433,7 @@ function runCombatTick() {
   }
 
   // 6. Gear Drop & Auto-Equip
-  const gearDropChance = mobCategory === "boss" ? 1.0 : (mobCategory === "elite" ? 0.45 : 0.12);
+  const gearDropChance = mobCategory === "boss" ? 0.40 : (mobCategory === "elite" ? 0.10 : 0.02);
   if (Math.random() < gearDropChance) {
     const forceR = mobCategory === "boss" ? Math.min(6, 3 + Math.floor(Math.random() * 4)) : (mobCategory === "elite" ? Math.min(3, 2 + Math.floor(Math.random() * 2)) : null);
     const droppedItem = generateItem(currentMap.tier, forceR);
@@ -446,6 +450,7 @@ function runCombatTick() {
     }
     addLog(`★ LEVEL UP! Đạt Cấp ${state.level}! Nhận Điểm Tiềm Năng! ★`, "log-crit");
     
+    // Auto stats if enabled
     if (state.autoStats) {
       autoDistributeStats();
     }
@@ -470,9 +475,11 @@ function addLog(msg, cssClass = "log-norm") {
 function updateUI() {
   const stats = calculateStats();
   
+  // Title & Hero Info
   const heroNameEl = document.getElementById("heroName");
   if (heroNameEl) heroNameEl.innerText = state.gender === "male" ? `${state.username} [DK Nam]` : `${state.username} [FE Nữ]`;
 
+  // Prominent CP Banner
   const valTotalCP = document.getElementById("valTotalCP");
   if (valTotalCP) valTotalCP.innerText = `${stats.cp.toLocaleString()} CP`;
 
@@ -480,6 +487,7 @@ function updateUI() {
   const mapBadge = document.getElementById("currentMapBadge");
   if (mapBadge) mapBadge.innerText = `Map ${curMap.id}: ${curMap.name}`;
 
+  // Currency
   const valZen = document.getElementById("valZen");
   if (valZen) valZen.innerText = `Zen: ${state.zen.toLocaleString()}`;
   const valBless = document.getElementById("valBless");
@@ -489,6 +497,7 @@ function updateUI() {
   const valLife = document.getElementById("valLife");
   if (valLife) valLife.innerText = `L: ${state.life}`;
 
+  // HP & MP Bars
   state.currentHp = Math.max(0, Math.min(stats.maxHp, state.currentHp));
   state.currentMp = Math.max(0, Math.min(stats.maxMp, state.currentMp));
   const hpPercent = Math.max(0, Math.min(100, (state.currentHp / stats.maxHp) * 100));
@@ -504,6 +513,7 @@ function updateUI() {
   const txtMpBar = document.getElementById("txtMpBar");
   if (txtMpBar) txtMpBar.innerText = `MP: ${state.currentMp.toLocaleString()} / ${stats.maxMp.toLocaleString()}`;
 
+  // Set Bonus Badge
   const setBadge = document.getElementById("setBonusBadge");
   if (setBadge) {
     if (stats.activeSetTier) {
@@ -514,6 +524,7 @@ function updateUI() {
     }
   }
 
+  // 11 Paperdoll Slots with SVG Icons
   SLOT_TYPES.forEach(s => {
     const el = document.getElementById(`slot-${s.key}`);
     if (!el) return;
@@ -545,6 +556,7 @@ function updateUI() {
     }
   });
 
+  // Stats Tab
   const freePointsEl = document.getElementById("statFreePoints");
   if (freePointsEl) freePointsEl.innerText = state.freePoints;
 
@@ -560,6 +572,7 @@ function updateUI() {
     }
   });
 
+  // Enable/Disable manual stat buttons based on checkbox
   document.querySelectorAll(".btn-stat").forEach(btn => {
     btn.disabled = state.autoStats;
   });
@@ -569,6 +582,7 @@ function updateUI() {
   renderDetailPanel();
 }
 
+// Map Selection Renderer
 function renderMapList() {
   const container = document.getElementById("mapListContainer");
   if (!container) return;
@@ -592,7 +606,7 @@ function renderMapList() {
     div.innerHTML = `
       <div>
         <div class="map-title">Map ${m.id}: ${m.name} (Bậc ${m.tier})</div>
-        <div class="map-req">Yêu cầu: Lv.${m.reqLv} - RS.${m.reqRs} | ST Quái: ${m.mobDmg[0]}-${m.mobDmg} | Boss: ${m.boss}</div>
+        <div class="map-req">Yêu cầu: Lv.${m.reqLv} - RS.${m.reqRs} | ST Quái: ${m.mobDmg[0]}-${m.mobDmg[1]} | Boss: ${m.boss}</div>
       </div>
       <div>${btnHtml}</div>
     `;
@@ -613,6 +627,7 @@ function teleportMap(mapId) {
   saveGameState();
 }
 
+// Auto Stats Toggle
 function toggleAutoStats() {
   const chk = document.getElementById("chkAutoStats");
   state.autoStats = chk ? chk.checked : true;
