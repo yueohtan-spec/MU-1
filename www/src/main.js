@@ -529,6 +529,137 @@ const SVG_ICONS = {
   wings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="slot-icon-svg"><path d="M2 9c4-6 10-6 10 2-4-2-7-1-10-2z"/><path d="M22 9c-4-6-10-6-10 2 4-2 7-1 10-2z"/><path d="M4 14c4-3 8-3 8 3-3-2-5-2-8-3z"/><path d="M20 14c-4-3-8-3-8 3 3-2 5-2 8-3z"/></svg>`
 };
 
+
+const ITEM_ARTWORKS = {
+  sword: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <defs>
+      <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="30%" stop-color="#f5cd79"/>
+        <stop offset="70%" stop-color="#e67e22"/>
+        <stop offset="100%" stop-color="#c0392b"/>
+      </linearGradient>
+      <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffd700"/>
+        <stop offset="100%" stop-color="#d35400"/>
+      </linearGradient>
+    </defs>
+    <rect x="22" y="34" width="4" height="10" rx="1.5" fill="#2d3436"/>
+    <circle cx="24" cy="45" r="2.5" fill="url(#goldTrim)"/>
+    <path d="M14 33 Q24 36 34 33 L32 29 Q24 31 16 29 Z" fill="url(#goldTrim)"/>
+    <circle cx="24" cy="31" r="2" fill="#e74c3c"/>
+    <path d="M21 29 L21 8 L24 2 L27 8 L27 29 Z" fill="url(#bladeGrad)" stroke="#d35400" stroke-width="0.8"/>
+    <line x1="24" y1="9" x2="24" y2="27" stroke="#ffd700" stroke-width="1"/>
+    <polygon points="22,12 24,5 23,12" fill="#ffffff" opacity="0.85"/>
+  </svg>`,
+
+  staff: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <defs>
+      <linearGradient id="staffOrb" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="40%" stop-color="#00d2d3"/>
+        <stop offset="100%" stop-color="#341f97"/>
+      </linearGradient>
+    </defs>
+    <line x1="24" y1="18" x2="24" y2="46" stroke="#706fd3" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="24" cy="45" r="2" fill="#ffd700"/>
+    <path d="M16 16 Q18 4 24 10 Q30 4 32 16 Q24 12 16 16 Z" fill="#ffd700" stroke="#d35400" stroke-width="0.8"/>
+    <circle cx="24" cy="11" r="7" fill="url(#staffOrb)" filter="drop-shadow(0 0 4px #00d2d3)"/>
+    <circle cx="22.5" cy="9.5" r="2" fill="#ffffff"/>
+  </svg>`,
+
+  bow: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <path d="M14 8 Q38 24 14 40" fill="none" stroke="#00cec9" stroke-width="3" stroke-linecap="round" filter="drop-shadow(0 0 3px #00d2d3)"/>
+    <path d="M14 8 Q32 24 14 40" fill="none" stroke="#ffd700" stroke-width="1.2"/>
+    <line x1="14" y1="8" x2="14" y2="40" stroke="#ffffff" stroke-width="1" stroke-dasharray="2,2" opacity="0.8"/>
+    <line x1="10" y1="24" x2="32" y2="24" stroke="#ffd700" stroke-width="1.8"/>
+    <polygon points="32,21 38,24 32,27" fill="#e74c3c"/>
+  </svg>`,
+
+  shield: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <defs>
+      <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#e74c3c"/>
+        <stop offset="50%" stop-color="#c0392b"/>
+        <stop offset="100%" stop-color="#2c3e50"/>
+      </linearGradient>
+    </defs>
+    <path d="M24 4 L40 9 C40 26 33 39 24 44 C15 39 8 26 8 9 Z" fill="url(#shieldGrad)" stroke="#ffd700" stroke-width="2"/>
+    <path d="M24 8 L36 12 C36 24 30 35 24 39 C18 35 12 24 12 12 Z" fill="#2c3e50" opacity="0.85"/>
+    <polygon points="24,14 28,22 24,20 20,22" fill="#ffd700"/>
+    <circle cx="24" cy="26" r="4" fill="#f1c40f" stroke="#d35400" stroke-width="1"/>
+    <circle cx="24" cy="26" r="2" fill="#e74c3c"/>
+  </svg>`,
+
+  helm: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <path d="M12 20 Q4 6 12 2 Q13 12 16 18 Z" fill="#ffd700" stroke="#d35400" stroke-width="1"/>
+    <path d="M36 20 Q44 6 36 2 Q35 12 32 18 Z" fill="#ffd700" stroke="#d35400" stroke-width="1"/>
+    <path d="M14 20 Q24 6 34 20 L36 34 Q24 42 12 34 Z" fill="#34495e" stroke="#ffd700" stroke-width="1.8"/>
+    <path d="M17 25 Q24 22 31 25 L32 28 Q24 25 16 28 Z" fill="#00d2d3" filter="drop-shadow(0 0 2px #00cec9)"/>
+    <polygon points="24,4 21,14 27,14" fill="#e74c3c"/>
+  </svg>`,
+
+  armor: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <polygon points="8,14 16,8 18,18 6,20" fill="#f1c40f" stroke="#d35400" stroke-width="1"/>
+    <polygon points="40,14 32,8 30,18 42,20" fill="#f1c40f" stroke="#d35400" stroke-width="1"/>
+    <path d="M16 10 L32 10 L36 24 L32 40 L16 40 L12 24 Z" fill="#2c3e50" stroke="#ffd700" stroke-width="1.8"/>
+    <polygon points="24,18 29,24 24,30 19,24" fill="#00cec9" stroke="#ffffff" stroke-width="0.8"/>
+    <path d="M18 34 Q24 38 30 34" fill="none" stroke="#f1c40f" stroke-width="1.5"/>
+  </svg>`,
+
+  gloves: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <rect x="14" y="24" width="20" height="18" rx="4" fill="#2c3e50" stroke="#ffd700" stroke-width="1.5"/>
+    <rect x="16" y="14" width="4" height="12" rx="2" fill="#34495e" stroke="#7f8c8d"/>
+    <rect x="22" y="10" width="4" height="16" rx="2" fill="#34495e" stroke="#7f8c8d"/>
+    <rect x="28" y="14" width="4" height="12" rx="2" fill="#34495e" stroke="#7f8c8d"/>
+    <circle cx="24" cy="33" r="3" fill="#e74c3c" stroke="#ffd700" stroke-width="1"/>
+  </svg>`,
+
+  boots: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <path d="M14 10 L28 10 L28 30 L36 34 L36 40 L12 40 L12 28 Z" fill="#2c3e50" stroke="#ffd700" stroke-width="1.8"/>
+    <path d="M26 12 Q34 6 30 18 Z" fill="#ffd700"/>
+    <line x1="14" y1="26" x2="28" y2="26" stroke="#e67e22" stroke-width="1.5"/>
+  </svg>`,
+
+  wings: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <path d="M24 26 Q10 4 2 16 Q2 32 14 36 Q20 32 24 26 Z" fill="#e74c3c" stroke="#ffd700" stroke-width="1.5" filter="drop-shadow(0 0 4px #c0392b)"/>
+    <path d="M24 26 Q38 4 46 16 Q46 32 34 36 Q28 32 24 26 Z" fill="#e74c3c" stroke="#ffd700" stroke-width="1.5" filter="drop-shadow(0 0 4px #c0392b)"/>
+    <circle cx="24" cy="26" r="3.5" fill="#ffd700"/>
+    <circle cx="24" cy="26" r="1.5" fill="#ffffff"/>
+  </svg>`,
+
+  pendant: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <path d="M12 8 Q24 22 36 8" fill="none" stroke="#ffd700" stroke-width="2"/>
+    <polygon points="24,20 30,30 24,40 18,30" fill="#e74c3c" stroke="#ffd700" stroke-width="1.5" filter="drop-shadow(0 0 3px #ff4757)"/>
+    <circle cx="24" cy="29" r="2.5" fill="#ffffff" opacity="0.8"/>
+  </svg>`,
+
+  ring: `<svg viewBox="0 0 48 48" class="item-art-svg">
+    <ellipse cx="24" cy="28" rx="14" ry="11" fill="none" stroke="#ffd700" stroke-width="3" filter="drop-shadow(0 0 2px #d35400)"/>
+    <polygon points="24,12 28,18 24,22 20,18" fill="#3498db" stroke="#ffffff" stroke-width="1"/>
+    <circle cx="24" cy="17" r="2" fill="#ffffff" opacity="0.9"/>
+  </svg>`
+};
+
+function getItemIllustration(item, slotKey) {
+  if (!item) return "";
+  let key = slotKey;
+  if (slotKey === "mainWeapon") {
+    if (state.charClass === "dw") key = "staff";
+    else if (state.charClass === "fe") key = "bow";
+    else key = "sword";
+  } else if (slotKey === "offWeapon") {
+    if (state.charClass === "fe") key = "bow";
+    else key = "shield";
+  } else if (slotKey === "pendant1" || slotKey === "pendant2") {
+    key = "pendant";
+  } else if (slotKey === "ring1" || slotKey === "ring2") {
+    key = "ring";
+  }
+
+  return ITEM_ARTWORKS[key] || ITEM_ARTWORKS.sword;
+}
+
 const SLOT_TYPES = [
   { key: "mainWeapon", name: "Vũ Khí Chính" },
   { key: "offWeapon", name: "Vũ Khí Phụ / Khiên" },
@@ -583,6 +714,10 @@ function getClassSkills(charClass = "dk") {
 }
 
 // USER & GAME STATE
+function getRequiredExpForLevel(lvl) {
+  return Math.floor(lvl * lvl * 15 + lvl * 80 + 100);
+}
+
 function getDefaultState(username = "Hero_Lorencia", charClass = "dk") {
   let stats = { str: 25, agi: 20, vit: 25, ene: 15 };
   let gender = "male";
@@ -600,7 +735,7 @@ function getDefaultState(username = "Hero_Lorencia", charClass = "dk") {
     gender,
     level: 1,
     exp: 0,
-    nextExp: 100,
+    nextExp: 195,
     rs: 0,
     srs: 0,
     freePoints: 0,
@@ -717,7 +852,11 @@ function submitLogin() {
   if (!state.autoPotion) state.autoPotion = { hpEnabled: true, hpThreshold: 40 };
 
   setCurrentUser(u);
-  initGameSession();
+  if (state.exp > state.nextExp) {
+      state.exp = Math.floor(state.nextExp * 0.15);
+    }
+    state.nextExp = getRequiredExpForLevel(state.level);
+    initGameSession();
 }
 
 function submitRegister() {
@@ -1458,8 +1597,8 @@ function runCombatTick() {
   spawnFloatingLoot("🪙", `+${earnedZen.toLocaleString()} Zen`, "#ffec8b");
   addLog(`🪙 [NHẶT ZEN] +${earnedZen.toLocaleString()} Zen!`, "log-zen");
 
-  // 4. EXP Boost x10.000
-  const earnedExp = 25 * 10000 * currentMap.tier * mobMult;
+  // 4. Standard Balanced EXP Gain
+  const earnedExp = Math.floor((Math.random() * 15 + 20) * currentMap.tier * mobMult);
   state.exp += earnedExp;
 
   // 5. Jewel & Potion Drops
@@ -1509,7 +1648,7 @@ function runCombatTick() {
     while (state.exp >= state.nextExp) {
       state.exp -= state.nextExp;
       state.level++;
-      state.nextExp = Math.floor(state.nextExp * 1.35);
+      state.nextExp = getRequiredExpForLevel(state.level);
       state.freePoints += 5;
       if (state.level % 5 === 0) {
         state.skillPoints = (state.skillPoints || 0) + 1;
@@ -1738,10 +1877,11 @@ function renderInventory() {
 
     if (item && RARITIES[item.rarity]) {
       const r = RARITIES[item.rarity];
+      const itemArt = getItemIllustration(item, item.slotKey);
       html += `
-        <div class="inv-cell ${r.class} ${isSelected ? "selected" : ""}" onclick="selectInventoryItem(${i})">
-          <div style="color:${r.color}; font-size:16px;">⚔</div>
-          <div style="color:${r.color}; font-size:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${item.name}</div>
+        <div class="inv-cell ${r.class} ${isSelected ? "selected" : ""}" onclick="selectInventoryItem(${i})" style="border-color:${r.color}; box-shadow:0 0 6px ${r.color}44;">
+          <div style="width:28px; height:28px; display:flex; justify-content:center; align-items:center;">${itemArt}</div>
+          <div style="color:${r.color}; font-size:7.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; font-weight:bold;">${item.name}</div>
           ${item.plus > 0 ? `<div class="inv-cell-tag">+${item.plus}</div>` : ""}
         </div>
       `;
@@ -1959,12 +2099,19 @@ function renderDetailPanel() {
     item = state.equipped[state.selectedSlotKey];
   }
 
+  const showcase = document.getElementById("dItemShowcase");
   if (!item) {
     if (dTitle) dTitle.innerText = "Chưa chọn trang bị";
     if (dStats) dStats.innerText = "Chạm vào ô trang bị hoặc túi đồ để xem chi tiết.";
     if (dOptions) dOptions.innerHTML = "";
     if (dActions) dActions.style.display = "none";
+    if (showcase) showcase.style.display = "none";
     return;
+  }
+  if (showcase && RARITIES[item.rarity]) {
+    showcase.style.display = "flex";
+    showcase.style.borderColor = RARITIES[item.rarity].color;
+    showcase.innerHTML = getItemIllustration(item, item.slotKey);
   }
 
   const r = RARITIES[item.rarity];
@@ -2153,7 +2300,7 @@ function performRebirth() {
   state.rs++;
   state.level = 1;
   state.exp = 0;
-  state.nextExp = 100;
+  state.nextExp = getRequiredExpForLevel(1);
   state.freePoints += state.rs * 500;
   state.skillPoints = (state.skillPoints || 0) + 5;
 
@@ -2306,7 +2453,7 @@ function checkOfflineProgress() {
       const currentTier = state.currentMapId || 1;
       const mobsKilledOffline = Math.floor(actualSeconds / 0.5);
       const gainedZen = mobsKilledOffline * 200 * currentTier;
-      const gainedExp = mobsKilledOffline * 25 * 10000 * currentTier;
+      const gainedExp = mobsKilledOffline * 25 * currentTier;
       const gainedBless = Math.floor(mobsKilledOffline * 0.002);
       const gainedChaos = Math.floor(mobsKilledOffline * 0.0008);
       const gainedLife = Math.floor(mobsKilledOffline * 0.0005);
