@@ -60,6 +60,37 @@
     .hero-title { font-size: 12.5px; font-weight: bold; color: #fff; }
     .hero-rs { font-size: 10px; color: #00ffcc; font-weight: bold; }
     .btn-rename-icon { background: #1e2433; border: 1px solid #3d4966; color: #f1c40f; font-size: 9.5px; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
+        .btn-sound-icon { background: #1c2333; border: 1px solid #384966; color: var(--gold); font-size: 9.5px; padding: 2px 6px; border-radius: 4px; cursor: pointer; transition: transform 0.08s ease; }
+    .btn-sound-icon:active { transform: scale(0.88); }
+    
+    /* Tactile mobile tap feedback */
+    button { -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.96); filter: brightness(1.15); }
+    .slot-card:active, .inv-cell:active, .map-card:active { transform: scale(0.97); }
+
+    /* Floating Skill Callout Banner */
+    .floating-skill-banner {
+      position: absolute;
+      background: rgba(19, 23, 34, 0.95);
+      border: 1.5px solid var(--gold);
+      border-radius: 4px;
+      color: var(--gold);
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 1.5px 6px;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+      pointer-events: none;
+      animation: floatSkillUp 0.8s ease-out forwards;
+      white-space: nowrap;
+      z-index: 25;
+      text-shadow: 0 1px 3px #000;
+    }
+    @keyframes floatSkillUp {
+      0% { transform: translate(-50%, 0) scale(0.7); opacity: 0; }
+      25% { transform: translate(-50%, -10px) scale(1.12); opacity: 1; }
+      75% { transform: translate(-50%, -22px) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -34px) scale(0.85); opacity: 0; }
+    }
     .btn-overview-icon { background: #1f2b38; border: 1px solid #3867d6; color: #74b9ff; font-size: 9.5px; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .btn-logout-icon { background: #2c1a1d; border: 1px solid #632d30; color: #ff7675; font-size: 9.5px; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
     .current-map-badge { font-size: 10px; color: #74b9ff; font-weight: bold; background: #1a2233; padding: 2px 6px; border-radius: 4px; border: 1px solid #3867d6; }
@@ -113,11 +144,11 @@
     .debuff-poison { background: rgba(108, 92, 231, 0.2); color: #a29bfe; border-color: #6c5ce7; }
 
     /* 3. Combat Log Box */
-    /* 3. 2D Chibi Battle Arena Stage */
+    /* 3. High-Fidelity 2.5D Battle Arena Stage (Đấu Trường 2.5D MU Nâng Cấp) */
     .battle-arena-container {
-      height: 25%;
-      min-height: 160px;
-      max-height: 200px;
+      height: 28%;
+      min-height: 180px;
+      max-height: 230px;
       position: relative;
       overflow: hidden;
       border-bottom: 2px solid #232a3d;
@@ -126,29 +157,124 @@
       justify-content: space-between;
       flex-shrink: 0;
       background: #080a10;
-      perspective: 900px;
+      perspective: 950px;
       transform-style: preserve-3d;
+      transition: box-shadow 0.3s ease;
     }
+    .battle-arena-container.screen-shake {
+      animation: screenShake 0.25s ease-out !important;
+    }
+    @keyframes screenShake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-3px, 2px); }
+      40% { transform: translate(3px, -2px); }
+      60% { transform: translate(-2px, 1px); }
+      80% { transform: translate(2px, -1px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    /* Ambient Weather & Atmospheric Particles */
+    .arena-weather-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2;
+    }
+    .weather-particle {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+    }
+    .particle-snow {
+      width: 4px;
+      height: 4px;
+      background: #ffffff;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+      top: -10px;
+      animation: driftSnow linear infinite;
+    }
+    @keyframes driftSnow {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      15% { opacity: 0.95; }
+      85% { opacity: 0.95; }
+      100% { transform: translateY(200px) translateX(30px); opacity: 0; }
+    }
+    .particle-embers {
+      width: 3.5px;
+      height: 3.5px;
+      background: #ff7675;
+      box-shadow: 0 0 8px #ff4757;
+      bottom: 0px;
+      animation: driftEmbers linear infinite;
+    }
+    @keyframes driftEmbers {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 0.9; }
+      100% { transform: translateY(-170px) translateX(-25px); opacity: 0; }
+    }
+    .particle-bubbles {
+      width: 4.5px;
+      height: 4.5px;
+      background: rgba(0, 206, 201, 0.55);
+      border: 1px solid #7efff5;
+      bottom: 0px;
+      animation: driftBubbles linear infinite;
+    }
+    @keyframes driftBubbles {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      20% { opacity: 0.95; }
+      80% { opacity: 0.95; }
+      100% { transform: translateY(-170px) translateX(20px); opacity: 0; }
+    }
+    .particle-motes {
+      width: 3.5px;
+      height: 3.5px;
+      background: #feca57;
+      box-shadow: 0 0 7px #ffd32a;
+      bottom: 10px;
+      animation: driftMotes linear infinite;
+    }
+    @keyframes driftMotes {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      30% { opacity: 0.9; }
+      70% { opacity: 0.9; }
+      100% { transform: translateY(-140px) translateX(15px); opacity: 0; }
+    }
+    .particle-stars {
+      width: 3px;
+      height: 3px;
+      background: #00d2d3;
+      box-shadow: 0 0 8px #54a0ff;
+      animation: pulseStar linear infinite;
+    }
+    @keyframes pulseStar {
+      0%, 100% { opacity: 0.2; transform: scale(0.6); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+
     /* 2.5D Isometric Pedestal */
     .arena-pedestal {
       position: absolute;
-      bottom: 24px;
-      left: 6%;
-      right: 6%;
-      height: 64px;
-      background: radial-gradient(ellipse at 50% 40%, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 60%, #020617 100%);
+      bottom: 22px;
+      left: 5%;
+      right: 5%;
+      height: 66px;
+      background: radial-gradient(ellipse at 50% 40%, rgba(30,41,59,0.96) 0%, rgba(15,23,42,0.98) 60%, #020617 100%);
       border-radius: 50%;
       border: 2px solid #f59e0b;
-      box-shadow: 0 0 25px rgba(245, 158, 11, 0.3), inset 0 0 15px rgba(0,0,0,0.9);
+      box-shadow: 0 0 28px rgba(245, 158, 11, 0.35), inset 0 0 18px rgba(0,0,0,0.95);
       transform: rotateX(56deg);
       transform-style: preserve-3d;
       z-index: 3;
     }
     .arena-runic-circle {
       position: absolute;
-      inset: 7px;
+      inset: 6px;
       border-radius: 50%;
-      border: 1.5px dashed rgba(255, 215, 0, 0.45);
+      border: 1.5px dashed rgba(255, 215, 0, 0.55);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
       animation: rotateRune 24s linear infinite;
     }
     @keyframes rotateRune {
@@ -160,25 +286,26 @@
       inset: 0;
       background: linear-gradient(180deg, #101c2e 0%, #0d2818 70%, #041208 100%);
       transition: background 0.6s ease;
-      opacity: 0.92;
+      opacity: 0.95;
     }
     .arena-background::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 100%, rgba(255,255,255,0.06) 0%, transparent 70%);
+      background: radial-gradient(circle at 50% 100%, rgba(255,255,255,0.08) 0%, transparent 70%);
       pointer-events: none;
     }
     .arena-stage {
       position: absolute;
       inset: 0;
-      bottom: 22px; z-index: 6; transform-style: preserve-3d;
+      bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 6px 18px 6px 18px;
+      padding: 4px 12px;
       pointer-events: none;
       z-index: 5;
+      transform-style: preserve-3d;
     }
     .chibi-actor {
       display: flex;
@@ -188,50 +315,168 @@
       transform: translateZ(10px);
     }
     .actor-badge {
-      background: rgba(12, 16, 24, 0.85);
+      background: rgba(12, 16, 24, 0.9);
       border: 1px solid #3d4966;
       border-radius: 4px;
-      padding: 1px 6px;
+      padding: 1.5px 7px;
       font-size: 8.5px;
       font-weight: bold;
       color: var(--gold);
       margin-bottom: 2px;
       white-space: nowrap;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+      box-shadow: 0 1px 5px rgba(0,0,0,0.8);
+      z-index: 5;
     }
     .actor-sprite-box {
-      width: 68px;
-      height: 78px;
+      width: 114px;
+      height: 130px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
-      animation: chibiIdle 1.8s infinite ease-in-out;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
+    }
+    @keyframes heroOrganicIdle {
+      0%, 100% { transform: translateY(0) scale(1, 1); }
+      50% { transform: translateY(-5px) scale(1.02, 0.98); }
     }
     .chibi-svg {
       width: 100%;
       height: 100%;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.85));
+    }
+    .hero-foot-ring {
+      position: absolute;
+      bottom: 4px;
+      width: 68px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(255, 215, 0, 0.7);
+      box-shadow: 0 0 14px rgba(255, 215, 0, 0.45), inset 0 0 8px rgba(245, 158, 11, 0.3);
+      animation: rotateFootRune 7s linear infinite;
+      transform: rotateX(58deg);
+      pointer-events: none;
+      z-index: 2;
+    }
+    @keyframes rotateFootRune {
+      from { transform: rotateX(58deg) rotate(0deg); }
+      to { transform: rotateX(58deg) rotate(360deg); }
+    }
+    .mob-foot-ring {
+      position: absolute;
+      bottom: 4px;
+      width: 74px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(231, 76, 60, 0.55);
+      box-shadow: 0 0 12px rgba(231, 76, 60, 0.35);
+      animation: rotateFootRuneRev 9s linear infinite;
+      transform: rotateX(58deg);
+      pointer-events: none;
+      z-index: 2;
+    }
+    @keyframes rotateFootRuneRev {
+      from { transform: rotateX(58deg) rotate(360deg); }
+      to { transform: rotateX(58deg) rotate(0deg); }
     }
     .actor-shadow {
-      width: 48px;
-      height: 8px;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, transparent 75%);
+      width: 64px;
+      height: 11px;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.85) 0%, transparent 75%);
       border-radius: 50%;
       margin-top: -3px;
+      z-index: 1;
     }
     .arena-vs-badge {
       font-size: 11px;
       transform: translateZ(20px);
       font-weight: 900;
       color: #ffd700;
-      background: rgba(20, 24, 34, 0.7);
+      background: rgba(20, 24, 34, 0.8);
       border: 1px solid #d35400;
-      padding: 2px 5px;
+      padding: 2px 6px;
       border-radius: 50%;
       margin-bottom: 30px;
-      box-shadow: 0 0 8px rgba(243,156,18,0.5);
-      opacity: 0.75;
+      box-shadow: 0 0 10px rgba(243,156,18,0.6);
+      opacity: 0.85;
+    }
+
+    /* SVG Character Sub-Element Keyframes */
+    .wing-flap-anim {
+      transform-origin: 50px 55px;
+      animation: wingFlapDragon 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes wingFlapDragon {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(0.92, 1.05) rotate(-3deg); }
+    }
+    .wing-fairy-anim {
+      transform-origin: 50px 55px;
+      animation: wingFlapFairy 1.4s ease-in-out infinite alternate;
+    }
+    @keyframes wingFlapFairy {
+      0% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+      100% { transform: scale(0.88, 1.06) rotate(3deg); opacity: 1; }
+    }
+    .wing-soul-anim {
+      transform-origin: 50px 55px;
+      animation: wingFlapSoul 2.0s ease-in-out infinite alternate;
+    }
+    @keyframes wingFlapSoul {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-3px) scale(1.04, 0.96); }
+    }
+    .dw-arcane-orb {
+      transform-origin: 74px 18px;
+      animation: arcaneOrbSpin 4s linear infinite;
+    }
+    @keyframes arcaneOrbSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .fe-hair-back {
+      transform-origin: 50px 35px;
+      animation: hairFlutter 2.4s ease-in-out infinite alternate;
+    }
+    @keyframes hairFlutter {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(3deg) scaleY(1.03); }
+    }
+
+    /* Monster Sub-element Keyframes */
+    .spider-legs-group {
+      transform-origin: 50px 75px;
+      animation: spiderLegTwitch 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes spiderLegTwitch {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.97, 1.02); }
+      100% { transform: scale(1.02, 0.98); }
+    }
+    .sea-fins-anim {
+      transform-origin: 50px 75px;
+      animation: seaFinsWave 2s ease-in-out infinite alternate;
+    }
+    @keyframes seaFinsWave {
+      0% { transform: rotate(-2deg); }
+      100% { transform: rotate(2deg); }
+    }
+    .demon-wings-anim {
+      transform-origin: 50px 60px;
+      animation: demonWingFlap 2.2s ease-in-out infinite alternate;
+    }
+    @keyframes demonWingFlap {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(0.9, 1.05) rotate(3deg); }
+    }
+    .dragon-wings-anim {
+      transform-origin: 50px 60px;
+      animation: dragonWingFlap 1.9s ease-in-out infinite alternate;
+    }
+    @keyframes dragonWingFlap {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(0.92, 1.06) rotate(-2deg); }
     }
 
     /* Monster Head Badge with HP */
@@ -240,26 +485,28 @@
       flex-direction: column;
       align-items: center;
       margin-bottom: 2px;
-      width: 82px;
+      width: 86px;
+      z-index: 5;
     }
     .mob-name-text {
       font-size: 8.5px;
       font-weight: bold;
       color: #fff;
-      text-shadow: 0 1px 2px #000;
+      text-shadow: 0 1px 3px #000;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 82px;
+      max-width: 86px;
     }
     .mob-hp-bar-bg {
       width: 100%;
-      height: 6px;
+      height: 6.5px;
       background: #141720;
       border: 1px solid #3d465c;
-      border-radius: 3px;
+      border-radius: 3.5px;
       overflow: hidden;
       margin-top: 1px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
     }
     .mob-hp-bar-fill {
       height: 100%;
@@ -267,49 +514,131 @@
       transition: width 0.2s ease;
     }
 
+    /* Hero Ranks Auras */
+    .hero-actor.hero-aura-radiant .actor-sprite-box {
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
+    }
+    .hero-actor.hero-aura-gold .actor-sprite-box {
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
+    }
+    .hero-actor.hero-aura-godly .actor-sprite-box {
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
+    }
+    .hero-actor.hero-aura-mythic .actor-sprite-box {
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
+    }
+
     /* 7 Monster Ranks Effects */
     .monster-actor.rank-normal .actor-sprite-box {
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
     .monster-actor.rank-elite .actor-sprite-box {
-      transform: scale(1.08);
-      filter: drop-shadow(0 0 8px rgba(46, 204, 113, 0.9));
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
     .monster-actor.rank-dark-gold .actor-sprite-box {
-      transform: scale(1.15);
-      filter: drop-shadow(0 0 10px rgba(155, 89, 182, 0.95)) drop-shadow(0 0 4px #000);
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
     .monster-actor.rank-golden .actor-sprite-box {
-      transform: scale(1.22);
-      filter: drop-shadow(0 0 12px rgba(241, 196, 15, 1)) drop-shadow(0 0 5px #ffd700);
-      animation: goldenShimmer 1.5s infinite alternate;
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
     .monster-actor.rank-overlord .actor-sprite-box {
-      transform: scale(1.30);
-      filter: drop-shadow(0 0 15px rgba(230, 126, 34, 1)) drop-shadow(0 0 6px #d35400);
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
     .monster-actor.rank-legendary .actor-sprite-box {
-      transform: scale(1.42);
-      filter: drop-shadow(0 0 18px rgba(255, 71, 87, 1)) drop-shadow(0 0 8px #ff4757);
-      animation: pulseRedBoss 1.2s infinite alternate;
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
     .monster-actor.rank-mythical .actor-sprite-box {
-      transform: scale(1.52);
-      filter: drop-shadow(0 0 24px rgba(224, 86, 253, 1)) drop-shadow(0 0 10px #eb4d4b);
-      animation: mythicalPulse 1.0s infinite alternate;
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+      z-index: 4;
     }
 
     @keyframes goldenShimmer {
-      0% { filter: drop-shadow(0 0 8px #f1c40f); }
-      100% { filter: drop-shadow(0 0 16px #ffd700) drop-shadow(0 0 5px #fff); }
+      0% { filter: drop-shadow(0 0 9px #f1c40f); }
+      100% { filter: drop-shadow(0 0 18px #ffd700) drop-shadow(0 0 6px #fff); }
     }
     @keyframes pulseRedBoss {
-      0% { filter: drop-shadow(0 0 10px #e74c3c); }
-      100% { filter: drop-shadow(0 0 22px #ff4757) drop-shadow(0 0 6px #fff); }
+      0% { filter: drop-shadow(0 0 12px #e74c3c); }
+      100% { filter: drop-shadow(0 0 24px #ff4757) drop-shadow(0 0 8px #fff); }
     }
     @keyframes mythicalPulse {
-      0% { filter: drop-shadow(0 0 14px #e056fd) drop-shadow(0 0 6px #eb4d4b); }
-      100% { filter: drop-shadow(0 0 28px #e056fd) drop-shadow(0 0 14px #ffd700) drop-shadow(0 0 8px #fff); }
+      0% { filter: drop-shadow(0 0 16px #e056fd) drop-shadow(0 0 8px #eb4d4b); }
+      100% { filter: drop-shadow(0 0 30px #e056fd) drop-shadow(0 0 16px #ffd700) drop-shadow(0 0 9px #fff); }
     }
 
     /* FX Layer */
@@ -317,7 +646,7 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 15;
+      z-index: 16;
     }
 
     /* Floating Damage Numbers */
@@ -327,13 +656,30 @@
       font-weight: 900;
       pointer-events: none;
       white-space: nowrap;
-      text-shadow: 0 1px 3px #000, 0 0 5px rgba(0,0,0,0.8);
+      text-shadow: 0 1px 3px #000, 0 0 6px rgba(0,0,0,0.9);
       animation: floatDamageUp 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
       z-index: 20;
+      letter-spacing: 0.5px;
     }
-    .float-phy { color: #ff9f43; font-size: 13px; }
-    .float-mag { color: #a29bfe; font-size: 13.5px; text-shadow: 0 0 8px rgba(162,155,254,0.8); }
-    .float-crit { color: #00ff66; font-size: 16px; text-shadow: 0 0 10px rgba(0,255,102,0.9); }
+    .float-phy { color: #ff9f43; font-size: 13.5px; filter: drop-shadow(0 0 4px rgba(255, 159, 67, 0.7)); }
+    .float-mag { color: #a29bfe; font-size: 14px; filter: drop-shadow(0 0 6px rgba(162, 155, 254, 0.85)); }
+    .float-crit {
+      color: #ff4757;
+      font-size: 17px;
+      background: linear-gradient(180deg, #ffffff 0%, #ffd32a 40%, #ff4757 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.95));
+      transform-origin: center;
+    }
+    .float-excellent {
+      color: #2ed573;
+      font-size: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #7efff5 40%, #2ed573 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 10px rgba(46, 213, 115, 0.95)) drop-shadow(0 0 5px #00d2d3);
+    }
     .float-hit { color: #ff6b6b; font-size: 12.5px; }
     .float-miss { color: #55efc4; font-size: 13px; }
 
@@ -349,35 +695,103 @@
       z-index: 25;
       display: flex;
       align-items: center;
-      background: rgba(12, 16, 24, 0.85);
-      padding: 1px 5px;
+      background: rgba(12, 16, 24, 0.9);
+      padding: 1.5px 6px;
       border-radius: 4px;
       border: 1px solid var(--gold);
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
     }
 
-    /* Combat Slashes */
+    /* Combat Slashes & Projectiles */
     .combat-slash-fx {
       position: absolute;
-      width: 44px;
-      height: 44px;
       pointer-events: none;
       z-index: 18;
+    }
+    .fx-fire {
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      border-right: 4px solid #ffd700;
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-left: 4px solid transparent;
-      filter: drop-shadow(0 0 8px #ff9f43);
-      animation: slashArc 0.35s ease-out forwards;
+      border-right: 6px solid #ff4757;
+      border-top: 6px solid #ffa502;
+      border-bottom: 3px solid transparent;
+      border-left: 3px solid transparent;
+      filter: drop-shadow(0 0 12px #ff4757) drop-shadow(0 0 6px #ffd32a);
+      animation: slashArcFire 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    }
+    @keyframes slashArcFire {
+      0% { opacity: 1; transform: translate(-50%, -50%) rotate(-45deg) scale(0.4); }
+      60% { opacity: 1; transform: translate(-50%, -50%) rotate(25deg) scale(1.3); }
+      100% { opacity: 0; transform: translate(-50%, -50%) rotate(70deg) scale(1.6); }
+    }
+    .fx-arrow {
+      width: 74px;
+      height: 24px;
+      background: linear-gradient(90deg, transparent, #2ecc71, #7efff5, #ffffff);
+      border-radius: 10px;
+      filter: drop-shadow(0 0 10px #7efff5) drop-shadow(0 0 5px #2ecc71);
+      animation: arrowVolley 0.3s ease-out forwards;
+    }
+    @keyframes arrowVolley {
+      0% { opacity: 1; transform: translate(-80%, -50%) scaleX(0.4); }
+      70% { opacity: 1; transform: translate(-50%, -50%) scaleX(1.3); }
+      100% { opacity: 0; transform: translate(-20%, -50%) scaleX(0.8); }
     }
     .fx-magic {
-      border-right-color: #00d2d3;
-      filter: drop-shadow(0 0 10px #706fd3);
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 3px dashed #00d2d3;
+      background: radial-gradient(circle, rgba(0, 210, 211, 0.45) 0%, transparent 70%);
+      filter: drop-shadow(0 0 14px #54a0ff) drop-shadow(0 0 8px #706fd3);
+      animation: magicNova 0.38s ease-out forwards;
+    }
+    @keyframes magicNova {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
+      60% { opacity: 1; transform: translate(-50%, -50%) scale(1.35) rotate(120deg); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.7) rotate(180deg); }
     }
     .fx-crit {
-      border-right-color: #00ff66;
-      border-right-width: 6px;
-      filter: drop-shadow(0 0 12px #00ff66);
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border-right: 6px solid #2ed573;
+      border-top: 6px solid #7efff5;
+      filter: drop-shadow(0 0 14px #2ed573);
+      animation: slashArcFire 0.35s ease-out forwards;
+    }
+    .fx-crit-burst::after {
+      content: "";
+      position: absolute;
+      width: 54px;
+      height: 54px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      border: 3.5px solid #ff4757;
+      box-shadow: 0 0 16px #ffa502;
+      animation: burstRing 0.3s ease-out forwards;
+    }
+    @keyframes burstRing {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
+    }
+    .mob-death-burst {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.85) 0%, rgba(255, 71, 87, 0.6) 40%, transparent 70%);
+      filter: drop-shadow(0 0 18px #ffd700);
+      animation: deathSoulBurst 0.5s ease-out forwards;
+      pointer-events: none;
+      z-index: 22;
+    }
+    @keyframes deathSoulBurst {
+      0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.9; }
+      100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
     }
 
     /* Keyframe Animations */
@@ -388,17 +802,44 @@
     .anim-attack {
       animation: heroAttack25D 0.35s ease-in-out forwards !important;
     }
+    .anim-attack .hero-weapon-layer {
+      animation: weaponSlashArc 0.35s ease-in-out forwards !important;
+      transform-origin: 100px 90px;
+    }
+    @keyframes weaponSlashArc {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(-25deg) scale(1.08); }
+      60% { transform: rotate(40deg) scale(1.22); }
+      100% { transform: rotate(0deg); }
+    }
     @keyframes heroAttack25D {
-      0% { transform: translate3d(0, 0, 0) rotateZ(0deg); }
-      40% { transform: translate3d(36px, -4px, 20px) rotateZ(6deg) scale(1.08, 0.96); }
-      100% { transform: translate3d(0, 0, 0) rotateZ(0deg); }
+      0% { transform: translate3d(0, 0, 0); }
+      40% { transform: translate3d(30px, -2px, 15px) scale(1.06, 0.98); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+    .anim-cast {
+      animation: heroCast25D 0.35s ease-in-out forwards !important;
+    }
+    .anim-cast .hero-weapon-layer {
+      animation: staffCastSurge 0.38s ease-in-out forwards !important;
+      transform-origin: 110px 100px;
+    }
+    @keyframes staffCastSurge {
+      0% { transform: translateY(0); }
+      40% { transform: translateY(-16px) rotate(-15deg) scale(1.2); }
+      100% { transform: translateY(0); }
+    }
+    @keyframes heroCast25D {
+      0% { transform: translate3d(0, 0, 0); }
+      35% { transform: translate3d(10px, -10px, 18px) scale(1.06); filter: drop-shadow(0 0 14px #00d2d3); }
+      100% { transform: translate3d(0, 0, 0); }
     }
     .anim-hit {
       animation: mobHit25D 0.3s ease-in-out forwards !important;
     }
     @keyframes mobHit25D {
       0% { transform: translate3d(0, 0, 0); filter: brightness(1); }
-      30% { transform: translate3d(14px, 4px, -15px) scale(0.92, 1.08); filter: brightness(2.2) drop-shadow(0 0 10px #ff4757); }
+      30% { transform: translate3d(15px, 4px, -15px) scale(0.92, 1.08); filter: brightness(2.4) drop-shadow(0 0 12px #ff4757); }
       60% { transform: translate3d(-5px, -2px, 5px); filter: brightness(1.4); }
       100% { transform: translate3d(0, 0, 0); filter: brightness(1); }
     }
@@ -413,15 +854,15 @@
     }
     @keyframes floatDamageUp {
       0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
-      20% { opacity: 1; transform: translate(-50%, -15px) scale(1.25); }
-      60% { opacity: 1; transform: translate(-50%, -30px) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -48px) scale(0.9); }
+      20% { opacity: 1; transform: translate(-50%, -16px) scale(1.28); }
+      60% { opacity: 1; transform: translate(-50%, -32px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -50px) scale(0.9); }
     }
     @keyframes floatLootBounce {
       0% { opacity: 0; transform: translateY(8px) scale(0.6); }
       30% { opacity: 1; transform: translateY(-16px) scale(1.2); }
       70% { opacity: 1; transform: translateY(-28px) scale(1); }
-      100% { opacity: 0; transform: translateY(-42px) scale(0.8); }
+      100% { opacity: 0; transform: translateY(-44px) scale(0.8); }
     }
     @keyframes slashArc {
       0% { opacity: 1; transform: translate(-50%, -50%) rotate(-30deg) scale(0.3); }
@@ -747,9 +1188,9 @@
           <div>
             <label style="font-size:10.5px; color:#8fa0b8; margin-bottom:3px; display:block;">Chọn Hệ Phái Khởi Nghiệp</label>
             <select class="gate-select" id="regClass">
-              <option value="dk">⚔️ Dark Knight (Chiến Binh - Sát Thương Vật Lý & Máu)</option>
-              <option value="fe">🏹 Fairy Elf (Cung Thủ - Nhanh Nhẹn & Né Tránh)</option>
-              <option value="dw">🧙 Dark Wizard (Pháp Sư - Sát Thương Phép & Khiên MP)</option>
+              <option value="dk">⚔️ Dark Knight (Chiến Binh - Cận Chiến Sát Thương Vật Lý & Máu Khủng)</option>
+              <option value="fe">🏹 Fairy Elf (Cung Thủ - Xạ Thủ Tầm Xa & Bạo Kích Băng Tiễn)</option>
+              <option value="dw">🧙 Dark Wizard (Pháp Sư - Ma Pháp Tối Thượng & Khiên MP)</option>
             </select>
           </div>
           <div class="gate-msg err" id="regMsg"></div>
@@ -769,6 +1210,7 @@
           <span class="hero-lv" id="heroLv">Lv.1</span>
           <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
           <button class="btn-rename-icon" onclick="openRenameModal()" title="Đổi tên">✏️</button>
+          <button class="btn-sound-icon" id="btnSoundToggle" onclick="toggleSound()" title="Bật/Tắt Âm thanh">🔊</button>
           <button class="btn-overview-icon" onclick="openOverviewStatsModal()" title="Bảng chỉ số tổng hợp">📜 Chỉ Số</button>
           <button class="btn-quest-icon" onclick="openQuestsModal()" title="Nhiệm vụ & Thành tựu">🎯 Nhiệm Vụ <span class="notif-dot" id="questNotifDot" style="display:none;">●</span></button>
           <span class="hero-rs" id="heroRs">(RS: 0)</span>
@@ -836,9 +1278,11 @@
       </div>
     </div>
 
-    <!-- 3. 2.5D Chibi Battle Arena Stage (Đấu Trường 2.5D MU) -->
+    <!-- 3. 2.5D Chibi Battle Arena Stage (Đấu Trường 2.5D MU Nâng Cấp) -->
     <div class="battle-arena-container" id="battleArena">
       <div class="arena-background" id="arenaBg"></div>
+      <!-- Ambient Weather & Atmospheric Particle Layer -->
+      <div class="arena-weather-layer" id="arenaWeatherLayer"></div>
       
       <!-- 2.5D Isometric Pedestal / Arena Floor -->
       <div class="arena-pedestal">
@@ -858,6 +1302,7 @@
         <div class="chibi-actor hero-actor" id="chibiHeroActor">
           <div class="actor-badge" id="chibiHeroBadge">Lv.1 Dark Knight</div>
           <div class="actor-sprite-box" id="heroSpriteEl"></div>
+          <div class="hero-foot-ring" id="heroFootRing"></div>
           <div class="actor-shadow"></div>
           <div class="chibi-pet-box" id="chibiPetEl" onclick="openPetShopModal()" title="Trợ thủ MU"></div>
         </div>
@@ -874,6 +1319,7 @@
             </div>
           </div>
           <div class="actor-sprite-box" id="monsterSpriteEl"></div>
+          <div class="mob-foot-ring" id="mobFootRing"></div>
           <div class="actor-shadow"></div>
         </div>
       </div>
@@ -975,6 +1421,12 @@
             <div style="font-size:9px; color:var(--gold); margin-top:1px;">Lượt hôm nay: <b id="txtBcAttempts">3 / 3</b></div>
           </div>
           <button class="btn btn-danger" style="padding:6px 10px; font-weight:bold; box-shadow:0 0 8px rgba(231,76,60,0.6);" onclick="startBloodCastleEvent()">VÀO HUYẾT LÂU</button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label class="auto-check-box" style="margin-bottom:0; flex:1;">
+            <input type="checkbox" id="chkAutoMap" onchange="toggleAutoMap()">
+            <span>🚩 Tự động tiến vào Bản Đồ mới khi đủ cấp</span>
+          </label>
         </div>
         <div style="font-size:10px; color:#8fa0b8; margin-bottom:4px;">10 Vùng đất dã ngoại Lục địa MU (EXP chuẩn):</div>
         <div id="mapListContainer" style="display:flex; flex-direction:column; gap:4px;"></div>
@@ -1089,8 +1541,11 @@
         </div>
 
         <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); font-size:10.5px; display:flex; justify-content:space-between; align-items:center;">
-          <span>Giới tính / Ngoại hình:</span>
-          <button class="btn btn-sm" onclick="toggleGender()">Đổi Nam / Nữ</button>
+          <span>Ngoại hình & Hệ phái:</span>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-sm" onclick="toggleGender()">Đổi Nam/Nữ</button>
+            <button class="btn btn-sm btn-primary" onclick="openClassSelectModal()">Chuyển Hệ Phái</button>
+          </div>
         </div>
       </div>
 
@@ -1249,6 +1704,42 @@
       <div style="font-size:15px; font-weight:900; margin-bottom:6px;" id="pvpResultTitle">⚔️ KẾT QUẢ ĐẤU TRƯỜNG</div>
       <div id="pvpResultBody" style="font-size:11px; color:#c8d6e5; margin-bottom:12px; line-height:1.5;"></div>
       <button class="btn btn-primary" style="width:100%; padding:8px;" onclick="closePvpResultModal()">XÁC NHẬN</button>
+    </div>
+  </div>
+
+  <!-- Class Selection & Switch Modal -->
+  <div class="modal-overlay" id="classSelectModal">
+    <div class="modal-card" style="text-align:center; max-width:380px;">
+      <div style="font-size:13.5px; font-weight:900; color:var(--gold); margin-bottom:6px;">🌟 CHUYỂN ĐỔI HỆ PHÁI MU</div>
+      <div style="font-size:10px; color:#8fa0b8; margin-bottom:10px;">Chọn hệ phái muốn trải nghiệm (Giữ nguyên cấp độ, đổi bộ chiêu thức và vũ khí tương ứng):</div>
+
+      <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px; text-align:left;">
+        <button class="btn btn-sm" style="display:flex; align-items:center; gap:8px; padding:7px;" onclick="switchClass('dk')">
+          <span style="font-size:16px;">⚔️</span>
+          <div>
+            <b style="color:#ff7675;">Dark Knight (Chiến Binh)</b>
+            <div style="font-size:8.5px; color:#8fa0b8;">Chuyên Sát thương Vật lý, máu cực trâu, càn quét cuồng phong kiếm</div>
+          </div>
+        </button>
+
+        <button class="btn btn-sm" style="display:flex; align-items:center; gap:8px; padding:7px;" onclick="switchClass('fe')">
+          <span style="font-size:16px;">🏹</span>
+          <div>
+            <b style="color:#55efc4;">Fairy Elf (Cung Thủ)</b>
+            <div style="font-size:8.5px; color:#8fa0b8;">Xạ thủ tầm xa, bạo kích xuyên thấu, né tránh và băng tiễn nữ thần</div>
+          </div>
+        </button>
+
+        <button class="btn btn-sm" style="display:flex; align-items:center; gap:8px; padding:7px;" onclick="switchClass('dw')">
+          <span style="font-size:16px;">🧙</span>
+          <div>
+            <b style="color:#a29bfe;">Dark Wizard (Pháp Sư)</b>
+            <div style="font-size:8.5px; color:#8fa0b8;">Đại ma pháp sư, bão tuyết đông giá, linh hồn quỷ dữ & khiên Mana Shield</div>
+          </div>
+        </button>
+      </div>
+
+      <button class="btn" style="width:100%; padding:6px;" onclick="closeClassSelectModal()">Đóng Cửa Sổ</button>
     </div>
   </div>
 
