@@ -564,6 +564,111 @@
     .rank-row.is-me { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
     .rank-num { font-weight: 900; width: 20px; text-align: center; }
 
+    
+    /* Enhanced Gear Auras */
+    .aura-plus-7 {
+      border-color: #dfe6e9 !important;
+      box-shadow: 0 0 8px rgba(223, 230, 233, 0.6) !important;
+    }
+    .aura-plus-9 {
+      border-color: #f39c12 !important;
+      box-shadow: 0 0 12px rgba(243, 156, 18, 0.8), inset 0 0 6px rgba(241, 196, 15, 0.5) !important;
+      animation: pulseGoldAura 1.5s infinite alternate !important;
+    }
+    .aura-plus-11 {
+      border-color: #3498db !important;
+      box-shadow: 0 0 14px rgba(52, 152, 219, 0.9), inset 0 0 8px rgba(0, 206, 201, 0.6) !important;
+      animation: pulseBlueAura 1.4s infinite alternate !important;
+    }
+    .aura-plus-13 {
+      border-color: #9b59b6 !important;
+      box-shadow: 0 0 18px rgba(155, 89, 182, 1), 0 0 6px #e74c3c, inset 0 0 8px rgba(231, 76, 60, 0.6) !important;
+      animation: pulsePurpleLightning 1.2s infinite alternate !important;
+    }
+    @keyframes pulseGoldAura {
+      0% { box-shadow: 0 0 8px rgba(243,156,18,0.6); }
+      100% { box-shadow: 0 0 16px rgba(241,196,15,1), 0 0 4px #fff; }
+    }
+    @keyframes pulseBlueAura {
+      0% { box-shadow: 0 0 10px rgba(52,152,219,0.7); }
+      100% { box-shadow: 0 0 18px rgba(0,206,201,1), 0 0 5px #74b9ff; }
+    }
+    @keyframes pulsePurpleLightning {
+      0% { box-shadow: 0 0 12px rgba(155,89,182,0.8), 0 0 4px #e74c3c; }
+      100% { box-shadow: 0 0 22px rgba(155,89,182,1), 0 0 10px #ff4757, 0 0 5px #fff; }
+    }
+
+    /* Flying Chibi Pet */
+    .chibi-pet-box {
+      position: absolute;
+      top: -10px;
+      right: -18px;
+      width: 30px;
+      height: 30px;
+      animation: petOrbit 3.2s ease-in-out infinite;
+      z-index: 12;
+      filter: drop-shadow(0 0 5px rgba(255,215,0,0.8));
+    }
+    @keyframes petOrbit {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(-6deg); }
+    }
+
+    /* Quest button & notification */
+    .btn-quest-icon {
+      background: #231b2e;
+      border: 1px solid #8e44ad;
+      color: #d0bcf1;
+      font-size: 9.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      position: relative;
+    }
+    .notif-dot {
+      color: #e74c3c;
+      font-size: 11px;
+      position: absolute;
+      top: -4px;
+      right: -2px;
+      animation: pulseDot 1s infinite;
+    }
+
+    /* Blood Castle Arena Banner */
+    .bc-timer-banner {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(192, 57, 43, 0.92);
+      border: 1.5px solid var(--gold);
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 900;
+      color: #fff;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      z-index: 25;
+      box-shadow: 0 0 12px rgba(231,76,60,0.8);
+      white-space: nowrap;
+    }
+
+    /* Quest rows */
+    .quest-row {
+      background: #0d1017;
+      border: 1px solid #232938;
+      border-radius: 5px;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 10px;
+    }
+
     /* Modals */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 300; }
     .modal-card { background: #161a24; border: 2px solid var(--gold); border-radius: 8px; padding: 12px; max-width: 380px; width: 92%; max-height: 85vh; overflow-y: auto; }
@@ -634,6 +739,7 @@
           <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
           <button class="btn-rename-icon" onclick="openRenameModal()" title="Đổi tên">✏️</button>
           <button class="btn-overview-icon" onclick="openOverviewStatsModal()" title="Bảng chỉ số tổng hợp">📜 Chỉ Số</button>
+          <button class="btn-quest-icon" onclick="openQuestsModal()" title="Nhiệm vụ & Thành tựu">🎯 Nhiệm Vụ <span class="notif-dot" id="questNotifDot" style="display:none;">●</span></button>
           <span class="hero-rs" id="heroRs">(RS: 0)</span>
           <button class="btn-logout-icon" onclick="logoutAccount()" title="Đổi tài khoản">🚪</button>
         </div>
@@ -708,6 +814,13 @@
         <div class="arena-runic-circle"></div>
       </div>
       
+      <!-- Blood Castle Countdown Banner (Hidden by default) -->
+      <div class="bc-timer-banner" id="bcTimerBanner" style="display:none;">
+        <span>🏰 HUYẾT LÂU:</span>
+        <span id="txtBcTimer" style="color:var(--gold);">⏱️ 60s</span>
+        <span>| Diệt: <b id="txtBcKills" style="color:#00ffcc;">0</b></span>
+      </div>
+
       <!-- Stage Layer with Hero & Monster -->
       <div class="arena-stage">
         <!-- Hero Chibi -->
@@ -715,6 +828,7 @@
           <div class="actor-badge" id="chibiHeroBadge">Lv.1 Dark Knight</div>
           <div class="actor-sprite-box" id="heroSpriteEl"></div>
           <div class="actor-shadow"></div>
+          <div class="chibi-pet-box" id="chibiPetEl" onclick="openPetShopModal()" title="Trợ thủ MU"></div>
         </div>
 
         <!-- VS Center Badge -->
@@ -802,7 +916,11 @@
       <div class="tab-content" id="tab-inventory">
         <div class="inv-header">
           <span>📦 Túi Đồ: <b id="invCapacityText" style="color:var(--gold)">0 / 30</b></span>
-          <button class="btn btn-sm btn-warn" onclick="sellGarbageItems()">🧹 Bán Đồ Trắng & Lục</button>
+          <div style="display:flex; gap:3px;">
+            <button class="btn btn-sm btn-danger" onclick="sellAllInventory()" title="Bán toàn bộ trang bị trong túi">💰 Bán Hết</button>
+            <button class="btn btn-sm btn-warn" onclick="sellGarbageItems()" title="Bán đồ trắng và lục">🧹 Dọn Rác</button>
+            <button class="btn btn-sm btn-primary" onclick="openPetShopModal()">👼 Trợ Thủ</button>
+          </div>
         </div>
         <div class="inv-grid" id="inventoryGrid"></div>
       </div>
@@ -818,7 +936,16 @@
 
       <!-- Tab 4: Map Selection -->
       <div class="tab-content" id="tab-map">
-        <div style="font-size:10.5px; color:#8fa0b8; margin-bottom:4px;">Chủ động chọn 10 Vùng đất Lục địa MU (Tỷ lệ EXP chuẩn):</div>
+        <!-- Blood Castle Event Card -->
+        <div style="background:linear-gradient(90deg, #2c0b0e 0%, #4a151b 50%, #2c0b0e 100%); border:1.5px solid #e74c3c; border-radius:6px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 0 10px rgba(231,76,60,0.35);">
+          <div>
+            <div style="font-size:11.5px; font-weight:900; color:#ff7675;">🏰 HUYẾT LÂU (BLOOD CASTLE)</div>
+            <div style="font-size:9px; color:#c8d6e5; margin-top:2px;">Phụ bản sinh tồn 60s • Quái dồn dập • Đại thưởng Rương Thần</div>
+            <div style="font-size:9px; color:var(--gold); margin-top:1px;">Lượt hôm nay: <b id="txtBcAttempts">3 / 3</b></div>
+          </div>
+          <button class="btn btn-danger" style="padding:6px 10px; font-weight:bold; box-shadow:0 0 8px rgba(231,76,60,0.6);" onclick="startBloodCastleEvent()">VÀO HUYẾT LÂU</button>
+        </div>
+        <div style="font-size:10px; color:#8fa0b8; margin-bottom:4px;">10 Vùng đất dã ngoại Lục địa MU (EXP chuẩn):</div>
         <div id="mapListContainer" style="display:flex; flex-direction:column; gap:4px;"></div>
       </div>
 
@@ -1054,6 +1181,43 @@
       <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:6px;">BÁO CÁO THU HOẠCH TREO MÁY</div>
       <div id="offlineReportText" style="font-size:10.5px; color:#c8d6e5; margin-bottom:10px; line-height:1.5;"></div>
       <button class="btn btn-success" style="width:100%; padding:7px;" onclick="closeOfflineModal()">NHẬN TẤT CẢ VÀO TÚI</button>
+    </div>
+  </div>
+
+  <!-- Quests & Achievements Modal -->
+  <div class="modal-overlay" id="questsModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:900; color:var(--gold);">🎯 NHIỆM VỤ & THÀNH TỰU</div>
+        <button class="btn btn-sm" onclick="closeQuestsModal()">✕ Đóng</button>
+      </div>
+
+      <div style="display:flex; gap:4px; margin-bottom:8px;">
+        <button class="btn btn-sm btn-primary" id="btnTabDailyQuests" style="flex:1;" onclick="switchQuestTab('daily')">📅 Nhiệm Vụ Ngày</button>
+        <button class="btn btn-sm" id="btnTabAchievements" style="flex:1;" onclick="switchQuestTab('achieve')">🏆 Cây Thành Tựu</button>
+      </div>
+
+      <div id="questsContentContainer" style="display:flex; flex-direction:column; gap:4px; max-height:55vh; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Pet Shop Modal -->
+  <div class="modal-overlay" id="petShopModal">
+    <div class="modal-card" style="text-align:center;">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:6px;">👼 TRỢ THỦ & THÚ CƯNG MU</div>
+      <div style="font-size:10px; color:#8fa0b8; margin-bottom:10px;">Linh thú thần thoại bay bên cạnh hiệp sĩ, tăng mạnh thuộc tính chiến đấu:</div>
+
+      <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;" id="petListContainer"></div>
+      <button class="btn" style="width:100%; padding:6px;" onclick="closePetShopModal()">Đóng Cửa Sổ</button>
+    </div>
+  </div>
+
+  <!-- PvP Result Modal -->
+  <div class="modal-overlay" id="pvpResultModal">
+    <div class="modal-card" style="text-align:center;">
+      <div style="font-size:15px; font-weight:900; margin-bottom:6px;" id="pvpResultTitle">⚔️ KẾT QUẢ ĐẤU TRƯỜNG</div>
+      <div id="pvpResultBody" style="font-size:11px; color:#c8d6e5; margin-bottom:12px; line-height:1.5;"></div>
+      <button class="btn btn-primary" style="width:100%; padding:8px;" onclick="closePvpResultModal()">XÁC NHẬN</button>
     </div>
   </div>
 
