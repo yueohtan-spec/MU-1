@@ -641,6 +641,15 @@ const ITEM_ARTWORKS = {
   </svg>`
 };
 
+function getItemAuraClass(plus) {
+  if (!plus) return "";
+  if (plus >= 13) return "aura-plus-13";
+  if (plus >= 11) return "aura-plus-11";
+  if (plus >= 9) return "aura-plus-9";
+  if (plus >= 7) return "aura-plus-7";
+  return "";
+}
+
 function getItemIllustration(item, slotKey) {
   if (!item) return "";
   let key = slotKey;
@@ -1033,6 +1042,10 @@ function closeOverviewStatsModal() {
 
 // POTION SYSTEM
 function usePotion(type) {
+  initQuestsState();
+  if (state.quests && state.quests.daily && state.quests.daily.usePotions) {
+    state.quests.daily.usePotions.cur++;
+  }
   const stats = calculateStats();
   if (type === "hp") {
     if (state.potions.hp <= 0) {
@@ -1262,6 +1275,33 @@ function sellSelectedItem() {
   saveGameState();
 }
 
+function sellAllInventory() {
+  if (!state.inventory || state.inventory.length === 0) {
+    addLog("Túi đồ hiện đang trống, không có trang bị để bán!", "log-norm");
+    return;
+  }
+
+  const count = state.inventory.length;
+  let totalZen = 0;
+  for (let i = 0; i < state.inventory.length; i++) {
+    totalZen += getItemSellPrice(state.inventory[i]);
+  }
+
+  const confirmed = confirm(`Bạn có chắc muốn BÁN TẤT CẢ ${count} món trang bị trong túi đồ để thu về +${totalZen.toLocaleString()} Zen không?`);
+  if (!confirmed) return;
+
+  state.zen += totalZen;
+  state.inventory = [];
+  state.selectedInventoryIndex = null;
+
+  audio.playKeng();
+  audio.vibrate(120);
+  addLog(`💰 [BÁN TẤT CẢ] Đã bán toàn bộ ${count} trang bị trong túi đồ thu về +${totalZen.toLocaleString()} Zen!`, "log-zen");
+
+  updateUI();
+  saveGameState();
+}
+
 function sellGarbageItems() {
   if (!state.inventory || state.inventory.length === 0) return;
   let totalZen = 0;
@@ -1354,6 +1394,19 @@ function calculateStats() {
   rawDef *= srsMult;
   maxHp *= srsMult;
 
+  // Active Pet Buffs
+  if (state.activePet === "angel") {
+    maxHp *= 1.15;
+    rawDef *= 1.15;
+  } else if (state.activePet === "satan") {
+    rawPhy *= 1.20;
+    rawMag *= 1.20;
+  } else if (state.activePet === "fenrir") {
+    rawPhy *= 1.15;
+    rawMag *= 1.15;
+    rawDef *= 1.10;
+  }
+
   // Skill Level CP Bonus
   let skillBonusCP = 0;
   if (state.skills) {
@@ -1400,8 +1453,34 @@ function runCombatTick() {
   const currentMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
   const stats = calculateStats();
 
+  // Blood Castle Event Tick
+  if (state.bloodCastle && state.bloodCastle.inEvent) {
+    state.bloodCastle.timeLeft -= 0.5;
+    state.bloodCastle.kills++;
+    const timerTxt = document.getElementById("txtBcTimer");
+    const killsTxt = document.getElementById("txtBcKills");
+    if (timerTxt) timerTxt.innerText = `⏱️ ${Math.ceil(state.bloodCastle.timeLeft)}s`;
+    if (killsTxt) killsTxt.innerText = state.bloodCastle.kills;
+
+    if (state.bloodCastle.kills >= 30) {
+      finishBloodCastle(true);
+      return;
+    }
+    if (state.bloodCastle.timeLeft <= 0) {
+      finishBloodCastle(false);
+      return;
+    }
+  }
+
+  // Track Daily Quests Mobs
+  initQuestsState();
+  if (state.quests && state.quests.daily && state.quests.daily.killMobs) {
+    state.quests.daily.killMobs.cur++;
+  }
+
   // Natural Regeneration
-  const currentHpRegen = stats.hpRegen * (state.buffs && state.buffs.fortitude > 0 ? 1.5 : 1.0);
+  let petHpRegen = state.activePet === "angel" ? 120 : 0;
+  const currentHpRegen = (stats.hpRegen + petHpRegen) * (state.buffs && state.buffs.fortitude > 0 ? 1.5 : 1.0);
   state.currentHp = Math.min(stats.maxHp, state.currentHp + currentHpRegen);
   state.currentMp = Math.min(stats.maxMp, state.currentMp + stats.mpRegen);
 
@@ -1425,34 +1504,50 @@ function runCombatTick() {
     state.enemyDebuffs = {};
   }
 
-  state.mobsKilled++;
+  // Monster Persistence & 10x HP System
+  if (!state.currentMob || state.currentMob.tier !== currentMap.tier) {
+    let mobCategory = "normal";
+    let mobMult = 1;
+    let mobColorClass = "log-norm";
 
-  // Monster Tier Roll
-  let mobCategory = "normal";
-  let mobMult = 1;
-  let mobColorClass = "log-norm";
+    const rollMob = Math.random() * 100;
+    if ((state.mobsKilled + 1) % 10 === 0 || rollMob < 2.0) {
+      mobCategory = "boss";
+      mobMult = 5;
+      mobColorClass = "log-boss";
+    } else if (rollMob < 20.0) {
+      mobCategory = "elite";
+      mobMult = 2;
+      mobColorClass = "log-elite";
+    }
 
-  const rollMob = Math.random() * 100;
-  if (state.mobsKilled % 10 === 0 || rollMob < 2.0) {
-    mobCategory = "boss";
-    mobMult = 5;
-    mobColorClass = "log-boss";
-  } else if (rollMob < 20.0) {
-    mobCategory = "elite";
-    mobMult = 2;
-    mobColorClass = "log-elite";
+    let mobName = "";
+    if (mobCategory === "boss") {
+      mobName = `[BOSS THỦ LĨNH] ${currentMap.boss}`;
+    } else if (mobCategory === "elite") {
+      const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
+      mobName = `[TINH ANH] ${rName} Đột Biến`;
+    } else {
+      mobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
+    }
+
+    // 10x Monster HP
+    const maxMobHp = Math.floor((currentMap.tier * 400 + 400) * 10 * mobMult);
+    state.currentMob = {
+      name: mobName,
+      category: mobCategory,
+      mult: mobMult,
+      colorClass: mobColorClass,
+      maxHp: maxMobHp,
+      currentHp: maxMobHp,
+      tier: currentMap.tier
+    };
   }
 
-  // Monster Name
-  let mobName = "";
-  if (mobCategory === "boss") {
-    mobName = `[BOSS THỦ LĨNH] ${currentMap.boss}`;
-  } else if (mobCategory === "elite") {
-    const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-    mobName = `[TINH ANH] ${rName} Đột Biến`;
-  } else {
-    mobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-  }
+  const mobName = state.currentMob.name;
+  const mobCategory = state.currentMob.category;
+  const mobMult = state.currentMob.mult;
+  const mobColorClass = state.currentMob.colorClass;
 
   // Update Chibi Arena Visuals
   updateChibiArena(currentMap, mobName, mobCategory);
@@ -1494,8 +1589,14 @@ function runCombatTick() {
   const finalPhy = Math.floor(rolledPhy * critMult);
   const finalMag = Math.floor(rolledMag * critMult);
 
-  // Trigger Chibi Attack FX & Floating Damage
+  // Trigger Chibi Attack FX, Deal Damage to Monster, Update HP Bar
   const totalHeroDmg = finalPhy + finalMag;
+  state.currentMob.currentHp -= totalHeroDmg;
+
+  const mobHpPct = Math.max(0, (state.currentMob.currentHp / state.currentMob.maxHp) * 100);
+  const mobHpFillEl = document.getElementById("chibiMobHpFill");
+  if (mobHpFillEl) mobHpFillEl.style.width = `${mobHpPct}%`;
+
   animateHeroAction(state.charClass === "dw" ? "cast" : "attack");
   playSlashFx(isCrit ? "crit" : (state.charClass === "dw" ? "magic" : "slash"));
   animateMonsterReaction(false);
@@ -1586,79 +1687,94 @@ function runCombatTick() {
     }
   }
 
-  // Track Boss Kills
-  if (mobCategory === "boss") {
-    state.bossKilled = (state.bossKilled || 0) + 1;
-  }
+  // Check if Monster is Defeated
+  if (state.currentMob.currentHp <= 0) {
+    animateMonsterReaction(true);
+    state.mobsKilled++;
 
-  // 3. BOOSTED ZEN DROP
-  const earnedZen = Math.floor((Math.random() * 350 + 250) * currentMap.tier * mobMult * (1 + state.rs * 0.25));
-  state.zen += earnedZen;
-  spawnFloatingLoot("🪙", `+${earnedZen.toLocaleString()} Zen`, "#ffec8b");
-  addLog(`🪙 [NHẶT ZEN] +${earnedZen.toLocaleString()} Zen!`, "log-zen");
-
-  // 4. Standard Balanced EXP Gain
-  const earnedExp = Math.floor((Math.random() * 15 + 20) * currentMap.tier * mobMult);
-  state.exp += earnedExp;
-
-  // 5. Jewel & Potion Drops
-  const rollJewel = Math.random() * 100;
-  const jewelBoost = mobCategory === "boss" ? 10 : (mobCategory === "elite" ? 3 : 1);
-
-  if (rollJewel < 3.0 * jewelBoost) {
-    state.bless++;
-    spawnFloatingLoot("💎", "Jewel of Bless!", "#bf55ec");
-    addLog(`💎 *KENG!* Nhặt được 1x Jewel of Bless từ ${mobName}!`, "log-bless");
-    audio.playKeng();
-    audio.vibrate(60);
-  } else if (rollJewel < (3.0 + 1.2) * jewelBoost) {
-    state.chaos++;
-    spawnFloatingLoot("🔥", "Jewel of Chaos!", "#e74c3c");
-    addLog(`🔥 *KENG!* Nhặt được 1x Jewel of Chaos từ ${mobName}!`, "log-chaos");
-    audio.playKeng();
-  } else if (rollJewel < (3.0 + 1.2 + 0.8) * jewelBoost) {
-    state.life++;
-    spawnFloatingLoot("🌿", "Jewel of Life!", "#2ecc71");
-    addLog(`🌿 *KENG!* Nhặt được 1x Jewel of Life từ ${mobName}!`, "log-life");
-    audio.playKeng();
-  }
-
-  // Potion drop chance (15%)
-  if (Math.random() < 0.15) {
-    if (Math.random() < 0.5) {
-      state.potions.hp++;
-      addLog(`🧪 Nhặt được 1x Bình Máu từ ${mobName}!`, "log-buff");
-    } else {
-      state.potions.mp++;
-      addLog(`🧪 Nhặt được 1x Bình Mana từ ${mobName}!`, "log-buff");
-    }
-  }
-
-  // 6. REDUCED GEAR DROP (Boss: 15%, Elite: 3%, Normal: 0.5%)
-  const gearDropChance = mobCategory === "boss" ? 0.15 : (mobCategory === "elite" ? 0.03 : 0.005);
-  if (Math.random() < gearDropChance) {
-    const forceR = mobCategory === "boss" ? Math.min(6, 3 + Math.floor(Math.random() * 4)) : (mobCategory === "elite" ? Math.min(3, 2 + Math.floor(Math.random() * 2)) : null);
-    const droppedItem = generateItem(currentMap.tier, forceR);
-    spawnFloatingLoot("🎁", `[${droppedItem.name}]`, RARITIES[droppedItem.rarity].color);
-    handleDroppedItem(droppedItem);
-  }
-
-  // 7. Level Up Check
-  if (state.exp >= state.nextExp) {
-    while (state.exp >= state.nextExp) {
-      state.exp -= state.nextExp;
-      state.level++;
-      state.nextExp = getRequiredExpForLevel(state.level);
-      state.freePoints += 5;
-      if (state.level % 5 === 0) {
-        state.skillPoints = (state.skillPoints || 0) + 1;
+    // Track Boss Kills
+    if (mobCategory === "boss") {
+      state.bossKilled = (state.bossKilled || 0) + 1;
+      if (state.quests && state.quests.daily && state.quests.daily.killBosses) {
+        state.quests.daily.killBosses.cur++;
       }
     }
-    addLog(`★ LEVEL UP! Đạt Cấp ${state.level}! Nhận +5 Điểm Tiềm Năng! ★`, "log-crit");
-    
-    if (state.autoStats) {
-      autoDistributeClass();
+
+    // 1. REDUCED ZEN DROP CHANCE (Giảm tỷ lệ rơi Zen: Boss 100%, Elite 60%, Normal 35%)
+    const zenDropChance = mobCategory === "boss" ? 1.0 : (mobCategory === "elite" ? 0.60 : 0.35);
+    if (Math.random() < zenDropChance) {
+      const earnedZen = Math.floor((Math.random() * 200 + 150) * currentMap.tier * mobMult * (1 + state.rs * 0.20));
+      state.zen += earnedZen;
+      spawnFloatingLoot("🪙", `+${earnedZen.toLocaleString()} Zen`, "#ffec8b");
+      addLog(`🪙 [NHẶT ZEN] +${earnedZen.toLocaleString()} Zen!`, "log-zen");
     }
+
+    // 2. Standard Balanced EXP Gain
+    const earnedExp = Math.floor((Math.random() * 15 + 20) * currentMap.tier * mobMult);
+    state.exp += earnedExp;
+
+    // 3. Jewel & Potion Drops
+    const rollJewel = Math.random() * 100;
+    const jewelBoost = mobCategory === "boss" ? 10 : (mobCategory === "elite" ? 3 : 1);
+
+    if (rollJewel < 3.0 * jewelBoost) {
+      state.bless++;
+      spawnFloatingLoot("💎", "Jewel of Bless!", "#bf55ec");
+      addLog(`💎 *KENG!* Nhặt được 1x Jewel of Bless từ ${mobName}!`, "log-bless");
+      audio.playKeng();
+      audio.vibrate(60);
+    } else if (rollJewel < (3.0 + 1.2) * jewelBoost) {
+      state.chaos++;
+      spawnFloatingLoot("🔥", "Jewel of Chaos!", "#e74c3c");
+      addLog(`🔥 *KENG!* Nhặt được 1x Jewel of Chaos từ ${mobName}!`, "log-chaos");
+      audio.playKeng();
+    } else if (rollJewel < (3.0 + 1.2 + 0.8) * jewelBoost) {
+      state.life++;
+      spawnFloatingLoot("🌿", "Jewel of Life!", "#2ecc71");
+      addLog(`🌿 *KENG!* Nhặt được 1x Jewel of Life từ ${mobName}!`, "log-life");
+      audio.playKeng();
+    }
+
+    // Potion drop chance (15%)
+    if (Math.random() < 0.15) {
+      if (Math.random() < 0.5) {
+        state.potions.hp++;
+        addLog(`🧪 Nhặt được 1x Bình Máu từ ${mobName}!`, "log-buff");
+      } else {
+        state.potions.mp++;
+        addLog(`🧪 Nhặt được 1x Bình Mana từ ${mobName}!`, "log-buff");
+      }
+    }
+
+    // 4. GEAR DROP REDUCED BY 70% (Boss: 4.5%, Elite: 0.9%, Normal: 0.15%)
+    const gearDropChance = mobCategory === "boss" ? 0.045 : (mobCategory === "elite" ? 0.009 : 0.0015);
+    if (Math.random() < gearDropChance) {
+      const forceR = mobCategory === "boss" ? Math.min(6, 3 + Math.floor(Math.random() * 4)) : (mobCategory === "elite" ? Math.min(3, 2 + Math.floor(Math.random() * 2)) : null);
+      const droppedItem = generateItem(currentMap.tier, forceR);
+      spawnFloatingLoot("🎁", `[${droppedItem.name}]`, RARITIES[droppedItem.rarity].color);
+      handleDroppedItem(droppedItem);
+    }
+
+    // 5. Level Up Check
+    if (state.exp >= state.nextExp) {
+      while (state.exp >= state.nextExp) {
+        state.exp -= state.nextExp;
+        state.level++;
+        state.nextExp = getRequiredExpForLevel(state.level);
+        state.freePoints += 5;
+        if (state.level % 5 === 0) {
+          state.skillPoints = (state.skillPoints || 0) + 1;
+        }
+      }
+      addLog(`★ LEVEL UP! Đạt Cấp ${state.level}! Nhận +5 Điểm Tiềm Năng! ★`, "log-crit");
+      
+      if (state.autoStats) {
+        autoDistributeClass();
+      }
+    }
+
+    // Spawn new monster next tick
+    state.currentMob = null;
   }
 
   updateUI();
@@ -1689,6 +1805,14 @@ function updateUI() {
   // 1. Level, Name, RS
   const heroLvEl = document.getElementById("heroLv");
   if (heroLvEl) heroLvEl.innerText = `Lv.${state.level}`;
+
+  // Active Pet Visual
+  const petEl = document.getElementById("chibiPetEl");
+  if (petEl) {
+    initPetsState();
+    petEl.innerHTML = PET_SVGS[state.activePet || "angel"] || "";
+  }
+  updateQuestNotificationDot();
 
   const heroNameEl = document.getElementById("heroName");
   if (heroNameEl) {
@@ -1768,19 +1892,20 @@ function updateUI() {
     if (!el) return;
     const item = state.equipped[s.key];
     const isSelected = state.selectedSlotKey === s.key && state.selectedInventoryIndex === null;
-    const svgIcon = SVG_ICONS[s.key] || "";
+    const itemArt = item ? getItemIllustration(item, s.key) : (SVG_ICONS[s.key] || "");
+    const aura = item ? getItemAuraClass(item.plus) : "";
 
     if (item && RARITIES[item.rarity]) {
       const r = RARITIES[item.rarity];
-      el.className = `slot-card ${r.class} ${isSelected ? "selected" : ""}`;
+      el.className = `slot-card ${r.class} ${isSelected ? "selected" : ""} ${aura}`;
       el.innerHTML = `
-        <div class="slot-icon-box" style="color:${r.color}; border:1px solid ${r.color};">${svgIcon}</div>
+        <div class="slot-icon-box" style="background:rgba(20,24,34,0.9); border:1.5px solid ${r.color}; box-shadow:0 0 8px ${r.color}55;">${itemArt}</div>
         <div class="slot-info">
           <div class="slot-label">${s.name}</div>
           <div class="slot-name" style="color:${r.color};">${item.name}</div>
           <div class="slot-opt">${item.options.length > 0 ? "★ " + item.options[0] : (item.atk ? "Công: +" + item.atk : "Thủ: +" + item.def)}</div>
         </div>
-        ${item.plus > 0 ? `<div class="slot-plus-tag">+${item.plus}</div>` : ""}
+        ${item.plus > 0 ? `<div class="slot-plus-tag" style="color:${item.plus >= 9 ? "var(--gold)" : "#fff"}; font-size:${item.plus >= 13 ? "9px" : "8px"};">+${item.plus}</div>` : ""}
       `;
     } else {
       el.className = `slot-card ${isSelected ? "selected" : ""}`;
@@ -2052,8 +2177,11 @@ function renderLeaderboard() {
             <div style="font-size:8.5px; color:#8fa0b8;">${classTitle}</div>
           </div>
         </div>
-        <div style="text-align:right; font-size:9.5px;">
-          ${scoreDisplay}
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="text-align:right; font-size:9.5px;">
+            ${scoreDisplay}
+          </div>
+          ${!item.isPlayer ? `<button class="btn btn-sm btn-warn" onclick="challengePlayer(${idx})">⚔️ Đấu</button>` : ""}
         </div>
       </div>
     `;
@@ -2348,6 +2476,10 @@ function renderForgeView() {
 }
 
 function forgeEnhance() {
+  initQuestsState();
+  if (state.quests && state.quests.daily && state.quests.daily.forgeOnce) {
+    state.quests.daily.forgeOnce.cur++;
+  }
   let targetItem = null;
   if (state.selectedInventoryIndex !== null && state.inventory && state.inventory[state.selectedInventoryIndex]) {
     targetItem = state.inventory[state.selectedInventoryIndex];
@@ -2522,3 +2654,446 @@ window.onload = () => {
     switchGateTab("login");
   }
 };
+
+
+// --- PETS, QUESTS, BLOOD CASTLE & PVP ENGINE ---
+const PET_SVGS = {
+  angel: `<svg viewBox="0 0 40 40" style="width:100%; height:100%;">
+    <ellipse cx="20" cy="8" rx="8" ry="2.5" fill="none" stroke="#ffd700" stroke-width="1.8"/>
+    <path d="M12 18 Q2 10 6 26 Q14 22 16 24" fill="#ffffff" stroke="#74b9ff" stroke-width="1"/>
+    <path d="M28 18 Q38 10 34 26 Q26 22 24 24" fill="#ffffff" stroke="#74b9ff" stroke-width="1"/>
+    <path d="M16 22 L24 22 L26 34 L14 34 Z" fill="#74b9ff" stroke="#ffffff" stroke-width="1"/>
+    <circle cx="20" cy="16" r="6" fill="#ffeaa7"/>
+    <circle cx="18" cy="16" r="0.8" fill="#2c3e50"/>
+    <circle cx="22" cy="16" r="0.8" fill="#2c3e50"/>
+  </svg>`,
+  satan: `<svg viewBox="0 0 40 40" style="width:100%; height:100%;">
+    <path d="M14 12 Q10 4 15 8 Z" fill="#e74c3c"/>
+    <path d="M26 12 Q30 4 25 8 Z" fill="#e74c3c"/>
+    <path d="M12 20 Q2 14 8 28 Q14 24 16 25" fill="#2c2c54" stroke="#c0392b" stroke-width="1"/>
+    <path d="M28 20 Q38 14 32 28 Q26 24 24 25" fill="#2c2c54" stroke="#c0392b" stroke-width="1"/>
+    <ellipse cx="20" cy="26" rx="6" ry="7" fill="#e74c3c"/>
+    <circle cx="20" cy="16" r="6" fill="#e74c3c"/>
+    <circle cx="18" cy="16" r="1" fill="#ffd700"/>
+    <circle cx="22" cy="16" r="1" fill="#ffd700"/>
+  </svg>`,
+  fenrir: `<svg viewBox="0 0 40 40" style="width:100%; height:100%;">
+    <polygon points="20,4 18,12 22,12" fill="#ffd700" stroke="#d35400" stroke-width="0.8"/>
+    <polygon points="14,14 20,10 26,14 24,24 16,24" fill="#f1c40f" stroke="#d35400" stroke-width="1"/>
+    <polygon points="14,12 11,6 16,10" fill="#f39c12"/>
+    <polygon points="26,12 29,6 24,10" fill="#f39c12"/>
+    <ellipse cx="20" cy="27" rx="8" ry="7" fill="#f1c40f" stroke="#d35400" stroke-width="1"/>
+    <circle cx="18" cy="17" r="1.5" fill="#00d2d3"/>
+    <circle cx="22" cy="17" r="1.5" fill="#00d2d3"/>
+  </svg>`
+};
+
+const PETS_DATA = [
+  { id: "angel", name: "Thiên Thần Hộ Mệnh", icon: "👼", desc: "Giảm 15% sát thương nhận, hồi +120 HP/nhịp", cost: 200000, color: "#74b9ff" },
+  { id: "satan", name: "Quỷ Nhỏ Satan", icon: "👿", desc: "Tăng +20% Sát thương đòn đánh, +10% Bạo kích", cost: 250000, color: "#ff7675" },
+  { id: "fenrir", name: "Kỳ Lân Hoàng Kim", icon: "🦄", desc: "Tăng +15% Sát thương, +15% Tốc đánh, +10% Né", cost: 500000, color: "#f1c40f" }
+];
+
+function initPetsState() {
+  if (!state.petsOwned) state.petsOwned = ["angel"];
+  if (!state.activePet) state.activePet = "angel";
+}
+
+function openPetShopModal() {
+  initPetsState();
+  const m = document.getElementById("petShopModal");
+  const list = document.getElementById("petListContainer");
+  if (!m || !list) return;
+
+  list.innerHTML = PETS_DATA.map(p => {
+    const isOwned = (state.petsOwned || []).includes(p.id);
+    const isActive = state.activePet === p.id;
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:#0c0e14; border:1px solid ${isActive ? "var(--gold)" : "#232a3d"}; border-radius:5px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="width:34px; height:34px;">${PET_SVGS[p.id] || ""}</div>
+          <div style="text-align:left;">
+            <div style="font-weight:bold; font-size:11px; color:${p.color};">${p.name} ${isActive ? "★ (Đang Xuất Chiến)" : ""}</div>
+            <div style="font-size:9px; color:#8fa0b8;">${p.desc}</div>
+          </div>
+        </div>
+        <div>
+          ${isActive ? `<span style="font-size:10px; color:var(--gold); font-weight:bold;">Đang dùng</span>` :
+            (isOwned ? `<button class="btn btn-sm btn-success" onclick="selectPet('${p.id}')">Xuất Chiến</button>` :
+            `<button class="btn btn-sm btn-primary" onclick="buyPet('${p.id}', ${p.cost})">${p.cost.toLocaleString()}z</button>`)}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  m.style.display = "flex";
+}
+
+function closePetShopModal() {
+  const m = document.getElementById("petShopModal");
+  if (m) m.style.display = "none";
+}
+
+function selectPet(petId) {
+  initPetsState();
+  state.activePet = petId;
+  audio.playKeng();
+  addLog(`[TRỢ THỦ] Đã kích hoạt [${petId.toUpperCase()}] xuất chiến! Lực chiến và thuộc tính đã được gia tăng!`, "log-crit");
+  openPetShopModal();
+  updateUI();
+  saveGameState();
+}
+
+function buyPet(petId, cost) {
+  if (state.zen < cost) {
+    addLog(`Không đủ ${cost.toLocaleString()} Zen để sở hữu linh thú này!`, "log-damage-taken");
+    return;
+  }
+  state.zen -= cost;
+  initPetsState();
+  state.petsOwned.push(petId);
+  state.activePet = petId;
+  audio.playKeng();
+  audio.vibrate(150);
+  addLog(`★ SỞ HỮU LINH THÚ THẦN THOẠI! [${petId.toUpperCase()}] đã đồng hành cùng bạn! ★`, "log-crit");
+  openPetShopModal();
+  updateUI();
+  saveGameState();
+}
+
+// BLOOD CASTLE 60S EVENT ENGINE
+function startBloodCastleEvent() {
+  if (!state.bloodCastle) {
+    state.bloodCastle = { inEvent: false, timeLeft: 60, kills: 0, attempts: 3 };
+  }
+  if (state.bloodCastle.attempts <= 0) {
+    addLog("Đã hết 3 lượt tham gia Huyết Lâu hôm nay!", "log-damage-taken");
+    return;
+  }
+  if (state.bloodCastle.inEvent) {
+    addLog("Đang trong phụ bản Huyết Lâu!", "log-norm");
+    return;
+  }
+
+  state.bloodCastle.attempts--;
+  state.bloodCastle.inEvent = true;
+  state.bloodCastle.timeLeft = 60;
+  state.bloodCastle.kills = 0;
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) timerBanner.style.display = "flex";
+
+  const attemptsTxt = document.getElementById("txtBcAttempts");
+  if (attemptsTxt) attemptsTxt.innerText = `${state.bloodCastle.attempts} / 3`;
+
+  // Change Arena Background to Blood Bridge
+  const bg = document.getElementById("arenaBg");
+  if (bg) bg.style.background = "linear-gradient(180deg, #4a0000 0%, #1a0505 70%, #000000 100%)";
+
+  audio.playGateOpen();
+  audio.playKeng();
+  audio.vibrate(180);
+  addLog("🏰 [HUYẾT LÂU] CỔNG HUYẾT LÂU ĐÃ MỞ! 60 GIÂY HÀNH ĐỘNG BẮT ĐẦU! TOÀN LỰC XÔNG LÊN!", "log-boss");
+
+  if (state.quests && state.quests.daily && state.quests.daily.bloodCastle) {
+    state.quests.daily.bloodCastle.cur++;
+  }
+
+  updateUI();
+  saveGameState();
+}
+
+function finishBloodCastle(victory) {
+  if (!state.bloodCastle) return;
+  state.bloodCastle.inEvent = false;
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) timerBanner.style.display = "none";
+
+  updateArenaBackground(state.currentMapId);
+
+  if (victory) {
+    const zenReward = 500000 + state.currentMapId * 50000;
+    state.zen += zenReward;
+    state.bless += 3;
+    state.chaos += 2;
+    state.life += 1;
+    audio.playKeng();
+    audio.vibrate(250);
+    addLog(`🏆 [HUYẾT LÂU ĐẠI THẮNG] Phá hủy Tượng Thần thành công! Nhận Rương Thần: +${zenReward.toLocaleString()} Zen, +3x Bless, +2x Chaos, +1x Life!`, "log-crit");
+  } else {
+    state.zen += 150000;
+    state.bless += 1;
+    addLog(`⏱️ [HẾT GIỜ HUYẾT LÂU] Rời khỏi Huyết Lâu! Nhận thưởng an ủi: +150.000 Zen & 1x Bless!`, "log-norm");
+  }
+
+  updateUI();
+  saveGameState();
+}
+
+// QUESTS & ACHIEVEMENTS SYSTEM
+let currentQuestTab = "daily";
+
+function initQuestsState() {
+  const today = new Date().toDateString();
+  if (!state.quests || state.quests.lastResetDay !== today) {
+    const oldAchieve = state.quests ? state.quests.achievements : null;
+    state.quests = {
+      lastResetDay: today,
+      daily: {
+        killMobs: { cur: 0, target: 100, claimed: false, rewardZen: 50000, title: "Thợ Săn Quái Vật", desc: "Tiêu diệt 100 quái dã ngoại" },
+        killBosses: { cur: 0, target: 2, claimed: false, rewardBless: 1, title: "Trảm Sát Thủ Lĩnh", desc: "Tiêu diệt 2 Boss Thủ Lĩnh" },
+        forgeOnce: { cur: 0, target: 1, claimed: false, rewardChaos: 1, title: "Luyện Kim Thuật", desc: "Cường hóa trang bị tại Lò Rèn 1 lần" },
+        usePotions: { cur: 0, target: 5, claimed: false, rewardPotions: 20, title: "Dược Sĩ Phòng Thân", desc: "Sử dụng 5 bình dược phẩm" },
+        bloodCastle: { cur: 0, target: 1, claimed: false, rewardLife: 1, title: "Dũng Sĩ Huyết Lâu", desc: "Tham gia phụ bản Huyết Lâu 1 lần" }
+      },
+      achievements: oldAchieve || {
+        lv50: { claimed: false, title: "Tập Sự Lorencia", desc: "Đạt Cấp Độ 50", rewardZen: 100000, rewardBless: 2 },
+        lv100: { claimed: false, title: "Chiến Binh Thành Thạo", desc: "Đạt Cấp Độ 100", rewardZen: 300000, rewardBless: 3, rewardChaos: 1 },
+        lv200: { claimed: false, title: "Hào Kiệt Lục Địa", desc: "Đạt Cấp Độ 200", rewardZen: 1000000, rewardBless: 5, rewardChaos: 2 },
+        rs1: { claimed: false, title: "Chuyển Sinh Tái Sinh", desc: "Thực hiện Chuyển Sinh lần 1", rewardZen: 2000000, rewardBless: 10 },
+        plus9: { claimed: false, title: "Bậc Thầy Cường Hóa", desc: "Sở hữu trang bị cường hóa +9", rewardChaos: 3, rewardLife: 2 },
+        boss25: { claimed: false, title: "Sát Tinh Thủ Lĩnh", desc: "Tiêu diệt 25 Boss Thủ Lĩnh", rewardChest: 1 }
+      }
+    };
+  }
+}
+
+function openQuestsModal() {
+  initQuestsState();
+  const m = document.getElementById("questsModal");
+  if (m) m.style.display = "flex";
+  renderQuestsModal(currentQuestTab);
+}
+function closeQuestsModal() {
+  const m = document.getElementById("questsModal");
+  if (m) m.style.display = "none";
+}
+function switchQuestTab(tab) {
+  currentQuestTab = tab;
+  const btnD = document.getElementById("btnTabDailyQuests");
+  const btnA = document.getElementById("btnTabAchievements");
+  if (btnD) btnD.classList.toggle("btn-primary", tab === "daily");
+  if (btnA) btnA.classList.toggle("btn-primary", tab === "achieve");
+  renderQuestsModal(tab);
+}
+
+function renderQuestsModal(tab) {
+  initQuestsState();
+  const container = document.getElementById("questsContentContainer");
+  if (!container) return;
+
+  let html = "";
+  if (tab === "daily") {
+    const daily = state.quests.daily;
+    for (const k in daily) {
+      const q = daily[k];
+      const isDone = q.cur >= q.target;
+      const canClaim = isDone && !q.claimed;
+
+      let rewardText = "";
+      if (q.rewardZen) rewardText = `+${q.rewardZen.toLocaleString()} Zen`;
+      if (q.rewardBless) rewardText = `+${q.rewardBless} Bless`;
+      if (q.rewardChaos) rewardText = `+${q.rewardChaos} Chaos`;
+      if (q.rewardLife) rewardText = `+${q.rewardLife} Life`;
+      if (q.rewardPotions) rewardText = `+${q.rewardPotions} Bình Máu & Mana`;
+
+      html += `
+        <div class="quest-row">
+          <div>
+            <div style="font-weight:bold; color:var(--gold); font-size:11px;">${q.title}</div>
+            <div style="font-size:9px; color:#8fa0b8;">${q.desc} (${Math.min(q.target, q.cur)}/${q.target})</div>
+            <div style="font-size:9px; color:#00ffcc;">Thưởng: <b>${rewardText}</b></div>
+          </div>
+          <div>
+            ${q.claimed ? `<span style="color:#576574; font-size:9px; font-weight:bold;">Đã Nhận ✓</span>` :
+              (canClaim ? `<button class="btn btn-sm btn-success" onclick="claimDailyQuest('${k}')">Nhận Thưởng</button>` :
+              `<span style="color:#e74c3c; font-size:9px; font-weight:bold;">Chưa Đạt</span>`)}
+          </div>
+        </div>
+      `;
+    }
+  } else {
+    const achieve = state.quests.achievements;
+    for (const k in achieve) {
+      const a = achieve[k];
+      let isDone = false;
+      if (k === "lv50") isDone = state.level >= 50;
+      else if (k === "lv100") isDone = state.level >= 100;
+      else if (k === "lv200") isDone = state.level >= 200;
+      else if (k === "rs1") isDone = state.rs >= 1;
+      else if (k === "boss25") isDone = (state.bossKilled || 0) >= 25;
+      else if (k === "plus9") {
+        for (const slotKey in state.equipped) {
+          if (state.equipped[slotKey] && state.equipped[slotKey].plus >= 9) { isDone = true; break; }
+        }
+      }
+
+      const canClaim = isDone && !a.claimed;
+      let rewardText = "";
+      if (a.rewardZen) rewardText += `+${a.rewardZen.toLocaleString()} Zen `;
+      if (a.rewardBless) rewardText += `+${a.rewardBless} Bless `;
+      if (a.rewardChaos) rewardText += `+${a.rewardChaos} Chaos `;
+      if (a.rewardLife) rewardText += `+${a.rewardLife} Life `;
+      if (a.rewardChest) rewardText += `+1 Rương Đồ Cam `;
+
+      html += `
+        <div class="quest-row">
+          <div>
+            <div style="font-weight:bold; color:var(--gold); font-size:11px;">🏆 ${a.title}</div>
+            <div style="font-size:9px; color:#8fa0b8;">${a.desc}</div>
+            <div style="font-size:9px; color:#00ffcc;">Thưởng: <b>${rewardText}</b></div>
+          </div>
+          <div>
+            ${a.claimed ? `<span style="color:#576574; font-size:9px; font-weight:bold;">Đã Nhận ✓</span>` :
+              (canClaim ? `<button class="btn btn-sm btn-success" onclick="claimAchievement('${k}')">Nhận Thưởng</button>` :
+              `<span style="color:#e74c3c; font-size:9px; font-weight:bold;">Chưa Đạt</span>`)}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  container.innerHTML = html;
+  updateQuestNotificationDot();
+}
+
+function claimDailyQuest(key) {
+  initQuestsState();
+  const q = state.quests.daily[key];
+  if (!q || q.claimed || q.cur < q.target) return;
+
+  q.claimed = true;
+  if (q.rewardZen) state.zen += q.rewardZen;
+  if (q.rewardBless) state.bless += q.rewardBless;
+  if (q.rewardChaos) state.chaos += q.rewardChaos;
+  if (q.rewardLife) state.life += q.rewardLife;
+  if (q.rewardPotions) {
+    state.potions.hp += q.rewardPotions;
+    state.potions.mp += q.rewardPotions;
+  }
+
+  audio.playKeng();
+  addLog(`★ NHẬN THƯỞNG NHIỆM VỤ! [${q.title}] hoàn thành! ★`, "log-crit");
+  renderQuestsModal("daily");
+  updateUI();
+  saveGameState();
+}
+
+function claimAchievement(key) {
+  initQuestsState();
+  const a = state.quests.achievements[key];
+  if (!a || a.claimed) return;
+
+  a.claimed = true;
+  if (a.rewardZen) state.zen += a.rewardZen;
+  if (a.rewardBless) state.bless += a.rewardBless;
+  if (a.rewardChaos) state.chaos += a.rewardChaos;
+  if (a.rewardLife) state.life += a.rewardLife;
+  if (a.rewardChest) {
+    const item = generateItem(state.currentMapId, 3);
+    addLog(`[RƯƠNG THÀNH TỰU] Nhận được [${item.name}] phẩm chất Cam!`, "log-equip");
+    handleDroppedItem(item);
+  }
+
+  audio.playKeng();
+  audio.vibrate(120);
+  addLog(`★ VINH DANH THÀNH TỰU! [${a.title}] hoàn thành! ★`, "log-crit");
+  renderQuestsModal("achieve");
+  updateUI();
+  saveGameState();
+}
+
+function updateQuestNotificationDot() {
+  initQuestsState();
+  const dot = document.getElementById("questNotifDot");
+  if (!dot) return;
+
+  let hasUnclaimed = false;
+  for (const k in state.quests.daily) {
+    const q = state.quests.daily[k];
+    if (q.cur >= q.target && !q.claimed) { hasUnclaimed = true; break; }
+  }
+  if (!hasUnclaimed) {
+    for (const k in state.quests.achievements) {
+      const a = state.quests.achievements[k];
+      let isDone = false;
+      if (k === "lv50") isDone = state.level >= 50;
+      else if (k === "lv100") isDone = state.level >= 100;
+      else if (k === "lv200") isDone = state.level >= 200;
+      else if (k === "rs1") isDone = state.rs >= 1;
+      else if (k === "boss25") isDone = (state.bossKilled || 0) >= 25;
+      else if (k === "plus9") {
+        for (const slotKey in state.equipped) {
+          if (state.equipped[slotKey] && state.equipped[slotKey].plus >= 9) { isDone = true; break; }
+        }
+      }
+      if (isDone && !a.claimed) { hasUnclaimed = true; break; }
+    }
+  }
+
+  dot.style.display = hasUnclaimed ? "inline-block" : "none";
+}
+
+// ASYNCHRONOUS PVP ARENA DUEL ENGINE
+function challengePlayer(oppIndex) {
+  const stats = calculateStats();
+  const list = LEGEND_RANKS.map(l => ({
+    name: l.name,
+    charClass: l.charClass,
+    cp: Math.max(500, Math.floor(l.cpMult * 8500)),
+    rs: l.rs,
+    lv: l.lv
+  }));
+
+  const opp = list[oppIndex];
+  if (!opp) return;
+
+  const winRate = Math.min(0.92, Math.max(0.08, stats.cp / (stats.cp + opp.cp)));
+  const isVictory = Math.random() < winRate;
+
+  animateHeroAction("attack");
+  audio.playSlash();
+
+  const modal = document.getElementById("pvpResultModal");
+  const title = document.getElementById("pvpResultTitle");
+  const body = document.getElementById("pvpResultBody");
+  if (!modal || !title || !body) return;
+
+  if (isVictory) {
+    title.innerText = "🏆 ĐẠI THẮNG ĐẤU TRƯỜNG!";
+    title.style.color = "var(--gold)";
+    const rewardZen = 100000;
+    state.zen += rewardZen;
+    audio.playKeng();
+    audio.vibrate(200);
+
+    body.innerHTML = `
+      Chúc mừng bạn đã xuất sắc đánh bại <b>[${opp.name}]</b>!<br>
+      • Lực chiến của bạn: <b style="color:var(--gold);">${stats.cp.toLocaleString()} CP</b><br>
+      • Lực chiến đối thủ: <b style="color:#ff7675;">${opp.cp.toLocaleString()} CP</b><br><br>
+      🎁 <b>Phần thưởng chiến thắng:</b> +${rewardZen.toLocaleString()} Zen & Danh Hiệu Đấu Sĩ!
+    `;
+    addLog(`⚔️ [ĐẤU TRƯỜNG PVP] Hạ gục ${opp.name} thành công! Nhận +${rewardZen.toLocaleString()} Zen!`, "log-crit");
+  } else {
+    title.innerText = "💀 THẤT BẠI ĐẤU TRƯỜNG";
+    title.style.color = "#ff7675";
+
+    body.innerHTML = `
+      Bạn đã bị <b>[${opp.name}]</b> áp đảo lực chiến!<br>
+      • Lực chiến của bạn: <b style="color:var(--gold);">${stats.cp.toLocaleString()} CP</b><br>
+      • Lực chiến đối thủ: <b style="color:#ff7675;">${opp.cp.toLocaleString()} CP</b><br><br>
+      💡 <b>Lời khuyên:</b> Hãy cường hóa trang bị lên +9 hoặc +11 tại Lò Rèn để tăng vọt lực chiến trước khi tái đấu!
+    `;
+    addLog(`⚔️ [ĐẤU TRƯỜNG PVP] Bị ${opp.name} đánh bại trong gang tấc! Hãy tiếp tục rèn luyện!`, "log-damage-taken");
+  }
+
+  modal.style.display = "flex";
+  updateUI();
+  saveGameState();
+}
+
+function closePvpResultModal() {
+  const modal = document.getElementById("pvpResultModal");
+  if (modal) modal.style.display = "none";
+}
