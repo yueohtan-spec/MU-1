@@ -9,8 +9,31 @@
 // 7. Added Class Skills Tab with Skill Progression
 
 class SoundController {
-  constructor() { this.ctx = null; }
+  constructor() {
+    this.ctx = null;
+    try {
+      this.muted = localStorage.getItem("mu_sound_muted") === "true";
+    } catch(e) {
+      this.muted = false;
+    }
+  }
+  toggleMute() {
+    this.muted = !this.muted;
+    try {
+      localStorage.setItem("mu_sound_muted", this.muted ? "true" : "false");
+    } catch(e) {}
+    this.updateIcon();
+    return this.muted;
+  }
+  updateIcon() {
+    const btn = document.getElementById("btnSoundToggle");
+    if (btn) {
+      btn.innerText = this.muted ? "🔇" : "🔊";
+      btn.title = this.muted ? "Âm thanh: Đang Tắt (Bấm để Bật)" : "Âm thanh: Đang Bật (Bấm để Tắt)";
+    }
+  }
   init() {
+    if (this.muted) return;
     try {
       if (!this.ctx) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -22,6 +45,7 @@ class SoundController {
     } catch(e) {}
   }
   playGateOpen() {
+    if (this.muted) return;
     try {
       this.init();
       if (!this.ctx) return;
@@ -40,6 +64,7 @@ class SoundController {
     } catch(e) {}
   }
   playKeng() {
+    if (this.muted) return;
     try {
       this.init();
       if (!this.ctx) return;
@@ -58,6 +83,7 @@ class SoundController {
     } catch(e) {}
   }
   playSlash() {
+    if (this.muted) return;
     try {
       this.init();
       if (!this.ctx) return;
@@ -76,6 +102,7 @@ class SoundController {
     } catch(e) {}
   }
   playMagic() {
+    if (this.muted) return;
     try {
       this.init();
       if (!this.ctx) return;
@@ -94,6 +121,7 @@ class SoundController {
     } catch(e) {}
   }
   playPotion() {
+    if (this.muted) return;
     try {
       this.init();
       if (!this.ctx) return;
@@ -112,6 +140,7 @@ class SoundController {
     } catch(e) {}
   }
   playAnvil() {
+    if (this.muted) return;
     try {
       this.init();
       if (!this.ctx) return;
@@ -130,6 +159,7 @@ class SoundController {
     } catch(e) {}
   }
   vibrate(ms = 80) {
+    if (this.muted) return;
     try {
       if (navigator.vibrate) navigator.vibrate(ms);
     } catch(e) {}
@@ -138,174 +168,825 @@ class SoundController {
 
 const audio = new SoundController();
 
+function toggleSound() {
+  audio.toggleMute();
+}
+
 // --- 2D CHIBI GRAPHICS & BATTLE ARENA ENGINE ---
 const CHIBI_HEROES = {
-  dk: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M25 45 Q5 25 15 65 Q30 55 35 60" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
-    <path d="M75 45 Q95 25 85 65 Q70 55 65 60" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
-    <ellipse cx="50" cy="80" rx="18" ry="22" fill="#2c3e50" stroke="#ffd700" stroke-width="2"/>
-    <rect x="42" y="70" width="16" height="18" rx="4" fill="#34495e" stroke="#e67e22" stroke-width="1.5"/>
-    <path d="M40 75 Q32 105 30 110 L70 110 Q68 105 60 75 Z" fill="#962d22"/>
-    <rect x="38" y="96" width="9" height="15" rx="3" fill="#1a252f" stroke="#7f8c8d" stroke-width="1"/>
-    <rect x="53" y="96" width="9" height="15" rx="3" fill="#1a252f" stroke="#7f8c8d" stroke-width="1"/>
-    <circle cx="50" cy="42" r="22" fill="#f5cd79" stroke="#2c3e50" stroke-width="1"/>
-    <ellipse cx="43" cy="44" rx="4" ry="5.5" fill="#2c3e50"/>
-    <circle cx="41.5" cy="42" r="1.8" fill="#ffffff"/>
-    <circle cx="44.5" cy="46" r="0.8" fill="#ffffff"/>
-    <ellipse cx="57" cy="44" rx="4" ry="5.5" fill="#2c3e50"/>
-    <circle cx="55.5" cy="42" r="1.8" fill="#ffffff"/>
-    <circle cx="58.5" cy="46" r="0.8" fill="#ffffff"/>
-    <ellipse cx="37" cy="49" rx="3" ry="1.5" fill="#ff7675" opacity="0.7"/>
-    <ellipse cx="63" cy="49" rx="3" ry="1.5" fill="#ff7675" opacity="0.7"/>
-    <path d="M47 50 Q50 53 53 50" fill="none" stroke="#2c3e50" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M30 38 Q50 18 70 38 Q65 24 50 20 Q35 24 30 38 Z" fill="#7f8c8d" stroke="#ffd700" stroke-width="2"/>
-    <path d="M32 28 Q18 12 24 32 Q27 30 32 28 Z" fill="#ffd700" stroke="#d35400" stroke-width="1"/>
-    <path d="M68 28 Q82 12 76 32 Q73 30 68 28 Z" fill="#ffd700" stroke="#d35400" stroke-width="1"/>
-    <polygon points="50,15 46,24 54,24" fill="#e74c3c"/>
-    <g class="weapon-swing">
-      <rect x="70" y="55" width="6" height="12" rx="2" fill="#d35400"/>
-      <path d="M71 18 L75 18 L76 55 L70 55 Z" fill="#ecf0f1" stroke="#3498db" stroke-width="1.5"/>
-      <polygon points="70,18 73,8 76,18" fill="#ffd700"/>
-      <line x1="73" y1="18" x2="73" y2="52" stroke="#e74c3c" stroke-width="1"/>
+  dk: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg hero-dk-svg">
+  <defs>
+    <!-- Metallic Red Armor Shaders (Volumetric Dragon Plate) -->
+    <linearGradient id="dkCrimsonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="25%" stop-color="#ee5253"/>
+      <stop offset="60%" stop-color="#b71540"/>
+      <stop offset="85%" stop-color="#670d23"/>
+      <stop offset="100%" stop-color="#2c050e"/>
+    </linearGradient>
+    <linearGradient id="dkHighlightPlate" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff9f9f"/>
+      <stop offset="35%" stop-color="#ff4757"/>
+      <stop offset="80%" stop-color="#962d22"/>
+      <stop offset="100%" stop-color="#4d130c"/>
+    </linearGradient>
+    <!-- 24K Polished Gold Trim with Specular Bevels -->
+    <linearGradient id="dkGoldBevel" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="20%" stop-color="#fff275"/>
+      <stop offset="50%" stop-color="#f1c40f"/>
+      <stop offset="75%" stop-color="#d35400"/>
+      <stop offset="100%" stop-color="#784212"/>
+    </linearGradient>
+    <!-- Dark Obsidian Steel Under-armor (Chainmail & Joints) -->
+    <linearGradient id="dkUnderSteel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e272e"/>
+      <stop offset="40%" stop-color="#485460"/>
+      <stop offset="70%" stop-color="#2f3640"/>
+      <stop offset="100%" stop-color="#0c1014"/>
+    </linearGradient>
+    <!-- Dragon Flame Blade Energy -->
+    <linearGradient id="dkBladeCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="20%" stop-color="#feca57"/>
+      <stop offset="55%" stop-color="#ff4757"/>
+      <stop offset="85%" stop-color="#b71540"/>
+      <stop offset="100%" stop-color="#57091d"/>
+    </linearGradient>
+    <!-- Wings of Dragon Membranes -->
+    <radialGradient id="dkWingMembrane" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ff9f43"/>
+      <stop offset="35%" stop-color="#ee5253"/>
+      <stop offset="70%" stop-color="#881337"/>
+      <stop offset="100%" stop-color="#230308"/>
+    </radialGradient>
+    <!-- Bloom Glow Filter for Energy Runes & Weapon -->
+    <filter id="bloomFire" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="
+        1 0 0 0 0
+        0 0.5 0 0 0
+        0 0 0.2 0 0
+        0 0 0 1.6 0" result="fireTint"/>
+      <feComposite in="SourceGraphic" in2="fireTint" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- 1. WINGS OF DRAGON (Cánh Rồng Đỏ Cấp 3 - Sải cánh 150px) -->
+  <g class="hero-wings-layer wing-flap-anim">
+    <!-- Left Wing Struts & 3 Layered Primary Blades -->
+    <g class="dk-left-wing">
+      <!-- Main Upper Bone Strut -->
+      <path d="M 60 70 C 40 25, 14 20, 4 42 C -2 60, 16 66, 32 70" fill="none" stroke="url(#dkGoldBevel)" stroke-width="3" stroke-linecap="round"/>
+      <polygon points="4,42 -4,34 8,44" fill="url(#dkGoldBevel)"/>
+      <polygon points="20,28 14,20 24,30" fill="url(#dkGoldBevel)"/>
+      <!-- Primary Wing Blade 1 (Upper Outer) -->
+      <path d="M 60 72 C 38 28, 12 24, 6 44 C 4 60, 20 64, 38 68 Z" fill="url(#dkWingMembrane)" stroke="url(#dkCrimsonGrad)" stroke-width="1.5"/>
+      <!-- Primary Wing Blade 2 (Middle) -->
+      <path d="M 56 76 C 30 50, 4 60, 2 82 C 2 98, 22 92, 38 84 Z" fill="url(#dkWingMembrane)" stroke="url(#dkCrimsonGrad)" stroke-width="1.5"/>
+      <!-- Primary Wing Blade 3 (Lower Inner) -->
+      <path d="M 52 82 C 32 75, 12 90, 18 112 C 24 116, 40 106, 48 90 Z" fill="url(#dkWingMembrane)" stroke="url(#dkCrimsonGrad)" stroke-width="1.5"/>
+      <!-- Energy Veins in Wings -->
+      <path d="M 32 50 Q 14 62 8 80" fill="none" stroke="#feca57" stroke-width="1.2" opacity="0.85"/>
+      <path d="M 40 65 Q 22 80 18 100" fill="none" stroke="#feca57" stroke-width="1.2" opacity="0.85"/>
     </g>
-  </svg>`,
-  fe: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M22 50 Q0 20 20 70 Q30 55 35 60" fill="#a8e6cf" opacity="0.8" stroke="#1dd1a1" stroke-width="1.5"/>
-    <path d="M78 50 Q100 20 80 70 Q70 55 65 60" fill="#a8e6cf" opacity="0.8" stroke="#1dd1a1" stroke-width="1.5"/>
-    <path d="M42 68 Q50 65 58 68 L64 96 L36 96 Z" fill="#2ecc71" stroke="#27ae60" stroke-width="1.5"/>
-    <circle cx="50" cy="74" r="3" fill="#ffd700"/>
-    <rect x="42" y="96" width="6" height="15" rx="3" fill="#ffeaa7"/>
-    <rect x="52" y="96" width="6" height="15" rx="3" fill="#ffeaa7"/>
-    <rect x="40" y="107" width="9" height="5" rx="2" fill="#27ae60"/>
-    <rect x="51" y="107" width="9" height="5" rx="2" fill="#27ae60"/>
-    <circle cx="50" cy="42" r="21" fill="#ffeaa7"/>
-    <path d="M28 35 Q10 40 16 75 Q24 60 30 48 Z" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
-    <path d="M72 35 Q90 40 84 75 Q76 60 70 48 Z" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
-    <path d="M30 38 Q50 18 70 38 Q65 26 50 24 Q35 26 30 38 Z" fill="#f1c40f"/>
-    <polygon points="29,40 18,36 30,46" fill="#ffeaa7" stroke="#fab1a0" stroke-width="1"/>
-    <polygon points="71,40 82,36 70,46" fill="#ffeaa7" stroke="#fab1a0" stroke-width="1"/>
-    <ellipse cx="43" cy="44" rx="4.5" ry="6" fill="#0984e3"/>
-    <circle cx="41.5" cy="42" r="2" fill="#ffffff"/>
-    <circle cx="44.5" cy="46" r="1" fill="#ffffff"/>
-    <ellipse cx="57" cy="44" rx="4.5" ry="6" fill="#0984e3"/>
-    <circle cx="55.5" cy="42" r="2" fill="#ffffff"/>
-    <circle cx="58.5" cy="46" r="1" fill="#ffffff"/>
-    <ellipse cx="37" cy="49" rx="3" ry="1.5" fill="#ff7675" opacity="0.7"/>
-    <ellipse cx="63" cy="49" rx="3" ry="1.5" fill="#ff7675" opacity="0.7"/>
-    <path d="M47 50 Q50 53 53 50" fill="none" stroke="#2c3e50" stroke-width="1.5" stroke-linecap="round"/>
-    <g class="weapon-swing">
-      <path d="M70 30 Q88 55 70 80" fill="none" stroke="#00cec9" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="70" y1="30" x2="70" y2="80" stroke="#dfe6e9" stroke-width="1" stroke-dasharray="2,2"/>
-      <line x1="62" y1="55" x2="80" y2="55" stroke="#ffeaa7" stroke-width="2"/>
-      <polygon points="80,52 86,55 80,58" fill="#ffd700"/>
+
+    <!-- Right Wing Struts & 3 Layered Primary Blades -->
+    <g class="dk-right-wing">
+      <path d="M 100 70 C 120 25, 146 20, 156 42 C 162 60, 144 66, 128 70" fill="none" stroke="url(#dkGoldBevel)" stroke-width="3" stroke-linecap="round"/>
+      <polygon points="156,42 164,34 152,44" fill="url(#dkGoldBevel)"/>
+      <polygon points="140,28 146,20 136,30" fill="url(#dkGoldBevel)"/>
+      <path d="M 100 72 C 122 28, 148 24, 154 44 C 156 60, 140 64, 122 68 Z" fill="url(#dkWingMembrane)" stroke="url(#dkCrimsonGrad)" stroke-width="1.5"/>
+      <path d="M 104 76 C 130 50, 156 60, 158 82 C 158 98, 138 92, 122 84 Z" fill="url(#dkWingMembrane)" stroke="url(#dkCrimsonGrad)" stroke-width="1.5"/>
+      <path d="M 108 82 C 128 75, 148 90, 142 112 C 136 116, 120 106, 112 90 Z" fill="url(#dkWingMembrane)" stroke="url(#dkCrimsonGrad)" stroke-width="1.5"/>
+      <path d="M 128 50 Q 146 62 152 80" fill="none" stroke="#feca57" stroke-width="1.2" opacity="0.85"/>
+      <path d="M 120 65 Q 138 80 142 100" fill="none" stroke="#feca57" stroke-width="1.2" opacity="0.85"/>
     </g>
-  </svg>`,
-  dw: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M30 65 Q18 95 20 112 L80 112 Q82 95 70 65 Z" fill="#2c2c54" stroke="#474787" stroke-width="1.5"/>
-    <path d="M40 70 L50 90 L60 70 Z" fill="#40407a"/>
-    <rect x="42" y="100" width="6" height="12" rx="2" fill="#1b1464"/>
-    <rect x="52" y="100" width="6" height="12" rx="2" fill="#1b1464"/>
-    <circle cx="50" cy="44" r="21" fill="#f5cd79"/>
-    <path d="M28 42 Q25 65 30 72 Q36 60 33 46 Z" fill="#dcdde1"/>
-    <path d="M72 42 Q75 65 70 72 Q64 60 67 46 Z" fill="#dcdde1"/>
-    <path d="M30 40 Q50 25 70 40 Q62 30 50 28 Q38 30 30 40 Z" fill="#dcdde1"/>
-    <polygon points="50,10 32,32 68,32" fill="#474787" stroke="#706fd3" stroke-width="1.5"/>
-    <ellipse cx="50" cy="32" rx="20" ry="5" fill="#2c2c54" stroke="#ffd700" stroke-width="1.5"/>
-    <circle cx="50" cy="30" r="3" fill="#00d2d3"/>
-    <ellipse cx="43" cy="45" rx="4" ry="5.5" fill="#341f97"/>
-    <circle cx="42" cy="43" r="1.8" fill="#00d2d3"/>
-    <ellipse cx="57" cy="45" rx="4" ry="5.5" fill="#341f97"/>
-    <circle cx="56" cy="43" r="1.8" fill="#00d2d3"/>
-    <ellipse cx="37" cy="50" rx="2.5" ry="1.2" fill="#ff7675" opacity="0.6"/>
-    <ellipse cx="63" cy="50" rx="2.5" ry="1.2" fill="#ff7675" opacity="0.6"/>
-    <path d="M47 52 Q50 54 53 52" fill="none" stroke="#2c3e50" stroke-width="1.2" stroke-linecap="round"/>
-    <g class="weapon-swing">
-      <line x1="72" y1="25" x2="72" y2="105" stroke="#706fd3" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="72" cy="22" r="9" fill="none" stroke="#ffd700" stroke-width="2"/>
-      <circle cx="72" cy="22" r="5" fill="#00cec9"/>
-      <circle cx="72" cy="22" r="2" fill="#ffffff"/>
+  </g>
+
+  <!-- 2. BILLOWING HELLFIRE CAPE (Áo Choàng Hỏa Long Phấp Phới) -->
+  <path d="M 60 76 C 52 110, 44 140, 42 160 L 118 160 C 116 140, 108 110, 100 76 Z" fill="#4d080b" stroke="#250305" stroke-width="1.2"/>
+  <path d="M 50 115 Q 44 160 42 160 L 60 160 Q 64 125 58 115 Z" fill="#2d0507"/>
+  <path d="M 110 115 Q 116 160 118 160 L 100 160 Q 96 125 102 115 Z" fill="#2d0507"/>
+
+  <!-- 3. VOLUMETRIC ARMORED LEGS (Đôi Chân Giáp Chiến Binh Cường Tráng, Thế Tấn Vững Chãi) -->
+  <!-- Left Leg (Thigh, Poleyn Spikes, Sculpted Greave, Sabaton) -->
+  <g class="dk-leg-left">
+    <!-- Thigh Cuisses -->
+    <path d="M 60 108 L 48 132 L 64 135 L 72 112 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <!-- Overlapping Knee Poleyn with Dragon Horn Spike -->
+    <path d="M 44 130 L 52 126 L 64 128 L 60 140 L 46 138 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1"/>
+    <polygon points="44,130 36,124 46,134" fill="url(#dkGoldBevel)"/>
+    <circle cx="53" cy="132" r="2.2" fill="#ff4757"/>
+    <!-- Articulated Greave (Ống đồng cơ bắp có sống gân kim loại sắc nhọn) -->
+    <path d="M 48 138 C 40 148, 40 162, 46 172 L 62 172 C 68 162, 66 148, 60 138 Z" fill="url(#dkHighlightPlate)" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <!-- Greave Central Ridge Line -->
+    <line x1="54" y1="138" x2="54" y2="170" stroke="url(#dkGoldBevel)" stroke-width="1.8"/>
+    <!-- Sabaton (Giày sắt móng vuốt rồng cắm đất 2.5D) -->
+    <path d="M 40 170 C 34 175, 32 178, 46 180 L 64 180 C 66 175, 64 170, 62 170 Z" fill="#1e272e" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <polygon points="34,178 30,180 38,180" fill="url(#dkGoldBevel)"/>
+  </g>
+
+  <!-- Right Leg (Thigh, Poleyn Spikes, Sculpted Greave, Sabaton) -->
+  <g class="dk-leg-right">
+    <path d="M 100 108 L 112 132 L 96 135 L 88 112 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <path d="M 116 130 L 108 126 L 96 128 L 100 140 L 114 138 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1"/>
+    <polygon points="116,130 124,124 114,134" fill="url(#dkGoldBevel)"/>
+    <circle cx="107" cy="132" r="2.2" fill="#ff4757"/>
+    <path d="M 112 138 C 120 148, 120 162, 114 172 L 98 172 C 92 162, 94 148, 100 138 Z" fill="url(#dkHighlightPlate)" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <line x1="106" y1="138" x2="106" y2="170" stroke="url(#dkGoldBevel)" stroke-width="1.8"/>
+    <path d="M 120 170 C 126 175, 128 178, 114 180 L 96 180 C 94 175, 96 170, 98 170 Z" fill="#1e272e" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <polygon points="126,178 130,180 122,180" fill="url(#dkGoldBevel)"/>
+  </g>
+
+  <!-- 4. ARMORED FAULDS & BELT (Giáp hộ hông & Khóa đai rồng vàng) -->
+  <path d="M 58 98 L 102 98 L 98 116 L 80 122 L 62 116 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="1.8"/>
+  <!-- Golden Belt Band -->
+  <rect x="58" y="96" width="44" height="6" rx="2" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="0.8"/>
+  <!-- Dragon Belt Buckle with Glowing Gem -->
+  <polygon points="80,94 88,102 80,110 72,102" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1.2"/>
+  <circle cx="80" cy="102" r="3" fill="#ff4757" filter="url(#bloomFire)"/>
+
+  <!-- 5. VOLUMETRIC TORSO & DRAGON BREASTPLATE (Giáp Ngực Khối Cơ Bắp Vạm Vỡ) -->
+  <!-- Under-armor chainmail base -->
+  <path d="M 54 62 L 106 62 L 100 100 L 60 100 Z" fill="url(#dkUnderSteel)" stroke="#0c1014" stroke-width="1"/>
+  <!-- Sculpted Pectoral Plates (Ngực áo giáp đỏ rực rỡ uốn khối nổi 3D) -->
+  <path d="M 58 64 L 78 66 L 77 86 L 60 84 Z" fill="url(#dkHighlightPlate)" stroke="url(#dkGoldBevel)" stroke-width="1.2"/>
+  <path d="M 102 64 L 82 66 L 83 86 L 100 84 Z" fill="url(#dkHighlightPlate)" stroke="url(#dkGoldBevel)" stroke-width="1.2"/>
+  <!-- Sternum Armor Inlay -->
+  <polygon points="80,64 83,86 80,92 77,86" fill="url(#dkGoldBevel)"/>
+  <!-- 4-Tier Abdominal Articulated Plates -->
+  <path d="M 64 88 L 96 88 L 94 92 L 66 92 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="0.8"/>
+  <path d="M 65 93 L 95 93 L 93 97 L 67 97 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="0.8"/>
+  <!-- Dragon Core Heart Stone -->
+  <polygon points="80,72 86,79 80,86 74,79" fill="#ff4757" filter="url(#bloomFire)"/>
+  <circle cx="80" cy="79" r="2.2" fill="#ffffff"/>
+
+  <!-- 6. MULTI-TIER DRAGON PAULDRONS (Giáp Hộ Vai Nhiều Tầng Gai Rồng Bề Thế) -->
+  <!-- Left Shoulder (3 Tiered Spiked Plates) -->
+  <g class="dk-shoulder-left">
+    <path d="M 58 60 C 38 52, 28 66, 36 78 C 48 82, 56 74, 58 60 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="1.8"/>
+    <path d="M 42 50 C 26 40, 18 52, 28 64 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1.2"/>
+    <polygon points="26,46 14,36 28,52" fill="url(#dkGoldBevel)"/>
+    <polygon points="38,40 30,30 42,46" fill="url(#dkHighlightPlate)"/>
+  </g>
+  <!-- Right Shoulder (3 Tiered Spiked Plates) -->
+  <g class="dk-shoulder-right">
+    <path d="M 102 60 C 122 52, 132 66, 124 78 C 112 82, 104 74, 102 60 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="1.8"/>
+    <path d="M 118 50 C 134 40, 142 52, 132 64 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1.2"/>
+    <polygon points="134,46 146,36 132,52" fill="url(#dkGoldBevel)"/>
+    <polygon points="122,40 130,30 118,46" fill="url(#dkHighlightPlate)"/>
+  </g>
+
+  <!-- 7. GORGET, NECK & DRAGON KNIGHT HELMET (Mũ Giáp Rồng Chiến Binh Oai Phong) -->
+  <!-- Gorget (Giáp cổ sắt) -->
+  <path d="M 70 52 L 90 52 L 86 64 L 74 64 Z" fill="#1e272e" stroke="url(#dkGoldBevel)" stroke-width="1"/>
+  <!-- Helmet Dome Shell -->
+  <path d="M 62 30 C 62 8, 98 8, 98 30 C 98 52, 90 58, 80 58 C 70 58, 62 52, 62 30 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="2"/>
+  <!-- Massive Sweeping Dragon Horns (Cặp sừng rồng cong vút viền vàng) -->
+  <path d="M 64 24 C 44 4, 32 14, 50 28 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1.5"/>
+  <path d="M 96 24 C 116 4, 128 14, 110 28 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1.5"/>
+  <!-- Forehead Dragon Crown & Crest Spikes -->
+  <polygon points="80,6 72,20 88,20" fill="url(#dkGoldBevel)"/>
+  <polygon points="80,12 75,24 85,24" fill="#ff4757"/>
+  <!-- Visor Slit & Piercing Crimson Eyes (Kính ngắm hầm hố, mắt rực lửa ma thuật) -->
+  <path d="M 66 34 L 94 34 L 90 43 L 70 43 Z" fill="#080b0e" stroke="url(#dkGoldBevel)" stroke-width="1.2"/>
+  <ellipse cx="73" cy="38" rx="4.5" ry="2.2" fill="#ff4757" filter="url(#bloomFire)"/>
+  <circle cx="73" cy="38" r="1.5" fill="#ffffff"/>
+  <ellipse cx="87" cy="38" rx="4.5" ry="2.2" fill="#ff4757" filter="url(#bloomFire)"/>
+  <circle cx="87" cy="38" r="1.5" fill="#ffffff"/>
+  <!-- Chin & Cheek Plating -->
+  <polygon points="70,43 90,43 80,55" fill="url(#dkHighlightPlate)" stroke="url(#dkGoldBevel)" stroke-width="1"/>
+
+  <!-- 8. WEAPON & DYNAMIC ARMS: DRAGON SLAYER GREATSWORD (Hỏa Long Đao Khổng Lồ Rực Lửa) -->
+  <g class="hero-weapon-layer weapon-swing">
+    <!-- Armored Right Arm & Spiked Gauntlet -->
+    <path d="M 108 72 L 126 84 L 118 96 L 102 84 Z" fill="url(#dkCrimsonGrad)" stroke="url(#dkGoldBevel)" stroke-width="1.5"/>
+    <circle cx="122" cy="88" r="6" fill="url(#dkGoldBevel)"/>
+    <polygon points="126,84 134,80 126,92" fill="url(#dkGoldBevel)"/>
+    <!-- Two-handed Sword Grip & Pommel -->
+    <line x1="122" y1="86" x2="128" y2="114" stroke="#d35400" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="129" cy="116" r="4.2" fill="url(#dkGoldBevel)"/>
+    <!-- Winged Dragon Crossguard -->
+    <path d="M 108 84 C 116 74, 134 74, 142 84 L 125 89 Z" fill="url(#dkGoldBevel)" stroke="#784212" stroke-width="1.5"/>
+    <circle cx="125" cy="83" r="3" fill="#ff4757" filter="url(#bloomFire)"/>
+    <!-- Massive Dragon Slayer Blade (Lưỡi kiếm bản lớn bén nhọn vươn cao rực lửa) -->
+    <path d="M 122 80 L 130 80 L 146 16 L 140 2 L 118 16 Z" fill="url(#dkBladeCore)" stroke="url(#dkGoldBevel)" stroke-width="1.8" filter="url(#bloomFire)"/>
+    <!-- Serrated Back Spikes on Sword -->
+    <polygon points="144,28 152,32 143,40" fill="url(#dkGoldBevel)"/>
+    <polygon points="141,46 149,50 140,58" fill="url(#dkGoldBevel)"/>
+    <polygon points="138,64 145,68 137,74" fill="url(#dkGoldBevel)"/>
+    <!-- Central Fire Energy Channel Line -->
+    <line x1="131" y1="10" x2="126" y2="76" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="131" y1="18" x2="128" y2="70" stroke="#feca57" stroke-width="4" opacity="0.75"/>
+  </g>
+</svg>`,
+  fe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg hero-fe-svg">
+  <defs>
+    <linearGradient id="feEmeraldLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7efff5"/>
+      <stop offset="30%" stop-color="#2ecc71"/>
+      <stop offset="80%" stop-color="#10ac84"/>
+      <stop offset="100%" stop-color="#0b5345"/>
+    </linearGradient>
+    <linearGradient id="feEmeraldDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1abc9c"/>
+      <stop offset="60%" stop-color="#16a085"/>
+      <stop offset="100%" stop-color="#0e6251"/>
+    </linearGradient>
+    <linearGradient id="feGoldBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#fff9d2"/>
+      <stop offset="60%" stop-color="#f1c40f"/>
+      <stop offset="85%" stop-color="#d35400"/>
+      <stop offset="100%" stop-color="#784212"/>
+    </linearGradient>
+    <linearGradient id="feSilkyHair" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffde8"/>
+      <stop offset="35%" stop-color="#feca57"/>
+      <stop offset="75%" stop-color="#f39c12"/>
+      <stop offset="100%" stop-color="#b7791f"/>
+    </linearGradient>
+    <linearGradient id="feWingCrystal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#7efff5"/>
+      <stop offset="65%" stop-color="#18dcff"/>
+      <stop offset="90%" stop-color="#7d5fff"/>
+      <stop offset="100%" stop-color="#2c2c54"/>
+    </linearGradient>
+    <filter id="bloomSpirit" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- 1. WINGS OF SPIRIT (Cánh Tinh Linh Pha Lê 4 Cánh Lấp Lánh) -->
+  <g class="hero-wings-layer wing-fairy-anim">
+    <!-- Top Left Wing -->
+    <path d="M 62 65 C 36 20, 8 22, 4 52 C 2 76, 26 82, 48 76 Z" fill="url(#feWingCrystal)" opacity="0.9" stroke="#7efff5" stroke-width="1.5"/>
+    <circle cx="20" cy="44" r="3" fill="#ffffff" filter="url(#bloomSpirit)"/>
+    <circle cx="34" cy="58" r="2" fill="#ffffff"/>
+    <path d="M 44 48 Q 22 55 12 70" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.8"/>
+    <!-- Bottom Left Wing -->
+    <path d="M 58 76 C 28 84, 12 104, 26 122 C 38 126, 52 106, 58 88 Z" fill="url(#feWingCrystal)" opacity="0.8" stroke="#18dcff" stroke-width="1.2"/>
+    <!-- Top Right Wing -->
+    <path d="M 98 65 C 124 20, 152 22, 156 52 C 158 76, 134 82, 112 76 Z" fill="url(#feWingCrystal)" opacity="0.9" stroke="#7efff5" stroke-width="1.5"/>
+    <circle cx="140" cy="44" r="3" fill="#ffffff" filter="url(#bloomSpirit)"/>
+    <circle cx="126" cy="58" r="2" fill="#ffffff"/>
+    <path d="M 116 48 Q 138 55 148 70" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.8"/>
+    <!-- Bottom Right Wing -->
+    <path d="M 102 76 C 132 84, 148 104, 134 122 C 122 126, 108 106, 102 88 Z" fill="url(#feWingCrystal)" opacity="0.8" stroke="#18dcff" stroke-width="1.2"/>
+  </g>
+
+  <!-- 2. SILKY BLONDE HAIR BACK (Mái Tóc Vàng Bay Bổng) -->
+  <g class="fe-hair-back">
+    <path d="M 54 48 C 32 64, 26 98, 36 128 C 46 108, 50 82, 56 60 Z" fill="url(#feSilkyHair)"/>
+    <path d="M 106 48 C 128 64, 134 98, 124 128 C 114 108, 110 82, 104 60 Z" fill="url(#feSilkyHair)"/>
+  </g>
+
+  <!-- 3. VOLUMETRIC SCULPTED LEGS (Đôi Chân Cung Thủ Thon Dài, Giáp Bắp Chân Xanh Ngọc) -->
+  <!-- Left Leg -->
+  <g class="fe-leg-left">
+    <path d="M 64 110 L 54 135 L 66 138 L 74 112 Z" fill="#ffeaa7"/>
+    <!-- Knee Guard with Gold Leaf Motif -->
+    <polygon points="52,132 60,127 70,129 64,142 50,139" fill="url(#feGoldBevel)" stroke="#784212" stroke-width="0.8"/>
+    <circle cx="58" cy="134" r="2" fill="#1abc9c"/>
+    <!-- Sculpted Emerald Greave -->
+    <path d="M 54 139 C 48 148, 48 162, 54 172 L 66 172 C 70 162, 68 148, 64 139 Z" fill="url(#feEmeraldLight)" stroke="url(#feGoldBevel)" stroke-width="1.5"/>
+    <line x1="60" y1="139" x2="60" y2="170" stroke="url(#feGoldBevel)" stroke-width="1.5"/>
+    <!-- Sabaton Boot -->
+    <path d="M 46 170 C 40 175, 40 178, 54 180 L 68 180 C 68 175, 66 170, 64 170 Z" fill="url(#feEmeraldDark)" stroke="url(#feGoldBevel)" stroke-width="1.2"/>
+  </g>
+  <!-- Right Leg -->
+  <g class="fe-leg-right">
+    <path d="M 96 110 L 106 135 L 94 138 L 86 112 Z" fill="#ffeaa7"/>
+    <polygon points="108,132 100,127 90,129 96,142 110,139" fill="url(#feGoldBevel)" stroke="#784212" stroke-width="0.8"/>
+    <circle cx="102" cy="134" r="2" fill="#1abc9c"/>
+    <path d="M 106 139 C 112 148, 112 162, 106 172 L 94 172 C 90 162, 92 148, 96 139 Z" fill="url(#feEmeraldLight)" stroke="url(#feGoldBevel)" stroke-width="1.5"/>
+    <line x1="100" y1="139" x2="100" y2="170" stroke="url(#feGoldBevel)" stroke-width="1.5"/>
+    <path d="M 114 170 C 120 175, 120 178, 106 180 L 92 180 C 92 175, 94 170, 96 170 Z" fill="url(#feEmeraldDark)" stroke="url(#feGoldBevel)" stroke-width="1.2"/>
+  </g>
+
+  <!-- 4. EMERALD SKIRT & BELT (Váy Giáp Nữ Thần Cung Thủ) -->
+  <path d="M 62 100 L 98 100 L 102 118 L 80 124 L 58 118 Z" fill="url(#feEmeraldDark)" stroke="url(#feGoldBevel)" stroke-width="1.5"/>
+  <rect x="62" y="98" width="36" height="5" rx="2" fill="url(#feGoldBevel)" stroke="#784212" stroke-width="0.8"/>
+  <circle cx="80" cy="100" r="3" fill="#7efff5" filter="url(#bloomSpirit)"/>
+
+  <!-- 5. VOLUMETRIC CORSET ARMOR (Giáp Ngực Giai Nhân Tinh Linh) -->
+  <path d="M 60 68 L 100 68 L 96 102 L 64 102 Z" fill="url(#feEmeraldLight)" stroke="url(#feGoldBevel)" stroke-width="1.5"/>
+  <!-- Pectoral Contour Curves -->
+  <path d="M 66 70 L 80 72 L 78 88 L 66 86 Z" fill="url(#feEmeraldDark)"/>
+  <path d="M 94 70 L 80 72 L 82 88 L 94 86 Z" fill="url(#feEmeraldDark)"/>
+  <circle cx="80" cy="80" r="3.2" fill="#7efff5" filter="url(#bloomSpirit)"/>
+
+  <!-- 6. SHOULDERS -->
+  <ellipse cx="56" cy="68" rx="8" ry="6" fill="url(#feGoldBevel)"/>
+  <ellipse cx="104" cy="68" rx="8" ry="6" fill="url(#feGoldBevel)"/>
+
+  <!-- 7. ELF HEAD, EARS & TIARA CROWN -->
+  <rect x="74" y="52" width="12" height="14" fill="#ffeaa7"/>
+  <polygon points="54,42 34,35 52,49" fill="#ffeaa7" stroke="#fab1a0" stroke-width="0.8"/>
+  <polygon points="106,42 126,35 108,49" fill="#ffeaa7" stroke="#fab1a0" stroke-width="0.8"/>
+  <ellipse cx="80" cy="40" rx="18" ry="19" fill="#ffeaa7"/>
+  <!-- Silky Front Hair & Bangs -->
+  <path d="M 60 36 C 70 16, 90 16, 100 36 C 94 24, 78 22, 60 36 Z" fill="url(#feSilkyHair)"/>
+  <!-- Tiara with Cyan Gem -->
+  <path d="M 58 32 Q 80 25 102 32" fill="none" stroke="url(#feGoldBevel)" stroke-width="2.2"/>
+  <circle cx="80" cy="27" r="3.5" fill="#18dcff" filter="url(#bloomSpirit)"/>
+  <!-- Anime Elf Eyes -->
+  <ellipse cx="71" cy="40" rx="4" ry="5.5" fill="#0984e3"/>
+  <circle cx="69.5" cy="38" r="1.8" fill="#ffffff"/>
+  <ellipse cx="89" cy="40" rx="4" ry="5.5" fill="#0984e3"/>
+  <circle cx="87.5" cy="38" r="1.8" fill="#ffffff"/>
+  <ellipse cx="64" cy="47" rx="3" ry="1.5" fill="#ff7675" opacity="0.65"/>
+  <ellipse cx="96" cy="47" rx="3" ry="1.5" fill="#ff7675" opacity="0.65"/>
+  <path d="M 76 48 Q 80 51 84 48" fill="none" stroke="#e17055" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- 8. WEAPON: CELESTIAL CHAOS BOW (Đại Cung Nữ Thần Khổng Lồ Sải Dài) -->
+  <g class="hero-weapon-layer weapon-swing">
+    <path d="M 106 72 L 128 68 L 132 78 L 110 82 Z" fill="url(#feEmeraldLight)" stroke="url(#feGoldBevel)" stroke-width="1.2"/>
+    <!-- Massive Curved Bow Limbs with Golden Angel Feathers -->
+    <path d="M 104 10 C 146 44, 152 114, 110 160" fill="none" stroke="url(#feGoldBevel)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 110 16 C 144 46, 148 110, 114 154" fill="none" stroke="#7efff5" stroke-width="2.2" filter="url(#bloomSpirit)"/>
+    <!-- Bow Wing Feathers on Tips -->
+    <polygon points="104,10 94,4 102,16" fill="url(#feGoldBevel)"/>
+    <polygon points="110,160 100,166 108,154" fill="url(#feGoldBevel)"/>
+    <!-- String of Light -->
+    <line x1="104" y1="12" x2="110" y2="158" stroke="#ffffff" stroke-width="1.5" opacity="0.95"/>
+    <!-- Glowing Arrow of Light -->
+    <line x1="82" y1="84" x2="148" y2="84" stroke="#fff9d2" stroke-width="3.5" filter="url(#bloomSpirit)"/>
+    <polygon points="148,79 160,84 148,89" fill="#7efff5"/>
+    <polygon points="88,80 80,84 88,88" fill="url(#feGoldBevel)"/>
+  </g>
+</svg>`,
+  dw: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg hero-dw-svg">
+  <defs>
+    <linearGradient id="dwRobesDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#341f97"/>
+      <stop offset="40%" stop-color="#1b1464"/>
+      <stop offset="85%" stop-color="#0b082c"/>
+      <stop offset="100%" stop-color="#040311"/>
+    </linearGradient>
+    <linearGradient id="dwRobesViolet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9980FA"/>
+      <stop offset="45%" stop-color="#5758BB"/>
+      <stop offset="85%" stop-color="#2c2c54"/>
+      <stop offset="100%" stop-color="#131326"/>
+    </linearGradient>
+    <linearGradient id="dwGoldBevel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#fff275"/>
+      <stop offset="60%" stop-color="#ffd32a"/>
+      <stop offset="85%" stop-color="#f39c12"/>
+      <stop offset="100%" stop-color="#784212"/>
+    </linearGradient>
+    <linearGradient id="dwSoulFlames" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7efff5"/>
+      <stop offset="35%" stop-color="#00d2d3"/>
+      <stop offset="70%" stop-color="#5f27cd"/>
+      <stop offset="100%" stop-color="#1b1464"/>
+    </linearGradient>
+    <filter id="bloomCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- 1. WINGS OF SOUL (Cánh Linh Hồn Ma Pháp Lửa Xanh Tím Sải Rộng) -->
+  <g class="hero-wings-layer wing-soul-anim">
+    <!-- Left Spectral Wing -->
+    <path d="M 60 70 C 32 22, 4 28, 6 64 C 10 92, 36 86, 54 80 C 24 90, 18 118, 40 122 C 52 124, 60 104, 62 92 Z" fill="url(#dwSoulFlames)" opacity="0.9" stroke="#00d2d3" stroke-width="1.5"/>
+    <path d="M 18 60 C 8 72, 6 95, 22 102" fill="none" stroke="#54a0ff" stroke-width="2"/>
+    <!-- Right Spectral Wing -->
+    <path d="M 100 70 C 128 22, 156 28, 154 64 C 150 92, 124 86, 106 80 C 136 90, 142 118, 120 122 C 108 124, 100 104, 98 92 Z" fill="url(#dwSoulFlames)" opacity="0.9" stroke="#00d2d3" stroke-width="1.5"/>
+    <path d="M 142 60 C 152 72, 154 95, 138 102" fill="none" stroke="#54a0ff" stroke-width="2"/>
+  </g>
+
+  <!-- 2. GRAND SOUL FLOWING ROBES (Áo Choàng Ma Pháp Tối Thượng Dài Chấm Đất) -->
+  <path d="M 50 74 C 34 112, 30 148, 32 170 L 128 170 C 130 148, 126 112, 110 74 Z" fill="url(#dwRobesDark)" stroke="url(#dwGoldBevel)" stroke-width="1.8"/>
+  <!-- Stole with Ancient Magic Glyphs -->
+  <path d="M 64 74 L 74 138 L 80 142 L 86 138 L 96 74 Z" fill="url(#dwRobesViolet)" stroke="url(#dwGoldBevel)" stroke-width="1.2"/>
+  <circle cx="80" cy="88" r="4" fill="#00d2d3" filter="url(#bloomCyan)"/>
+  <circle cx="80" cy="110" r="3.5" fill="#00d2d3" filter="url(#bloomCyan)"/>
+  <circle cx="80" cy="128" r="3" fill="#00d2d3" filter="url(#bloomCyan)"/>
+
+  <!-- 3. Armored Wizard Boots -->
+  <path d="M 58 164 L 50 174 L 66 174 L 70 164 Z" fill="#080b0e" stroke="url(#dwGoldBevel)" stroke-width="1.2"/>
+  <path d="M 102 164 L 110 174 L 94 174 L 90 164 Z" fill="#080b0e" stroke="url(#dwGoldBevel)" stroke-width="1.2"/>
+
+  <!-- 4. TORSO PLATING & MANTLE -->
+  <path d="M 54 62 L 106 62 L 100 94 L 60 94 Z" fill="url(#dwRobesViolet)" stroke="url(#dwGoldBevel)" stroke-width="1.5"/>
+  <polygon points="54,60 36,48 52,74" fill="url(#dwGoldBevel)"/>
+  <polygon points="106,60 124,48 108,74" fill="url(#dwGoldBevel)"/>
+
+  <!-- 5. ARCHMAGE HOOD (Mũ Trùm Bóng Tối, Mắt Sấm Sét Lôi Điện Xanh Rực Sáng) -->
+  <circle cx="80" cy="42" r="19" fill="#1b1464"/>
+  <!-- Pointed Grand Soul Cowl -->
+  <polygon points="80,4 52,34 108,34" fill="url(#dwRobesDark)" stroke="url(#dwGoldBevel)" stroke-width="2"/>
+  <ellipse cx="80" cy="34" rx="28" ry="7.5" fill="url(#dwRobesViolet)" stroke="url(#dwGoldBevel)" stroke-width="1.8"/>
+  <circle cx="80" cy="27" r="4" fill="#00d2d3" filter="url(#bloomCyan)"/>
+  <!-- Shadow Face with Glowing Electric Cyan Eyes -->
+  <ellipse cx="80" cy="42" rx="17" ry="12" fill="#05050d"/>
+  <ellipse cx="71" cy="42" rx="5" ry="3.2" fill="#00d2d3" filter="url(#bloomCyan)"/>
+  <circle cx="71" cy="42" r="1.8" fill="#ffffff"/>
+  <ellipse cx="89" cy="42" rx="5" ry="3.2" fill="#00d2d3" filter="url(#bloomCyan)"/>
+  <circle cx="89" cy="42" r="1.8" fill="#ffffff"/>
+
+  <!-- 6. WEAPON: KUNDUN ARCHANGEL STAFF (Gậy Kundun Ngút Trời, Ngọc Ma Thuật Xoay Tròn) -->
+  <g class="hero-weapon-layer weapon-swing">
+    <line x1="124" y1="16" x2="124" y2="168" stroke="url(#dwGoldBevel)" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- Winged Archangel Crest on Staff Top -->
+    <path d="M 110 18 C 110 4, 138 4, 138 18 C 132 30, 116 30, 110 18 Z" fill="none" stroke="url(#dwGoldBevel)" stroke-width="3"/>
+    <polygon points="124,2 119,11 129,11" fill="url(#dwGoldBevel)"/>
+    <!-- Spinning Arcane Core Orb with Magic Rings -->
+    <g class="dw-arcane-orb">
+      <circle cx="124" cy="16" r="9.5" fill="#00d2d3" filter="url(#bloomCyan)"/>
+      <circle cx="124" cy="16" r="4.5" fill="#ffffff"/>
+      <ellipse cx="124" cy="16" rx="15" ry="5.5" fill="none" stroke="#54a0ff" stroke-width="1.8" transform="rotate(-25 124 16)"/>
     </g>
-  </svg>`
+  </g>
+</svg>`
 };
 
 const CHIBI_MONSTERS = {
-  spider: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M35 70 Q10 50 15 90" fill="none" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>
-    <path d="M30 75 Q5 70 8 105" fill="none" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>
-    <path d="M65 70 Q90 50 85 90" fill="none" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>
-    <path d="M70 75 Q95 70 92 105" fill="none" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>
-    <ellipse cx="50" cy="72" rx="24" ry="20" fill="#2c3e50" stroke="#e74c3c" stroke-width="2"/>
-    <circle cx="50" cy="68" r="6" fill="#e74c3c"/>
-    <circle cx="50" cy="45" r="18" fill="#34495e" stroke="#c0392b" stroke-width="2"/>
-    <circle cx="43" cy="43" r="5" fill="#e74c3c"/>
-    <circle cx="41.5" cy="41.5" r="2" fill="#ffffff"/>
-    <circle cx="57" cy="43" r="5" fill="#e74c3c"/>
-    <circle cx="55.5" cy="41.5" r="2" fill="#ffffff"/>
-    <polygon points="44,54 42,62 47,56" fill="#ecf0f1"/>
-    <polygon points="56,54 58,62 53,56" fill="#ecf0f1"/>
-  </svg>`,
-  golem: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <ellipse cx="50" cy="80" rx="26" ry="24" fill="#7f8c8d" stroke="#34495e" stroke-width="2"/>
-    <rect x="36" y="98" width="12" height="15" rx="4" fill="#34495e"/>
-    <rect x="52" y="98" width="12" height="15" rx="4" fill="#34495e"/>
-    <circle cx="50" cy="44" r="22" fill="#95a5a6" stroke="#2c3e50" stroke-width="2"/>
-    <path d="M38 28 L50 16 L62 28 Z" fill="#3498db" stroke="#2980b9" stroke-width="1.5"/>
-    <circle cx="43" cy="44" r="5" fill="#00d2d3"/>
-    <circle cx="43" cy="44" r="2" fill="#ffffff"/>
-    <circle cx="57" cy="44" r="5" fill="#00d2d3"/>
-    <circle cx="57" cy="44" r="2" fill="#ffffff"/>
-    <line x1="42" y1="55" x2="58" y2="55" stroke="#2c3e50" stroke-width="2"/>
-  </svg>`,
-  sea: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M22 65 Q5 80 18 100 Q30 90 32 80" fill="#00cec9" stroke="#0984e3" stroke-width="1.5"/>
-    <path d="M78 65 Q95 80 82 100 Q70 90 68 80" fill="#00cec9" stroke="#0984e3" stroke-width="1.5"/>
-    <ellipse cx="50" cy="78" rx="20" ry="24" fill="#0984e3" stroke="#74b9ff" stroke-width="2"/>
-    <circle cx="50" cy="42" r="20" fill="#00cec9" stroke="#0984e3" stroke-width="2"/>
-    <polygon points="50,15 45,26 55,26" fill="#ffd700"/>
-    <ellipse cx="43" cy="42" rx="4" ry="5" fill="#2d3436"/>
-    <circle cx="42" cy="40" r="1.5" fill="#ffffff"/>
-    <ellipse cx="57" cy="42" rx="4" ry="5" fill="#2d3436"/>
-    <circle cx="56" cy="40" r="1.5" fill="#ffffff"/>
-    <path d="M47 50 Q50 54 53 50" fill="none" stroke="#2d3436" stroke-width="1.5"/>
-  </svg>`,
-  demon: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M25 50 Q0 30 15 75 Q28 65 32 70" fill="#881337" stroke="#4c0519" stroke-width="1.5"/>
-    <path d="M75 50 Q100 30 85 75 Q72 65 68 70" fill="#881337" stroke="#4c0519" stroke-width="1.5"/>
-    <ellipse cx="50" cy="80" rx="22" ry="22" fill="#be123c" stroke="#4c0519" stroke-width="2"/>
-    <circle cx="50" cy="44" r="22" fill="#e11d48" stroke="#881337" stroke-width="2"/>
-    <path d="M34 30 Q18 10 26 32 Z" fill="#ffd700" stroke="#d97706" stroke-width="1.5"/>
-    <path d="M66 30 Q82 10 74 32 Z" fill="#ffd700" stroke="#d97706" stroke-width="1.5"/>
-    <ellipse cx="43" cy="44" rx="5" ry="6" fill="#facc15"/>
-    <ellipse cx="43.5" cy="44" rx="2" ry="5" fill="#1e1b4b"/>
-    <circle cx="42" cy="41" r="1.5" fill="#ffffff"/>
-    <ellipse cx="57" cy="44" rx="5" ry="6" fill="#facc15"/>
-    <ellipse cx="56.5" cy="44" rx="2" ry="5" fill="#1e1b4b"/>
-    <circle cx="55" cy="41" r="1.5" fill="#ffffff"/>
-    <polygon points="45,54 43,62 48,56" fill="#ecf0f1"/>
-    <polygon points="55,54 57,62 52,56" fill="#ecf0f1"/>
-  </svg>`,
-  dragon: `<svg viewBox="0 0 100 120" class="chibi-svg">
-    <path d="M30 55 Q5 30 18 75 Q32 65 35 70" fill="#c0392b" stroke="#7f1d1d" stroke-width="1.5"/>
-    <path d="M70 55 Q95 30 82 75 Q68 65 65 70" fill="#c0392b" stroke="#7f1d1d" stroke-width="1.5"/>
-    <path d="M60 90 Q85 105 75 115" fill="none" stroke="#b71540" stroke-width="4" stroke-linecap="round"/>
-    <ellipse cx="50" cy="76" rx="20" ry="22" fill="#e55039" stroke="#ffd700" stroke-width="2"/>
-    <path d="M42 68 Q50 64 58 68 L56 94 Q50 97 44 94 Z" fill="#f8c291"/>
-    <ellipse cx="38" cy="100" rx="6" ry="4" fill="#b71540"/>
-    <ellipse cx="62" cy="100" rx="6" ry="4" fill="#b71540"/>
-    <ellipse cx="50" cy="42" rx="22" ry="19" fill="#e55039" stroke="#b71540" stroke-width="1.5"/>
-    <path d="M34 28 Q20 12 28 32 Z" fill="#ffd700" stroke="#e67e22" stroke-width="1"/>
-    <path d="M66 28 Q80 12 72 32 Z" fill="#ffd700" stroke="#e67e22" stroke-width="1"/>
-    <ellipse cx="42" cy="41" rx="5" ry="6" fill="#f6b93b"/>
-    <ellipse cx="43" cy="41" rx="2" ry="5" fill="#2c3e50"/>
-    <circle cx="41" cy="38" r="1.5" fill="#ffffff"/>
-    <ellipse cx="58" cy="41" rx="5" ry="6" fill="#f6b93b"/>
-    <ellipse cx="57" cy="41" rx="2" ry="5" fill="#2c3e50"/>
-    <circle cx="56" cy="38" r="1.5" fill="#ffffff"/>
-    <ellipse cx="50" cy="50" rx="6" ry="3.5" fill="#b71540"/>
-    <circle cx="48" cy="50" r="1" fill="#7f1d1d"/>
-    <circle cx="52" cy="50" r="1" fill="#7f1d1d"/>
-  </svg>`
+  spider: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-spider-svg">
+  <defs>
+    <radialGradient id="spiderSac" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#2ed573"/>
+      <stop offset="40%" stop-color="#10ac84"/>
+      <stop offset="75%" stop-color="#1b1464"/>
+      <stop offset="100%" stop-color="#050310"/>
+    </radialGradient>
+    <linearGradient id="spiderChitin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#574b90"/>
+      <stop offset="50%" stop-color="#303952"/>
+      <stop offset="100%" stop-color="#11141c"/>
+    </linearGradient>
+    <filter id="bloomVenom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- 8 Massive Articulated Chitinous Legs with Barbed Hooks -->
+  <g class="spider-legs-group">
+    <!-- Left Legs -->
+    <path d="M 60 92 C 28 55, 12 78, 10 130 L 4 138" fill="none" stroke="#2c1a3a" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="10,130 4,138 14,135" fill="#2ed573"/>
+    <path d="M 55 100 C 20 90, 4 115, 6 152 L 2 160" fill="none" stroke="#2c1a3a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 58 110 C 26 118, 10 144, 14 168 L 10 176" fill="none" stroke="#2c1a3a" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 62 118 C 36 135, 22 160, 30 178" fill="none" stroke="#2c1a3a" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Right Legs -->
+    <path d="M 100 92 C 132 55, 148 78, 150 130 L 156 138" fill="none" stroke="#2c1a3a" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="150,130 156,138 146,135" fill="#2ed573"/>
+    <path d="M 105 100 C 140 90, 156 115, 154 152 L 158 160" fill="none" stroke="#2c1a3a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M 102 110 C 134 118, 150 144, 146 168 L 150 176" fill="none" stroke="#2c1a3a" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 98 118 C 124 135, 138 160, 130 178" fill="none" stroke="#2c1a3a" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- Giant Venom Abdomen (Bụng Nhện Độc Phát Sáng Khổng Lồ) -->
+  <ellipse cx="80" cy="116" rx="44" ry="40" fill="url(#spiderSac)" stroke="#2ed573" stroke-width="2.5"/>
+  <!-- Demon Skull Rune on Back -->
+  <ellipse cx="80" cy="105" rx="16" ry="14" fill="#2ed573" opacity="0.92" filter="url(#bloomVenom)"/>
+  <circle cx="73" cy="101" r="3.5" fill="#000000"/>
+  <circle cx="87" cy="101" r="3.5" fill="#000000"/>
+  <polygon points="75,110 85,110 80,118" fill="#000000"/>
+  <ellipse cx="80" cy="142" rx="22" ry="8" fill="#00d2d3" opacity="0.7" filter="url(#bloomVenom)"/>
+
+  <!-- Segmented Armored Head & Mandibles -->
+  <ellipse cx="80" cy="65" rx="30" ry="28" fill="url(#spiderChitin)" stroke="#ff4757" stroke-width="2.5"/>
+  <path d="M 60 55 L 80 46 L 100 55 L 90 76 L 70 76 Z" fill="#1b1464" stroke="#2ed573" stroke-width="1.2"/>
+
+  <!-- 6 Ruby Cluster Eyes -->
+  <circle cx="66" cy="62" r="7" fill="#ff4757" filter="url(#bloomVenom)"/>
+  <circle cx="64" cy="60" r="2.5" fill="#ffffff"/>
+  <circle cx="94" cy="62" r="7" fill="#ff4757" filter="url(#bloomVenom)"/>
+  <circle cx="92" cy="60" r="2.5" fill="#ffffff"/>
+  <circle cx="76" cy="54" r="4.2" fill="#ff6b81"/>
+  <circle cx="84" cy="54" r="4.2" fill="#ff6b81"/>
+  <circle cx="60" cy="70" r="3.2" fill="#ff4757"/>
+  <circle cx="100" cy="70" r="3.2" fill="#ff4757"/>
+
+  <!-- Poison Dripping Mandibles -->
+  <polygon points="71,80 64,104 76,88" fill="#f1f2f6" stroke="#2ed573" stroke-width="1.5"/>
+  <circle cx="64" cy="106" r="3" fill="#2ed573" filter="url(#bloomVenom)"/>
+  <polygon points="89,80 96,104 84,88" fill="#f1f2f6" stroke="#2ed573" stroke-width="1.5"/>
+  <circle cx="96" cy="106" r="3" fill="#2ed573" filter="url(#bloomVenom)"/>
+</svg>`,
+  golem: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-golem-svg">
+  <defs>
+    <linearGradient id="golemStone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b2bec3"/>
+      <stop offset="40%" stop-color="#636e72"/>
+      <stop offset="85%" stop-color="#2d3436"/>
+      <stop offset="100%" stop-color="#1e272e"/>
+    </linearGradient>
+    <linearGradient id="golemCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#7efff5"/>
+      <stop offset="70%" stop-color="#00d2d3"/>
+      <stop offset="100%" stop-color="#0984e3"/>
+    </linearGradient>
+    <filter id="bloomCore" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Heavy Basalt Pillar Legs -->
+  <g class="golem-legs">
+    <polygon points="50,132 40,174 66,174 72,132" fill="url(#golemStone)" stroke="#0c1014" stroke-width="2.5"/>
+    <polygon points="110,132 120,174 94,174 88,132" fill="url(#golemStone)" stroke="#0c1014" stroke-width="2.5"/>
+  </g>
+
+  <!-- Crushing Granite Fists -->
+  <g class="golem-fists">
+    <circle cx="26" cy="126" r="22" fill="url(#golemStone)" stroke="#00d2d3" stroke-width="2.5"/>
+    <polygon points="12,112 20,102 28,112" fill="#00d2d3"/>
+    <polygon points="28,110 36,100 44,110" fill="#00d2d3"/>
+    <circle cx="134" cy="126" r="22" fill="url(#golemStone)" stroke="#00d2d3" stroke-width="2.5"/>
+    <polygon points="148,112 140,102 132,112" fill="#00d2d3"/>
+    <polygon points="132,110 124,100 116,110" fill="#00d2d3"/>
+  </g>
+
+  <!-- Massive Tectonic Chest with Molten/Cryo Fissures -->
+  <polygon points="46,65 114,65 104,138 56,138" fill="url(#golemStone)" stroke="#0c1014" stroke-width="3"/>
+  <!-- Glowing Cryo Core -->
+  <polygon points="80,82 94,100 80,118 66,100" fill="url(#golemCore)" stroke="#ffffff" stroke-width="1.8" filter="url(#bloomCore)"/>
+  <path d="M 66 100 L 50 108 L 44 105" fill="none" stroke="#00d2d3" stroke-width="2.5" filter="url(#bloomCore)"/>
+  <path d="M 94 100 L 110 108 L 116 105" fill="none" stroke="#00d2d3" stroke-width="2.5" filter="url(#bloomCore)"/>
+  <path d="M 80 118 L 80 134" fill="none" stroke="#00d2d3" stroke-width="2.5" filter="url(#bloomCore)"/>
+
+  <!-- Spiked Basalt Shoulders -->
+  <polygon points="42,65 22,44 50,54" fill="url(#golemStone)" stroke="#0c1014" stroke-width="2.2"/>
+  <polygon points="118,65 138,44 110,54" fill="url(#golemStone)" stroke="#0c1014" stroke-width="2.2"/>
+
+  <!-- Titan Head Block & Monolithic Glowing Eyes -->
+  <polygon points="58,26 102,26 94,62 66,62" fill="url(#golemStone)" stroke="#0c1014" stroke-width="2.5"/>
+  <polygon points="80,10 68,26 92,26" fill="#00d2d3" stroke="#ffffff" stroke-width="1.5" filter="url(#bloomCore)"/>
+  <!-- Monolithic Horizontal Eyes -->
+  <rect x="64" y="36" width="12" height="7" rx="2" fill="#00d2d3" filter="url(#bloomCore)"/>
+  <circle cx="70" cy="39.5" r="1.8" fill="#ffffff"/>
+  <rect x="84" y="36" width="12" height="7" rx="2" fill="#00d2d3" filter="url(#bloomCore)"/>
+  <circle cx="90" cy="39.5" r="1.8" fill="#ffffff"/>
+  <line x1="66" y1="52" x2="94" y2="52" stroke="#0c1014" stroke-width="3.5"/>
+</svg>`,
+  sea: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-sea-svg">
+  <defs>
+    <linearGradient id="seaScales" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00cec9"/>
+      <stop offset="40%" stop-color="#0984e3"/>
+      <stop offset="85%" stop-color="#1b1464"/>
+      <stop offset="100%" stop-color="#05081c"/>
+    </linearGradient>
+    <linearGradient id="seaGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#7efff5"/>
+      <stop offset="100%" stop-color="#18dcff"/>
+    </linearGradient>
+    <filter id="bloomAqua" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Giant Translucent Fin Frills -->
+  <g class="sea-fins-anim">
+    <path d="M 50 90 C 16 106, 8 142, 28 160 C 44 145, 50 125, 54 108 Z" fill="url(#seaGlow)" opacity="0.88" stroke="#00cec9" stroke-width="2.2"/>
+    <path d="M 110 90 C 144 106, 152 142, 132 160 C 116 145, 110 125, 106 108 Z" fill="url(#seaGlow)" opacity="0.88" stroke="#00cec9" stroke-width="2.2"/>
+    <path d="M 80 8 C 68 28, 76 50, 80 62 C 84 50, 92 28, 80 8 Z" fill="#ffeaa7" stroke="#fdcb6e" stroke-width="2.5"/>
+  </g>
+
+  <!-- Serpentine Body -->
+  <ellipse cx="80" cy="122" rx="36" ry="42" fill="url(#seaScales)" stroke="#74b9ff" stroke-width="3"/>
+  <path d="M 66 104 C 66 150, 94 150, 94 104 Z" fill="#ffeaa7" opacity="0.92"/>
+  <line x1="68" y1="116" x2="92" y2="116" stroke="#fdcb6e" stroke-width="2"/>
+  <line x1="68" y1="128" x2="92" y2="128" stroke="#fdcb6e" stroke-width="2"/>
+  <line x1="70" y1="140" x2="90" y2="140" stroke="#fdcb6e" stroke-width="2"/>
+
+  <!-- Leviathan Head & Horns -->
+  <circle cx="80" cy="62" r="32" fill="url(#seaScales)" stroke="#00cec9" stroke-width="3"/>
+  <polygon points="50,58 26,46 44,70" fill="url(#seaGlow)" stroke="#0984e3" stroke-width="1.8"/>
+  <polygon points="110,58 134,46 116,70" fill="url(#seaGlow)" stroke="#0984e3" stroke-width="1.8"/>
+  <polygon points="80,24 72,40 88,40" fill="#f1c40f" stroke="#e67e22" stroke-width="1.8"/>
+
+  <!-- Oceanic Pearl Eyes -->
+  <ellipse cx="66" cy="58" rx="7" ry="9" fill="#2d3436"/>
+  <circle cx="66" cy="58" r="5" fill="#ffeaa7" filter="url(#bloomAqua)"/>
+  <circle cx="64.5" cy="55.5" r="1.8" fill="#ffffff"/>
+  <ellipse cx="94" cy="58" rx="7" ry="9" fill="#2d3436"/>
+  <circle cx="94" cy="58" r="5" fill="#ffeaa7" filter="url(#bloomAqua)"/>
+  <circle cx="92.5" cy="55.5" r="1.8" fill="#ffffff"/>
+
+  <!-- Shark Fangs -->
+  <path d="M 66 76 Q 80 84 94 76" fill="none" stroke="#2c3e50" stroke-width="3"/>
+  <polygon points="70,76 74,84 78,76" fill="#ffffff"/>
+  <polygon points="82,76 86,84 90,76" fill="#ffffff"/>
+</svg>`,
+  demon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-demon-svg">
+  <defs>
+    <linearGradient id="demonPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b71540"/>
+      <stop offset="40%" stop-color="#4c0519"/>
+      <stop offset="85%" stop-color="#1e0207"/>
+      <stop offset="100%" stop-color="#080002"/>
+    </linearGradient>
+    <linearGradient id="demonLava" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#feca57"/>
+      <stop offset="65%" stop-color="#ff4757"/>
+      <stop offset="100%" stop-color="#780619"/>
+    </linearGradient>
+    <filter id="bloomInferno" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Jagged Bat Demon Wings -->
+  <g class="demon-wings-anim">
+    <path d="M 58 72 C 22 32, 2 68, 10 106 C 26 100, 44 94, 58 90 Z" fill="#4c0519" stroke="#e11d48" stroke-width="2.2"/>
+    <path d="M 10 106 L 0 118 L 20 110 L 14 130 L 32 116" fill="none" stroke="#e11d48" stroke-width="2.2"/>
+    <path d="M 102 72 C 138 32, 158 68, 150 106 C 134 100, 116 94, 102 90 Z" fill="#4c0519" stroke="#e11d48" stroke-width="2.2"/>
+    <path d="M 150 106 L 160 118 L 140 110 L 146 130 L 128 116" fill="none" stroke="#e11d48" stroke-width="2.2"/>
+  </g>
+
+  <!-- Obsidian Greaves -->
+  <polygon points="60,132 48,174 72,174 76,132" fill="#0c0003" stroke="#ff4757" stroke-width="2"/>
+  <polygon points="100,132 112,174 88,174 84,132" fill="#0c0003" stroke="#ff4757" stroke-width="2"/>
+
+  <!-- Spiked Demon Torso -->
+  <polygon points="52,65 108,65 100,138 60,138" fill="url(#demonPlate)" stroke="#ff4757" stroke-width="2.8"/>
+  <polygon points="80,76 92,96 80,116 68,96" fill="#e11d48" stroke="#ffeaa7" stroke-width="1.8" filter="url(#bloomInferno)"/>
+
+  <!-- Demon Skull Head & Giant Baphomet Horns -->
+  <circle cx="80" cy="52" r="28" fill="url(#demonPlate)" stroke="#e11d48" stroke-width="2.8"/>
+  <!-- Baphomet Horns -->
+  <path d="M 60 38 C 32 6, 22 24, 40 46 Z" fill="#ffeaa7" stroke="#d97706" stroke-width="2.5"/>
+  <path d="M 100 38 C 128 6, 138 24, 120 46 Z" fill="#ffeaa7" stroke="#d97706" stroke-width="2.5"/>
+
+  <!-- Sulphur Flame Eyes -->
+  <ellipse cx="68" cy="52" rx="7" ry="8.5" fill="#facc15" filter="url(#bloomInferno)"/>
+  <ellipse cx="69" cy="52" rx="3" ry="6.5" fill="#1e1b4b"/>
+  <circle cx="67" cy="49" r="2" fill="#ffffff"/>
+  <ellipse cx="92" cy="52" rx="7" ry="8.5" fill="#facc15" filter="url(#bloomInferno)"/>
+  <ellipse cx="91" cy="52" rx="3" ry="6.5" fill="#1e1b4b"/>
+  <circle cx="90" cy="49" r="2" fill="#ffffff"/>
+
+  <!-- Flaming Soul Blade -->
+  <g class="demon-weapon">
+    <line x1="128" y1="34" x2="128" y2="155" stroke="url(#demonLava)" stroke-width="5" stroke-linecap="round" filter="url(#bloomInferno)"/>
+    <polygon points="128,22 120,38 136,38" fill="url(#demonLava)"/>
+  </g>
+</svg>`,
+  treant: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-treant-svg">
+  <defs>
+    <linearGradient id="woodBark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ab04c"/>
+      <stop offset="35%" stop-color="#4b6584"/>
+      <stop offset="75%" stop-color="#303952"/>
+      <stop offset="100%" stop-color="#1e272e"/>
+    </linearGradient>
+    <filter id="sporeGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Root Feet -->
+  <polygon points="50,135 34,175 66,175 72,135" fill="url(#woodBark)" stroke="#2ed573" stroke-width="2"/>
+  <polygon points="110,135 126,175 94,175 88,135" fill="url(#woodBark)" stroke="#2ed573" stroke-width="2"/>
+  <!-- Massive Bark Torso with Spores -->
+  <polygon points="46,65 114,65 104,140 56,140" fill="url(#woodBark)" stroke="#2ed573" stroke-width="2.5"/>
+  <circle cx="80" cy="100" r="14" fill="#2ed573" opacity="0.8" filter="url(#sporeGlow)"/>
+  <!-- Spiked Branch Fists -->
+  <circle cx="26" cy="120" r="20" fill="url(#woodBark)" stroke="#2ed573" stroke-width="2"/>
+  <polygon points="12,106 18,96 26,106" fill="#2ed573"/>
+  <circle cx="134" cy="120" r="20" fill="url(#woodBark)" stroke="#2ed573" stroke-width="2"/>
+  <polygon points="148,106 142,96 134,106" fill="#2ed573"/>
+  <!-- Crown of Thorns & Glowing Amber Eyes -->
+  <polygon points="58,26 102,26 94,62 66,62" fill="url(#woodBark)" stroke="#2ed573" stroke-width="2"/>
+  <polygon points="80,8 72,26 88,26" fill="#6ab04c"/>
+  <circle cx="68" cy="40" r="4.5" fill="#ffd32a" filter="url(#sporeGlow)"/>
+  <circle cx="92" cy="40" r="4.5" fill="#ffd32a" filter="url(#sporeGlow)"/>
+</svg>`,
+  void: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-void-svg">
+  <defs>
+    <linearGradient id="voidCoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e056fd"/>
+      <stop offset="50%" stop-color="#686de0"/>
+      <stop offset="100%" stop-color="#130f40"/>
+    </linearGradient>
+    <filter id="voidBloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- 6 Void Blades Wings -->
+  <g class="demon-wings-anim">
+    <path d="M 58 70 C 18 20, -4 52, 4 96 C 18 90, 38 84, 58 80 Z" fill="#130f40" stroke="#e056fd" stroke-width="2"/>
+    <path d="M 102 70 C 142 20, 164 52, 156 96 C 142 90, 122 84, 102 80 Z" fill="#130f40" stroke="#e056fd" stroke-width="2"/>
+  </g>
+  <!-- Void Robes -->
+  <path d="M 50 74 C 34 115, 28 150, 30 172 L 130 172 C 132 150, 126 115, 110 74 Z" fill="#09061d" stroke="#e056fd" stroke-width="2"/>
+  <circle cx="80" cy="110" r="15" fill="url(#voidCoreGrad)" filter="url(#voidBloom)"/>
+  <!-- Void Skull & Eye Vortex -->
+  <circle cx="80" cy="50" r="26" fill="#09061d" stroke="#e056fd" stroke-width="2.5"/>
+  <ellipse cx="68" cy="48" rx="6" ry="8" fill="#e056fd" filter="url(#voidBloom)"/>
+  <circle cx="68" cy="48" r="2" fill="#ffffff"/>
+  <ellipse cx="92" cy="48" rx="6" ry="8" fill="#e056fd" filter="url(#voidBloom)"/>
+  <circle cx="92" cy="48" r="2" fill="#ffffff"/>
+  <!-- Colossal Void Scythe (Lưỡi Hái Hư Không) -->
+  <g class="demon-weapon">
+    <line x1="128" y1="18" x2="128" y2="165" stroke="#e056fd" stroke-width="4.5" stroke-linecap="round" filter="url(#voidBloom)"/>
+    <path d="M 128 20 C 128 4, 156 8, 158 32 C 145 32, 134 26, 128 20 Z" fill="#e056fd" filter="url(#voidBloom)"/>
+  </g>
+</svg>`,
+  dragon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 180" class="chibi-svg mob-dragon-svg">
+  <defs>
+    <linearGradient id="dragonScales" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9f43"/>
+      <stop offset="35%" stop-color="#ee5253"/>
+      <stop offset="80%" stop-color="#881337"/>
+      <stop offset="100%" stop-color="#230308"/>
+    </linearGradient>
+    <linearGradient id="dragonGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#feca57"/>
+      <stop offset="85%" stop-color="#ff9f43"/>
+      <stop offset="100%" stop-color="#b7791f"/>
+    </linearGradient>
+    <filter id="bloomDragon" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Massive Draconic Wings (Sải Cánh Rồng Khổng Lồ 155px) -->
+  <g class="dragon-wings-anim">
+    <path d="M 56 72 C 18 24, -8 48, 4 98 C 20 92, 38 86, 56 82 Z" fill="url(#dragonScales)" stroke="url(#dragonGold)" stroke-width="2.2"/>
+    <path d="M 4 98 L -6 112 L 16 102 L 8 124 L 30 108" fill="none" stroke="url(#dragonGold)" stroke-width="2.2"/>
+    <path d="M 104 72 C 142 24, 168 48, 156 98 C 140 92, 122 86, 104 82 Z" fill="url(#dragonScales)" stroke="url(#dragonGold)" stroke-width="2.2"/>
+    <path d="M 156 98 L 166 112 L 144 102 L 152 124 L 130 108" fill="none" stroke="url(#dragonGold)" stroke-width="2.2"/>
+  </g>
+
+  <!-- Long Spiked Dragon Tail -->
+  <path d="M 94 140 C 135 160, 132 176, 116 179 C 110 171, 100 160, 86 148" fill="none" stroke="#ee5253" stroke-width="5.5" stroke-linecap="round"/>
+  <polygon points="116,179 128,175 119,166" fill="url(#dragonGold)"/>
+
+  <!-- Armored Dragon Torso & Talons -->
+  <ellipse cx="80" cy="120" rx="38" ry="40" fill="url(#dragonScales)" stroke="url(#dragonGold)" stroke-width="3"/>
+  <path d="M 66 104 C 66 150, 94 150, 94 104 Z" fill="url(#dragonGold)" opacity="0.95"/>
+  <line x1="68" y1="114" x2="92" y2="114" stroke="#ee5253" stroke-width="2.2"/>
+  <line x1="66" y1="126" x2="94" y2="126" stroke="#ee5253" stroke-width="2.2"/>
+  <line x1="70" y1="138" x2="90" y2="138" stroke="#ee5253" stroke-width="2.2"/>
+  <!-- Razor Talons -->
+  <ellipse cx="60" cy="168" rx="12" ry="8" fill="#ee5253" stroke="url(#dragonGold)" stroke-width="1.8"/>
+  <ellipse cx="100" cy="168" rx="12" ry="8" fill="#ee5253" stroke="url(#dragonGold)" stroke-width="1.8"/>
+
+  <!-- Colossal Dragon Head & Golden Horns -->
+  <ellipse cx="80" cy="58" rx="34" ry="30" fill="url(#dragonScales)" stroke="url(#dragonGold)" stroke-width="3"/>
+  <path d="M 55 38 C 30 10, 36 28, 44 46 Z" fill="url(#dragonGold)" stroke="#d35400" stroke-width="2.5"/>
+  <path d="M 105 38 C 130 10, 124 28, 116 46 Z" fill="url(#dragonGold)" stroke="#d35400" stroke-width="2.5"/>
+  <polygon points="80,22 73,38 87,38" fill="url(#dragonGold)"/>
+
+  <!-- Blazing Molten Eyes -->
+  <ellipse cx="66" cy="54" rx="7.5" ry="9" fill="#feca57" filter="url(#bloomDragon)"/>
+  <ellipse cx="67" cy="54" rx="3" ry="7" fill="#1e272e"/>
+  <circle cx="64" cy="50" r="2.2" fill="#ffffff"/>
+  <ellipse cx="94" cy="54" rx="7.5" ry="9" fill="#feca57" filter="url(#bloomDragon)"/>
+  <ellipse cx="93" cy="54" rx="3" ry="7" fill="#1e272e"/>
+  <circle cx="91" cy="50" r="2.2" fill="#ffffff"/>
+
+  <!-- Fiery Breathing Nostrils -->
+  <ellipse cx="80" cy="70" rx="12" ry="6.5" fill="#ee5253"/>
+  <circle cx="75" cy="70" r="2.2" fill="#ff9f43" filter="url(#bloomDragon)"/>
+  <circle cx="85" cy="70" r="2.2" fill="#ff9f43" filter="url(#bloomDragon)"/>
+</svg>`
 };
+
+function updateArenaAtmosphere(mapId) {
+  const layer = document.getElementById("arenaWeatherLayer");
+  if (!layer) return;
+  let particleType = "motes";
+  if (mapId === 3) particleType = "snow"; // Devias snow
+  else if (mapId === 5) particleType = "bubbles"; // Atlans bubbles
+  else if (mapId === 6 || mapId === 7) particleType = "embers"; // Lost Tower / Tarkan embers
+  else if (mapId >= 9) particleType = "stars"; // Icarus / Kanturu stars
+
+  if (layer.getAttribute("data-weather") !== particleType) {
+    layer.setAttribute("data-weather", particleType);
+    layer.innerHTML = "";
+    for (let i = 0; i < 10; i++) {
+      const p = document.createElement("div");
+      p.className = `weather-particle particle-${particleType}`;
+      p.style.left = `${(Math.random() * 92 + 4).toFixed(1)}%`;
+      p.style.animationDelay = `${(Math.random() * 3.5).toFixed(1)}s`;
+      p.style.animationDuration = `${(2.2 + Math.random() * 2.8).toFixed(1)}s`;
+      layer.appendChild(p);
+    }
+  }
+}
 
 function updateArenaBackground(mapId) {
   const bg = document.getElementById("arenaBg");
@@ -323,8 +1004,8 @@ function updateArenaBackground(mapId) {
     10: "linear-gradient(180deg, #130f40 0%, #30336b 70%, #535c68 100%)"
   };
   bg.style.background = bgThemes[mapId] || bgThemes[1];
+  updateArenaAtmosphere(mapId);
 }
-
 
 // 7 MONSTER RANKS: Quái thường, Tinh anh, Ám kim, Hoàng kim, Lĩnh chủ, Truyền thuyết, Thần thoại
 const MONSTER_RANKS = [
@@ -338,7 +1019,7 @@ const MONSTER_RANKS = [
     dmgMult: 1.0,
     zenChance: 0.35,
     zenMult: 1.0,
-    gearChance: 0.04, // 4.0% (đồ phổ thông rơi ổn định)
+    gearChance: 0.25, // 25.0% (cứ ~4 quái rơi 1 món đồ)
     jewelBoost: 1,
     minRarity: null,
     auraClass: "rank-normal",
@@ -356,7 +1037,7 @@ const MONSTER_RANKS = [
     dmgMult: 1.8,
     zenChance: 0.60,
     zenMult: 1.8,
-    gearChance: 0.15, // 15%
+    gearChance: 1.0, // 100%
     jewelBoost: 2,
     minRarity: null,
     auraClass: "rank-elite",
@@ -374,7 +1055,7 @@ const MONSTER_RANKS = [
     dmgMult: 2.8,
     zenChance: 0.80,
     zenMult: 3.0,
-    gearChance: 0.30, // 30%
+    gearChance: 1.0, // 100%
     jewelBoost: 4,
     minRarity: null,
     auraClass: "rank-dark-gold",
@@ -428,7 +1109,7 @@ const MONSTER_RANKS = [
     dmgMult: 10.0,
     zenChance: 1.0,
     zenMult: 12.0,
-    gearChance: 0.90, // 90%
+    gearChance: 1.0, // 100%
     jewelBoost: 20,
     minRarity: null,
     auraClass: "rank-legendary",
@@ -472,16 +1153,34 @@ function rollMonsterRank(mobsKilled) {
   return MONSTER_RANKS[0]; // 62.0% Normal
 }
 
-function updateChibiArena(currentMap, mobName, rank) {
-  // 1. Hero Chibi
-  const heroBadge = document.getElementById("chibiHeroBadge");
+function renderHeroSprite(force = false) {
   const heroSprite = document.getElementById("heroSpriteEl");
-  if (heroBadge) heroBadge.innerText = `Lv.${state.level} ${state.username}`;
-  if (heroSprite && !heroSprite.hasChildNodes()) {
-    heroSprite.innerHTML = CHIBI_HEROES[state.charClass || "dk"] || CHIBI_HEROES.dk;
+  if (!heroSprite) return;
+  const currentClass = state.charClass || "dk";
+  if (force || heroSprite.getAttribute("data-class") !== currentClass || !heroSprite.hasChildNodes()) {
+    heroSprite.setAttribute("data-class", currentClass);
+    heroSprite.innerHTML = CHIBI_HEROES[currentClass] || CHIBI_HEROES.dk;
   }
 
-  // 2. Arena Background
+  // Hero Tier Aura Level
+  const heroActor = document.getElementById("chibiHeroActor");
+  if (heroActor) {
+    let auraClass = "hero-base";
+    if (state.rebirthCount >= 3) auraClass = "hero-aura-mythic";
+    else if (state.rebirthCount >= 1) auraClass = "hero-aura-godly";
+    else if (state.level >= 100) auraClass = "hero-aura-gold";
+    else if (state.level >= 50) auraClass = "hero-aura-radiant";
+    heroActor.className = `chibi-actor hero-actor ${auraClass}`;
+  }
+}
+
+function updateChibiArena(currentMap, mobName, rank) {
+  // 1. Hero Chibi & Aura
+  const heroBadge = document.getElementById("chibiHeroBadge");
+  if (heroBadge) heroBadge.innerText = `Lv.${state.level} ${state.username}`;
+  renderHeroSprite();
+
+  // 2. Arena Background & Atmosphere Particles
   updateArenaBackground(currentMap.id);
 
   // 3. Monster Chibi
@@ -493,15 +1192,21 @@ function updateChibiArena(currentMap, mobName, rank) {
   const rObj = typeof rank === "object" ? rank : (MONSTER_RANKS.find(r => r.key === rank) || MONSTER_RANKS[0]);
 
   let archetype = "spider";
-  if (rObj.key === "mythical" || rObj.key === "legendary") archetype = "dragon";
-  else if (rObj.key === "overlord") archetype = "demon";
+  if (rObj.key === "mythical") archetype = currentMap.tier >= 6 ? "void" : "dragon";
+  else if (rObj.key === "legendary") archetype = currentMap.tier >= 7 ? "dragon" : "demon";
+  else if (rObj.key === "overlord") archetype = currentMap.tier >= 5 ? "demon" : "golem";
   else if (rObj.key === "golden") archetype = "dragon";
   else {
-    if (currentMap.tier <= 2) archetype = "spider";
-    else if (currentMap.tier <= 4) archetype = "golem";
+    if (currentMap.tier === 1) archetype = "spider";
+    else if (currentMap.tier === 2) archetype = "treant";
+    else if (currentMap.tier === 3) archetype = "golem";
+    else if (currentMap.tier === 4) archetype = "demon";
     else if (currentMap.tier === 5) archetype = "sea";
-    else if (currentMap.tier <= 8) archetype = "demon";
-    else archetype = "dragon";
+    else if (currentMap.tier === 6) archetype = "demon";
+    else if (currentMap.tier === 7) archetype = "spider";
+    else if (currentMap.tier === 8) archetype = "treant";
+    else if (currentMap.tier === 9) archetype = "dragon";
+    else archetype = "void";
   }
 
   if (mobSprite) {
@@ -550,17 +1255,38 @@ function animateMonsterReaction(isDeath = false) {
   }
 }
 
-function playSlashFx(type = "slash") {
+function playSlashFx(type = "fire", isCrit = false) {
   const fxLayer = document.getElementById("arenaFxLayer");
+  const arena = document.getElementById("battleArena");
   if (!fxLayer) return;
 
+  if (isCrit && arena) {
+    arena.classList.remove("screen-shake");
+    void arena.offsetWidth;
+    arena.classList.add("screen-shake");
+    setTimeout(() => { arena.classList.remove("screen-shake"); }, 260);
+  }
+
   const fx = document.createElement("div");
-  fx.className = `combat-slash-fx fx-${type}`;
+  let fxClass = `combat-slash-fx fx-${type}`;
+  if (isCrit) fxClass += " fx-crit-burst";
+  fx.className = fxClass;
   fx.style.left = "75%";
-  fx.style.top = "50%";
+  fx.style.top = "48%";
 
   fxLayer.appendChild(fx);
-  setTimeout(() => { if (fx.parentNode) fx.remove(); }, 350);
+  setTimeout(() => { if (fx.parentNode) fx.remove(); }, 380);
+}
+
+function spawnMonsterDeathBurst() {
+  const fxLayer = document.getElementById("arenaFxLayer");
+  if (!fxLayer) return;
+  const burst = document.createElement("div");
+  burst.className = "mob-death-burst";
+  burst.style.left = "75%";
+  burst.style.top = "50%";
+  fxLayer.appendChild(burst);
+  setTimeout(() => { if (burst.parentNode) burst.remove(); }, 500);
 }
 
 function spawnFloatingDamage(amount, type, isCrit) {
@@ -615,12 +1341,38 @@ function spawnFloatingLoot(icon, text, color = "#ffd700") {
   setTimeout(() => { if (el.parentNode) el.remove(); }, 900);
 }
 
+function spawnFloatingSkillBanner(text) {
+  const fxLayer = document.getElementById("arenaFxLayer");
+  if (!fxLayer) return;
+  const el = document.createElement("div");
+  el.className = "floating-skill-banner";
+  el.innerText = text;
+  el.style.left = "24%";
+  el.style.top = "30%";
+  fxLayer.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 800);
+}
+
+function toggleAutoMap() {
+  const chk = document.getElementById("chkAutoMap");
+  if (chk) state.autoAdvanceMap = chk.checked;
+  saveGameState();
+}
+
+function checkAutoAdvanceMap() {
+  if (!state.autoAdvanceMap) return;
+  const nextMap = MAPS.find(m => m.id === state.currentMapId + 1);
+  if (nextMap && state.level >= nextMap.reqLv && (state.rs || 0) >= nextMap.reqRs) {
+    selectMap(nextMap.id);
+    addLog(`🚩 [TỰ ĐỘNG TIẾN MAP] Đủ điều kiện! Bạn đã tự động tiến vào vùng đất mới [${nextMap.name}]!`, "log-crit");
+  }
+}
+
 function toggleFullLog() {
   const overlay = document.getElementById("fullLogOverlay");
   if (!overlay) return;
   overlay.style.display = overlay.style.display === "none" ? "flex" : "none";
 }
-
 
 // 10 MU MAPS
 const MAPS = [
@@ -637,16 +1389,16 @@ const MAPS = [
 ];
 
 const TIERS = [
-  { tier: 1, name: "Da/Rồng" },
-  { tier: 2, name: "Đồng/Kim Ngân" },
-  { tier: 3, name: "Thiềm Thừ" },
-  { tier: 4, name: "Bạch Kim" },
-  { tier: 5, name: "Long Vương" },
-  { tier: 6, name: "Hắc Long" },
-  { tier: 7, name: "Phượng Hoàng" },
-  { tier: 8, name: "Thần Long" },
-  { tier: 9, name: "Huyết Thần" },
-  { tier: 10, name: "Bóng Đêm" }
+  { tier: 1, name: "Khởi Nguyên (Genesis)" },
+  { tier: 2, name: "Phong Lôi (Stormbringer)" },
+  { tier: 3, name: "Băng Hàn (Frostguard)" },
+  { tier: 4, name: "Ngục Tối (Nether Dark)" },
+  { tier: 5, name: "Hải Long (Leviathan)" },
+  { tier: 6, name: "Hỏa Ngục (Hellfire)" },
+  { tier: 7, name: "Sa Mạc (Sandstorm)" },
+  { tier: 8, name: "Rừng Thiêng (Mythic Wood)" },
+  { tier: 9, name: "Thiên Giới (Phoenix Sky)" },
+  { tier: 10, name: "Tối Thượng (Archangel God)" }
 ];
 
 const RARITIES = [
@@ -660,13 +1412,16 @@ const RARITIES = [
 ];
 
 const OPTION_POOL = [
-  "Tăng Sát Thương Hoàn Hảo +10%",
-  "Tăng Sát Thương Bạo Kích +15%",
-  "Gia Tăng Sức Đánh Tối Đa +50",
-  "Tăng Tốc Độ Tấn Công +10",
-  "Tăng Lượng Zen Rơi +30%",
-  "Khả Năng Hồi Máu Khi Tiêu Diệt +50",
-  "Giảm Sát Thương Nhận Vào +4%"
+  "★ Tăng Sát Thương Hoàn Hảo +12%",
+  "★ Tăng Sát Thương Bạo Kích +18%",
+  "★ Hút Máu Khi Đánh: +8% ST chuyển hóa HP",
+  "★ Bỏ Qua Phòng Thủ (Ignore Def) 5%",
+  "★ Tỷ Lệ Đòn Đánh Kép (Double Dmg) +12%",
+  "★ Phản Hồi Sát Thương (Reflect) +10%",
+  "★ Tăng Tốc Độ Tấn Công +15",
+  "★ Tăng May Mắn Rơi Đồ Quý & Ngọc +25%",
+  "★ Tăng Lượng Zen Rơi +35%",
+  "★ Giảm Sát Thương Nhận Vào +6%"
 ];
 
 const SVG_ICONS = {
@@ -864,31 +1619,28 @@ function getClassSkills(charClass = "dk") {
       { id: "evil_spirit", name: "Evil Spirit", icon: "🔮", level: 1, maxLevel: 10, desc: "Triệu hồi linh hồn tà ác quét sạch toàn bộ quái vật.", baseMult: 1.6, costZen: 10000, costPts: 1 },
       { id: "ice_storm", name: "Ice Storm", icon: "❄️", level: 1, maxLevel: 10, desc: "Bão tuyết đông giá đóng băng toàn bộ mục tiêu.", baseMult: 1.9, costZen: 25000, costPts: 2 },
       { id: "hellfire", name: "Hellfire", icon: "☄️", level: 0, maxLevel: 10, desc: "Cột lửa hỏa ngục thiêu đốt mục tiêu liên tục.", baseMult: 2.4, costZen: 50000, costPts: 3 },
-      { id: "mana_shield", name: "Mana Shield", icon: "🛡️", level: 1, maxLevel: 10, desc: "Khiên linh hồn dùng năng lượng hấp thụ sát thương.", baseMult: 1.0, costZen: 20000, costPts: 2 }
+      { id: "mana_shield", name: "Mana Shield", icon: "🛡️", level: 1, maxLevel: 10, desc: "Lớp khiên ma thuật bảo hộ, tăng phòng thủ tuyệt đối.", baseMult: 1.0, costZen: 20000, costPts: 2 }
     ];
   } else {
+    // dk (Dark Knight)
     return [
-      { id: "twisting_slash", name: "Twisting Slash", icon: "⚔️", level: 1, maxLevel: 10, desc: "Xoay kiếm cuồng phong, sát thương vật lý lan tỏa.", baseMult: 1.4, costZen: 10000, costPts: 1 },
-      { id: "death_stab", name: "Death Stab", icon: "🗡️", level: 1, maxLevel: 10, desc: "Đâm gió xuyên tâm bùng nổ, làm giảm giáp quái vật.", baseMult: 1.8, costZen: 25000, costPts: 2 },
-      { id: "rageful_blow", name: "Rageful Blow", icon: "💥", level: 0, maxLevel: 10, desc: "Nộ kích chấn động mặt đất, sát thương chí mạng.", baseMult: 2.3, costZen: 50000, costPts: 3 },
-      { id: "greater_fortitude", name: "Greater Fortitude", icon: "🛡️", level: 1, maxLevel: 10, desc: "Gồng máu thần thánh, tăng máu tối đa và hồi phục.", baseMult: 1.0, costZen: 20000, costPts: 2 }
+      { id: "twisting_slash", name: "Twisting Slash", icon: "⚔️", level: 1, maxLevel: 10, desc: "Xoay kiếm cuồng phong bão táp quét sạch mục tiêu xung quanh.", baseMult: 1.5, costZen: 10000, costPts: 1 },
+      { id: "rageful_blow", name: "Rageful Blow", icon: "💥", level: 1, maxLevel: 10, desc: "Dộng kiếm long trời lở đất gây choáng và sát thương lớn.", baseMult: 1.8, costZen: 25000, costPts: 2 },
+      { id: "death_stab", name: "Death Stab", icon: "🗡️", level: 0, maxLevel: 10, desc: "Đâm kiếm tử thần xuyên phá toàn bộ phòng ngự.", baseMult: 2.3, costZen: 50000, costPts: 3 },
+      { id: "fortitude", name: "Greater Fortitude", icon: "🛡️", level: 1, maxLevel: 10, desc: "Gồng máu thần thánh tăng lượng máu tối đa và sức chống chịu.", baseMult: 1.0, costZen: 20000, costPts: 2 }
     ];
   }
 }
 
-// USER & GAME STATE
-function getRequiredExpForLevel(lvl) {
-  return Math.floor(lvl * lvl * 15 + lvl * 80 + 100);
-}
-
 function getDefaultState(username = "Hero_Lorencia", charClass = "dk") {
-  let stats = { str: 25, agi: 20, vit: 25, ene: 15 };
+  if (!["dk", "fe", "dw"].includes(charClass)) charClass = "dk";
+  let stats = { str: 30, agi: 20, vit: 30, ene: 15 };
   let gender = "male";
   if (charClass === "fe") {
-    stats = { str: 20, agi: 35, vit: 20, ene: 15 };
+    stats = { str: 20, agi: 38, vit: 20, ene: 17 };
     gender = "female";
   } else if (charClass === "dw") {
-    stats = { str: 15, agi: 20, vit: 20, ene: 35 };
+    stats = { str: 15, agi: 20, vit: 20, ene: 40 };
     gender = "male";
   }
 
@@ -1008,8 +1760,11 @@ function submitLogin() {
   }
 
   // Load account state
-  state = Object.assign(getDefaultState(acc.username, acc.charClass), acc.state);
-  if (!state.skills || state.skills.length === 0) state.skills = getClassSkills(state.charClass);
+  let cClass = acc.charClass;
+  if (!["dk", "fe", "dw"].includes(cClass)) cClass = "dk";
+  state = Object.assign(getDefaultState(acc.username, cClass), acc.state);
+  if (!["dk", "fe", "dw"].includes(state.charClass)) state.charClass = cClass;
+  if (!state.skills || state.skills.length === 0 || !state.skills.some(s => s.id)) state.skills = getClassSkills(state.charClass);
   if (!state.inventory) state.inventory = [];
   if (!state.potions) state.potions = { hp: 50, mp: 50 };
   if (!state.autoPotion) state.autoPotion = { hpEnabled: true, hpThreshold: 40 };
@@ -1083,6 +1838,7 @@ function logoutAccount() {
 }
 
 function initGameSession() {
+  audio.updateIcon();
   const gate = document.getElementById("loginGate");
   if (gate) gate.style.display = "none";
 
@@ -1090,6 +1846,13 @@ function initGameSession() {
     audio.playGateOpen();
     audio.vibrate(120);
   } catch(e) {}
+
+  if (state.autoStats === undefined || state.autoStats === null) {
+    state.autoStats = true;
+  }
+  if (state.autoStats !== false && state.freePoints > 0) {
+    autoDistributeClass();
+  }
 
   checkOfflineProgress();
   startCombatLoop();
@@ -1272,12 +2035,20 @@ function buyPotion(type, count, cost) {
 // ITEM & INVENTORY UTILITIES
 function getItemCP(item) {
   if (!item) return 0;
-  return Math.floor((item.atk * 1.8) + (item.def * 1.5) + (item.hp * 0.4) + (item.plus * 60) + (item.options.length * 80));
+  const optCount = (item.options && Array.isArray(item.options)) ? item.options.length : 0;
+  const atk = item.atk || 0;
+  const def = item.def || 0;
+  const hp = item.hp || 0;
+  const plus = item.plus || 0;
+  return Math.floor((atk * 1.8) + (def * 1.5) + (hp * 0.4) + (plus * 60) + (optCount * 80));
 }
 
 function getItemSellPrice(item) {
   if (!item) return 0;
-  const baseValue = (item.tier * 200) + (item.rarity * 400) + (item.plus * 500);
+  const tier = item.tier || 1;
+  const rarity = item.rarity || 0;
+  const plus = item.plus || 0;
+  const baseValue = (tier * 200) + (rarity * 400) + (plus * 500);
   return Math.max(50, Math.floor(baseValue * 0.30));
 }
 
@@ -1355,12 +2126,12 @@ function generateItem(targetTier = null, forceRarity = null, preferredClass = nu
   let baseName = "";
   if (slotDef.key === "mainWeapon") {
     if (pClass === "dw") baseName = `Gậy ${tierData.name}`;
-    else if (pClass === "fe" || state.gender === "female") baseName = `Nỏ ${tierData.name}`;
-    else baseName = `Kiếm ${tierData.name}`;
+    else if (pClass === "fe") baseName = `Cung Thần ${tierData.name}`;
+    else baseName = `Đại Đao ${tierData.name}`;
   } else if (slotDef.key === "offWeapon") {
-    if (pClass === "dw") baseName = `Khiên Ma Thuật ${tierData.name}`;
-    else if (pClass === "fe") baseName = `Túi Tên ${tierData.name}`;
-    else baseName = `Khiên ${tierData.name}`;
+    if (pClass === "dw") baseName = `Khiên Ma Pháp ${tierData.name}`;
+    else if (pClass === "fe") baseName = `Túi Tên Thánh ${tierData.name}`;
+    else baseName = `Khiên Thần ${tierData.name}`;
   } else {
     baseName = `${slotDef.name} ${tierData.name}`;
   }
@@ -1403,35 +2174,34 @@ function handleDroppedItem(droppedItem) {
     state.equipped[slotKey] = droppedItem;
     let oldItemMsg = "";
     if (currentItem) {
-      // If old unequipped item is rare (>= 3: Cam, Vàng, Tím, Đỏ), save into inventory if space
-      if (currentItem.rarity >= 3 && state.inventory.length < 30) {
+      if (state.inventory.length < 30) {
         state.inventory.push(currentItem);
-        oldItemMsg = ` Đồ cũ [${currentItem.name}] phẩm cấp cao được giữ trong Túi Đồ!`;
+        oldItemMsg = ` Đồ cũ [${currentItem.name}] đã chuyển vào Túi Đồ!`;
       } else {
         const oldZen = getItemSellPrice(currentItem);
         state.zen += oldZen;
-        oldItemMsg = ` Đồ cũ tự động bán thu về +${oldZen.toLocaleString()} Zen!`;
+        oldItemMsg = ` Túi đầy, đồ cũ bán thu về +${oldZen.toLocaleString()} Zen!`;
       }
     }
-    addLog(`[NÂNG CẤP] Trang bị [${droppedItem.name}] (CP: ${newCP.toLocaleString()}) mạnh hơn -> Tự động mặc vào!${oldItemMsg}`, "log-equip");
-    if (droppedItem.rarity >= 3) {
-      audio.playKeng();
-      audio.vibrate(120);
-    }
+    addLog(`⚡ [MẶC TRANG BỊ MẠNH HƠN] Tự động mặc [${droppedItem.name}] (CP: ${newCP.toLocaleString()})!${oldItemMsg}`, "log-equip");
+    audio.playKeng();
+    audio.vibrate(100);
   } else {
-    // 2. newCP <= oldCP: Check user priority: "vật phẩm lc thấp hơn nhưng phẩm cấp cao hơn ưu tiên giữ lại"
-    const currentRarity = currentItem ? currentItem.rarity : 0;
-    const isHigherRarity = droppedItem.rarity > currentRarity;
-    const isRareTier = droppedItem.rarity >= 3; // Cam, Vàng, Tím, Đỏ
-
-    if ((isHigherRarity || isRareTier) && state.inventory.length < 30) {
+    // 2. newCP <= oldCP:
+    // If inventory has space (< 30), keep in inventory so player can see, enhance, or sell!
+    if (state.inventory.length < 30) {
       state.inventory.push(droppedItem);
-      addLog(`🎁 [TÚI ĐỒ] Nhặt [${droppedItem.name}] (Phẩm chất ${RARITIES[droppedItem.rarity].name} quý hiếm) -> Đã cất vào Túi Đồ để dành cường hóa!`, "log-crit");
-      audio.playKeng();
+      const rName = RARITIES[droppedItem.rarity] ? RARITIES[droppedItem.rarity].name : "Thường";
+      addLog(`🎁 [RƠI ĐỒ] Nhặt được [${droppedItem.name}] (${rName}) -> Đã cất vào Túi Đồ (${state.inventory.length}/30)!`, droppedItem.rarity >= 3 ? "log-crit" : "log-equip");
+      if (droppedItem.rarity >= 3) {
+        audio.playKeng();
+        audio.vibrate(120);
+      }
     } else {
+      // Inventory is full (30/30) -> Auto-sell for Zen
       const sellZen = getItemSellPrice(droppedItem);
       state.zen += sellZen;
-      addLog(`[RƠI ĐỒ] Nhặt [${droppedItem.name}] -> Tự động bán thu về +${sellZen.toLocaleString()} Zen!`, "log-zen");
+      addLog(`💰 [TÚI ĐẦY 30/30] Tự động bán [${droppedItem.name}] thu về +${sellZen.toLocaleString()} Zen!`, "log-zen");
     }
   }
 }
@@ -1531,16 +2301,24 @@ function sellGarbageItems() {
 // COMPREHENSIVE STATS CALCULATION
 // Base stats are strictly calculated without temporary fluctuating combat buffs to prevent CP bugs
 function calculateStats() {
-  const baseStr = Math.min(10000, state.stats.str);
-  const baseAgi = Math.min(10000, state.stats.agi);
-  const baseVit = Math.min(10000, state.stats.vit);
-  const baseEne = Math.min(10000, state.stats.ene);
+  const baseStr = Math.min(10000, state.stats.str || 0);
+  const baseAgi = Math.min(10000, state.stats.agi || 0);
+  const baseVit = Math.min(10000, state.stats.vit || 0);
+  const baseEne = Math.min(10000, state.stats.ene || 0);
 
-  let rawPhy = baseStr * 3.2 + baseAgi * 0.5;
-  let rawMag = baseEne * 3.8 + baseStr * 0.3;
-  let rawDef = baseAgi * 2.0 + baseStr * 0.4;
-  let maxHp = baseVit * 28 + 400;
-  let maxMp = baseEne * 18 + 200;
+  // Direct Level Stat Growth: Mỗi cấp nhân vật được cộng dồn trực tiếp vào chỉ số cơ bản
+  const lvlBonus = Math.max(0, (state.level || 1) - 1);
+  const lvlHp = lvlBonus * 35;
+  const lvlMp = lvlBonus * 18;
+  const lvlPhy = lvlBonus * 5.0;
+  const lvlMag = lvlBonus * 5.0;
+  const lvlDef = lvlBonus * 3.0;
+
+  let rawPhy = baseStr * 3.2 + baseAgi * 0.5 + lvlPhy;
+  let rawMag = baseEne * 3.8 + baseStr * 0.3 + lvlMag;
+  let rawDef = baseAgi * 2.0 + baseStr * 0.4 + lvlDef;
+  let maxHp = baseVit * 28 + 400 + lvlHp;
+  let maxMp = baseEne * 18 + 200 + lvlMp;
 
   let gearAtk = 0;
   let gearDef = 0;
@@ -1561,14 +2339,15 @@ function calculateStats() {
     }
   }
 
-  // Distribute gear attack by class
+  // Distribute gear attack by class (3 Classes: DK, DW, FE)
   if (state.charClass === "dw") {
-    rawMag += gearAtk * 0.85;
-    rawPhy += gearAtk * 0.25;
+    rawMag += gearAtk * 0.90;
+    rawPhy += gearAtk * 0.20;
   } else if (state.charClass === "fe") {
-    rawPhy += gearAtk * 0.65;
-    rawMag += gearAtk * 0.45;
+    rawPhy += gearAtk * 0.75;
+    rawMag += gearAtk * 0.35;
   } else {
+    // dk
     rawPhy += gearAtk * 0.85;
     rawMag += gearAtk * 0.20;
   }
@@ -1576,13 +2355,23 @@ function calculateStats() {
   rawDef += gearDef;
   maxHp += gearHp;
 
-  // Set 4-Piece Bonus
+  // Multi-tier Set Bonus (2, 4, 6, 8 pieces)
   let activeSetTier = null;
+  let activeSetCount = 0;
   for (const t in setTierCounts) {
-    if (setTierCounts[t] === 4) {
+    const count = setTierCounts[t];
+    if (count >= 2) {
       activeSetTier = t;
-      rawDef *= 1.20;
-      maxHp *= 1.20;
+      activeSetCount = count;
+      if (count >= 8) {
+        rawPhy *= 1.35; rawMag *= 1.35; rawDef *= 1.35; maxHp *= 1.35;
+      } else if (count >= 6) {
+        rawPhy *= 1.25; rawMag *= 1.25; rawDef *= 1.25; maxHp *= 1.25;
+      } else if (count >= 4) {
+        rawPhy *= 1.15; rawMag *= 1.15; rawDef *= 1.20; maxHp *= 1.20;
+      } else if (count >= 2) {
+        rawPhy *= 1.08; rawMag *= 1.08; rawDef *= 1.10;
+      }
       break;
     }
   }
@@ -1594,17 +2383,31 @@ function calculateStats() {
   rawDef *= srsMult;
   maxHp *= srsMult;
 
-  // Active Pet Buffs
+  // Active Pet Buffs (7 Pets)
   if (state.activePet === "angel") {
-    maxHp *= 1.15;
-    rawDef *= 1.15;
+    maxHp *= 1.20;
+    rawDef *= 1.20;
   } else if (state.activePet === "satan") {
+    rawPhy *= 1.25;
+    rawMag *= 1.25;
+  } else if (state.activePet === "fenrir") {
     rawPhy *= 1.20;
     rawMag *= 1.20;
-  } else if (state.activePet === "fenrir") {
+    rawDef *= 1.15;
+  } else if (state.activePet === "fairy") {
+    rawPhy *= 1.12;
+    rawMag *= 1.12;
+  } else if (state.activePet === "phoenix") {
+    rawMag *= 1.30;
     rawPhy *= 1.15;
-    rawMag *= 1.15;
-    rawDef *= 1.10;
+  } else if (state.activePet === "drake") {
+    rawPhy *= 1.25;
+    rawMag *= 1.25;
+  } else if (state.activePet === "kirin") {
+    rawPhy *= 1.40;
+    rawMag *= 1.40;
+    rawDef *= 1.30;
+    maxHp *= 1.30;
   }
 
   // Skill Level CP Bonus
@@ -1629,7 +2432,7 @@ function calculateStats() {
   const mpRegen = Math.floor(baseEne * 0.8 + 10);
 
   // STABLE BASE COMBAT POWER (Not inflated by temporary combat buffs)
-  const cp = Math.floor(rawPhy * 1.5 + rawMag * 1.5 + rawDef * 1.4 + maxHp * 0.35 + (critRate + dodgeRate) * 25 + skillBonusCP);
+  const cp = Math.floor(rawPhy * 1.5 + rawMag * 1.5 + rawDef * 1.4 + maxHp * 0.35 + (critRate + dodgeRate) * 25 + skillBonusCP + lvlBonus * 40);
 
   return {
     minPhy, maxPhy,
@@ -1729,7 +2532,7 @@ function runCombatTick() {
     }
 
     const fullMobName = `${rank.prefix} ${rawMobName}`;
-    const maxMobHp = Math.floor((currentMap.tier * 400 + 400) * 10 * rank.hpMult);
+    const maxMobHp = Math.floor((currentMap.tier * 220 + 120) * rank.hpMult);
 
     state.currentMob = {
       name: fullMobName,
@@ -1782,8 +2585,26 @@ function runCombatTick() {
   const isCrit = Math.random() * 100 < critChance;
   const critMult = isCrit ? 1.8 : 1.0;
 
+  // Active Skill Trigger (38% chance when MP >= 15)
+  let activeSkill = null;
+  const availableSkills = (state.skills || []).filter(sk => sk.level > 0 && sk.baseMult > 1.0);
+  if (availableSkills.length > 0 && Math.random() < 0.38 && state.currentMp >= 15) {
+    activeSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
+    state.currentMp = Math.max(0, state.currentMp - 15);
+  }
+
+  let skillMult = 1.0;
+  if (activeSkill) {
+    skillMult = activeSkill.baseMult + (activeSkill.level - 1) * 0.15;
+  }
+
   let rolledPhy = Math.floor(Math.random() * (stats.maxPhy - stats.minPhy + 1) + stats.minPhy);
   let rolledMag = Math.floor(Math.random() * (stats.maxMag - stats.minMag + 1) + stats.minMag);
+
+  if (activeSkill) {
+    if (state.charClass === "dw") rolledMag = Math.floor(rolledMag * skillMult);
+    else rolledPhy = Math.floor(rolledPhy * skillMult);
+  }
 
   if (state.buffs.berserk > 0) rolledPhy = Math.floor(rolledPhy * 1.35);
   if (state.buffs.manaShield > 0) rolledMag = Math.floor(rolledMag * 1.30);
@@ -1803,25 +2624,33 @@ function runCombatTick() {
   const mobHpFillEl = document.getElementById("chibiMobHpFill");
   if (mobHpFillEl) mobHpFillEl.style.width = `${mobHpPct}%`;
 
-  animateHeroAction(state.charClass === "dw" ? "cast" : "attack");
-  playSlashFx(isCrit ? "crit" : (state.charClass === "dw" ? "magic" : "slash"));
+  if (activeSkill) {
+    animateHeroAction("cast");
+    const skillFxType = state.charClass === "dw" ? "magic" : (state.charClass === "fe" ? "arrow" : "fire");
+    playSlashFx(skillFxType, isCrit);
+    if (state.charClass === "dw") audio.playMagic(); else audio.playSlash();
+    addLog(`✨ [TUYỆT KỸ] ${activeSkill.icon} ${activeSkill.name.toUpperCase()} (Cấp ${activeSkill.level}) bùng nổ gây ${totalHeroDmg.toLocaleString()} ST lên ${mobName}!`, "log-crit");
+    spawnFloatingSkillBanner(`${activeSkill.icon} ${activeSkill.name}`);
+  } else {
+    animateHeroAction(state.charClass === "dw" ? "cast" : "attack");
+    const heroSlashType = state.charClass === "dw" ? "magic" : (state.charClass === "fe" ? "arrow" : "fire");
+    playSlashFx(heroSlashType, isCrit);
+    if (state.charClass === "dw") {
+      audio.playMagic();
+      const spell = isCrit ? "BÃO TUYẾT HOÀNG KIM" : "EVIL SPIRIT";
+      addLog(`🔮 [PHÁP THUẬT] ${spell} gây ${finalMag.toLocaleString()} ST Phép (+${finalPhy.toLocaleString()} ST Vật lý) lên ${mobName}!`, isCrit ? "log-crit" : "log-mag");
+    } else if (state.charClass === "fe") {
+      audio.playSlash();
+      const shot = isCrit ? "TRIPLE SHOT BẠO KÍCH" : "BĂNG TIỄN";
+      addLog(`🏹 [CUNG THỦ] ${shot} gây ${finalPhy.toLocaleString()} ST Vật lý (+${finalMag.toLocaleString()} ST Phép) lên ${mobName}!`, isCrit ? "log-crit" : "log-phy");
+    } else {
+      audio.playSlash();
+      const slash = isCrit ? "TWISTING SLASH" : "CHÉM THƯỜNG";
+      addLog(`⚔️ [VẬT LÝ] ${slash} gây ${finalPhy.toLocaleString()} ST Vật lý (+${finalMag.toLocaleString()} ST Phép) lên ${mobName}!`, isCrit ? "log-crit" : "log-phy");
+    }
+  }
   animateMonsterReaction(false);
   spawnFloatingDamage(totalHeroDmg, state.charClass === "dw" ? "mag" : (isCrit ? "crit" : "phy"), isCrit);
-
-  // Log Attack by Class
-  if (state.charClass === "dw") {
-    audio.playMagic();
-    const spell = isCrit ? "BÃO TUYẾT HOÀNG KIM" : "EVIL SPIRIT";
-    addLog(`🔮 [PHÁP THUẬT] ${spell} gây ${finalMag.toLocaleString()} ST Phép (+${finalPhy.toLocaleString()} ST Vật lý) lên ${mobName}!`, isCrit ? "log-crit" : "log-mag");
-  } else if (state.charClass === "fe") {
-    audio.playSlash();
-    const shot = isCrit ? "TRIPLE SHOT BẠO KÍCH" : "BĂNG TIỄN";
-    addLog(`🏹 [CUNG THỦ] ${shot} gây ${finalPhy.toLocaleString()} ST Vật lý (+${finalMag.toLocaleString()} ST Phép) lên ${mobName}!`, isCrit ? "log-crit" : "log-phy");
-  } else {
-    audio.playSlash();
-    const slash = isCrit ? "TWISTING SLASH" : "CHÉM THƯỜNG";
-    addLog(`⚔️ [VẬT LÝ] ${slash} gây ${finalPhy.toLocaleString()} ST Vật lý (+${finalMag.toLocaleString()} ST Phép) lên ${mobName}!`, isCrit ? "log-crit" : "log-phy");
-  }
 
   // Proc Debuffs on Enemy
   if (state.stats.str >= 30 && Math.random() < 0.14 && (!state.enemyDebuffs.armorBreak || state.enemyDebuffs.armorBreak <= 0)) {
@@ -1896,6 +2725,7 @@ function runCombatTick() {
   // Check if Monster is Defeated
   if (state.currentMob.currentHp <= 0) {
     animateMonsterReaction(true);
+    spawnMonsterDeathBurst();
     state.mobsKilled++;
 
     // Track Boss & Overlord Kills
@@ -1922,7 +2752,7 @@ function runCombatTick() {
     }
 
     // 2. Standard Balanced EXP Gain
-    const earnedExp = Math.floor((Math.random() * 15 + 20) * currentMap.tier * mobRank.hpMult * 0.6);
+    const earnedExp = Math.floor((Math.random() * 20 + 35) * currentMap.tier * mobRank.hpMult);
     state.exp += earnedExp;
 
     // 3. Jewel & Potion Drops scaled by Rank
@@ -1965,21 +2795,31 @@ function runCombatTick() {
       handleDroppedItem(droppedItem);
     }
 
-    // 5. Level Up Check
+    // 5. Level Up Check: Tự động cộng chỉ số và phân bổ điểm tiềm năng
     if (state.exp >= state.nextExp) {
+      let leveledUp = false;
       while (state.exp >= state.nextExp) {
         state.exp -= state.nextExp;
         state.level++;
         state.nextExp = getRequiredExpForLevel(state.level);
-        state.freePoints += 5;
+        state.freePoints = (state.freePoints || 0) + 5;
         if (state.level % 5 === 0) {
           state.skillPoints = (state.skillPoints || 0) + 1;
         }
+        leveledUp = true;
       }
-      addLog(`★ LEVEL UP! Đạt Cấp ${state.level}! Nhận +5 Điểm Tiềm Năng! ★`, "log-crit");
-      
-      if (state.autoStats) {
-        autoDistributeClass();
+      if (leveledUp) {
+        audio.playKeng();
+        audio.vibrate(150);
+        addLog(`★ LEVEL UP! Bạn đã đạt Cấp ${state.level}! Chỉ số cơ bản & Lực chiến đã tăng mạnh! ★`, "log-crit");
+        
+        // Auto-distribute points if enabled (default true)
+        if (state.autoStats !== false) {
+          autoDistributeClass();
+        } else {
+          addLog(`💡 Bạn có ${state.freePoints} Điểm Tiềm Năng chưa cộng! Vào Tab [Chỉ Số] để cộng điểm!`, "log-buff");
+        }
+        checkAutoAdvanceMap();
       }
     }
 
@@ -2011,6 +2851,7 @@ function addLog(msg, cssClass = "log-norm") {
 // UI RENDERING
 function updateUI() {
   const stats = calculateStats();
+  renderHeroSprite();
   
   // 1. Level, Name, RS
   const heroLvEl = document.getElementById("heroLv");
@@ -2043,10 +2884,14 @@ function updateUI() {
   const subbarMagDmg = document.getElementById("subbarMagDmg");
   if (subbarMagDmg) subbarMagDmg.innerText = `🔮 Pháp Thuật: ${stats.minMag.toLocaleString()} ~ ${stats.maxMag.toLocaleString()}`;
 
-  // 4. Map Badge
+  // 4. Map Badge & Blood Castle Sync
   const curMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
   const mapBadge = document.getElementById("currentMapBadge");
   if (mapBadge) mapBadge.innerText = `Map ${curMap.id}: ${curMap.name}`;
+  const bcAttemptsEl = document.getElementById("txtBcAttempts");
+  if (bcAttemptsEl && state.bloodCastle) {
+    bcAttemptsEl.innerText = `${state.bloodCastle.attempts} / 3`;
+  }
 
   // 5. Currencies
   const valZen = document.getElementById("valZen");
@@ -2120,7 +2965,7 @@ function updateUI() {
     } else {
       el.className = `slot-card ${isSelected ? "selected" : ""}`;
       el.innerHTML = `
-        <div class="slot-icon-box" style="color:#576574;">${svgIcon}</div>
+        <div class="slot-icon-box" style="color:#576574;">${itemArt}</div>
         <div class="slot-info">
           <div class="slot-label">${s.name}</div>
           <div class="slot-name" style="color:#576574;">Chưa Trang Bị</div>
@@ -2452,13 +3297,31 @@ function renderDetailPanel() {
     showcase.innerHTML = getItemIllustration(item, item.slotKey);
   }
 
-  const r = RARITIES[item.rarity];
-  const originTag = isFromInventory ? "[Túi Đồ] " : "[Đang Mặc] ";
-  if (dTitle) dTitle.innerHTML = `<span style="color:${r.color}; font-weight:bold;">${originTag}${item.name} +${item.plus}</span> (CP: ${getItemCP(item).toLocaleString()})`;
+  const r = RARITIES[item.rarity] || RARITIES[0];
+  const itemCP = getItemCP(item);
+  let compText = "";
+  if (isFromInventory) {
+    const equippedItem = state.equipped[item.slotKey];
+    if (equippedItem) {
+      const eqCP = getItemCP(equippedItem);
+      const diff = itemCP - eqCP;
+      if (diff > 0) {
+        compText = ` <span style="color:#2ecc71; font-weight:bold;">(+${diff.toLocaleString()} CP ▲)</span>`;
+      } else if (diff < 0) {
+        compText = ` <span style="color:#ff7675; font-weight:bold;">(${diff.toLocaleString()} CP ▼)</span>`;
+      } else {
+        compText = ` <span style="color:#576574;">(Bằng CP)</span>`;
+      }
+    } else {
+      compText = ` <span style="color:#2ecc71; font-weight:bold;">(Ô đang trống ▲)</span>`;
+    }
+  }
+
+  if (dTitle) dTitle.innerHTML = `<span style="color:${r.color}; font-weight:bold;">${isFromInventory ? "[Túi Đồ] " : "[Đang Mặc] "}${item.name} +${item.plus}</span> (CP: ${itemCP.toLocaleString()})${compText}`;
   if (dStats) dStats.innerText = `Bậc ${item.tier} • Phẩm: ${r.name} | Sát thương: +${item.atk} | Phòng thủ: +${item.def} | Máu: +${item.hp}`;
   
   if (dOptions) {
-    if (item.options.length > 0) {
+    if (item.options && item.options.length > 0) {
       dOptions.innerHTML = item.options.map(o => `<div style="color:#00ffcc;">★ ${o}</div>`).join("");
     } else {
       dOptions.innerHTML = `<div style="color:#8fa0b8;">Chưa có dòng Hoàn Hảo (Dùng Jewel of Life ở Lò Rèn để tẩy).</div>`;
@@ -2473,10 +3336,13 @@ function renderDetailPanel() {
 function renderMaps() {
   const container = document.getElementById("mapListContainer");
   if (!container) return;
+  const chkAuto = document.getElementById("chkAutoMap");
+  if (chkAuto) chkAuto.checked = !!state.autoAdvanceMap;
+
   let html = "";
   MAPS.forEach(m => {
     const isActive = m.id === state.currentMapId;
-    const canEnter = state.level >= m.reqLv && state.rs >= m.reqRs;
+    const canEnter = state.level >= m.reqLv && (state.rs || 0) >= m.reqRs;
     html += `
       <div class="map-card ${isActive ? "active-map" : ""}">
         <div>
@@ -2495,11 +3361,17 @@ function renderMaps() {
 }
 
 function selectMap(mapId) {
-  state.currentMapId = mapId;
   const m = MAPS.find(x => x.id === mapId);
-  if (m) {
-    addLog(`🚩 Di chuyển đến vùng đất [${m.name}]! Quái vật cấp ${m.tier} xuất hiện!`, "log-boss");
+  if (!m) return;
+  if (state.level < m.reqLv || (state.rs || 0) < m.reqRs) {
+    addLog(`⛔ Chưa đủ điều kiện vào [${m.name}]! Yêu cầu: Lv.${m.reqLv} & Chuyển Sinh ${m.reqRs}!`, "log-damage-taken");
+    audio.vibrate(80);
+    return;
   }
+  state.currentMapId = mapId;
+  state.currentMob = null;
+  addLog(`🚩 Di chuyển đến vùng đất [${m.name}]! Quái vật cấp ${m.tier} xuất hiện!`, "log-boss");
+  audio.playGateOpen();
   updateUI();
   saveGameState();
 }
@@ -2531,59 +3403,94 @@ function addStat(key, amount) {
 }
 
 function autoDistributeClass() {
-  if (state.freePoints <= 0) return;
+  if (!state.freePoints || state.freePoints <= 0) return;
   const pts = state.freePoints;
 
   if (state.charClass === "dw") {
     const pEne = Math.floor(pts * 0.6);
     const pAgi = Math.floor(pts * 0.2);
     const pVit = pts - pEne - pAgi;
-    state.stats.ene += pEne;
-    state.stats.agi += pAgi;
-    state.stats.vit += pVit;
+    state.stats.ene = (state.stats.ene || 0) + pEne;
+    state.stats.agi = (state.stats.agi || 0) + pAgi;
+    state.stats.vit = (state.stats.vit || 0) + pVit;
   } else if (state.charClass === "fe") {
     const pAgi = Math.floor(pts * 0.55);
     const pStr = Math.floor(pts * 0.25);
     const pVit = pts - pAgi - pStr;
-    state.stats.agi += pAgi;
-    state.stats.str += pStr;
-    state.stats.vit += pVit;
+    state.stats.agi = (state.stats.agi || 0) + pAgi;
+    state.stats.str = (state.stats.str || 0) + pStr;
+    state.stats.vit = (state.stats.vit || 0) + pVit;
   } else {
+    // dk
     const pStr = Math.floor(pts * 0.5);
     const pVit = Math.floor(pts * 0.35);
     const pAgi = pts - pStr - pVit;
-    state.stats.str += pStr;
-    state.stats.vit += pVit;
-    state.stats.agi += pAgi;
+    state.stats.str = (state.stats.str || 0) + pStr;
+    state.stats.vit = (state.stats.vit || 0) + pVit;
+    state.stats.agi = (state.stats.agi || 0) + pAgi;
   }
 
   state.freePoints = 0;
-  addLog(`★ Tự động phân phối tiềm năng theo chuẩn Hệ Phái [${state.charClass.toUpperCase()}] thành công!`, "log-crit");
+  addLog(`★ Tự động phân phối +${pts} điểm tiềm năng theo chuẩn Hệ Phái [${(state.charClass || "dk").toUpperCase()}] thành công!`, "log-crit");
   updateUI();
   saveGameState();
 }
 
 function autoDistributeEven() {
-  if (state.freePoints <= 0) return;
+  if (!state.freePoints || state.freePoints <= 0) return;
   const share = Math.floor(state.freePoints / 4);
-  state.stats.str += share;
-  state.stats.agi += share;
-  state.stats.vit += share;
-  state.stats.ene += share;
-  state.freePoints -= share * 4;
+  if (share > 0) {
+    state.stats.str = (state.stats.str || 0) + share;
+    state.stats.agi = (state.stats.agi || 0) + share;
+    state.stats.vit = (state.stats.vit || 0) + share;
+    state.stats.ene = (state.stats.ene || 0) + share;
+    state.freePoints -= share * 4;
+  }
+  updateUI();
+  saveGameState();
+}
+
+function addStat(key, amount) {
+  if (state.freePoints < amount) amount = state.freePoints;
+  if (amount <= 0) return;
+  state.stats[key] = (state.stats[key] || 0) + amount;
+  state.freePoints -= amount;
   updateUI();
   saveGameState();
 }
 
 function toggleAutoStats() {
   const chk = document.getElementById("chkAutoStats");
-  if (chk) state.autoStats = chk.checked;
+  if (chk) {
+    state.autoStats = chk.checked;
+    if (state.autoStats && state.freePoints > 0) {
+      autoDistributeClass();
+    }
+  }
   saveGameState();
+}
+
+function renderStatsView() {
+  const freePointsEl = document.getElementById("statFreePoints");
+  if (freePointsEl) freePointsEl.innerText = (state.freePoints || 0).toLocaleString();
+
+  const strEl = document.getElementById("txtSTR");
+  if (strEl) strEl.innerText = (state.stats.str || 0).toLocaleString();
+  const agiEl = document.getElementById("txtAGI");
+  if (agiEl) agiEl.innerText = (state.stats.agi || 0).toLocaleString();
+  const vitEl = document.getElementById("txtVIT");
+  if (vitEl) vitEl.innerText = (state.stats.vit || 0).toLocaleString();
+  const eneEl = document.getElementById("txtENE");
+  if (eneEl) eneEl.innerText = (state.stats.ene || 0).toLocaleString();
+
+  const chk = document.getElementById("chkAutoStats");
+  if (chk) chk.checked = state.autoStats !== false;
 }
 
 function toggleGender() {
   state.gender = state.gender === "male" ? "female" : "male";
   addLog(`Đã chuyển đổi hình dạng nhân vật thành [${state.gender === "male" ? "Nam" : "Nữ"}]!`, "log-crit");
+  renderHeroSprite(true);
   updateUI();
   saveGameState();
 }
@@ -2652,6 +3559,10 @@ function performRebirth() {
 
 // FORGE GOBLIN WITH ACCURATE CP CHANGE LOGGING
 function renderForgeView() {
+  if (!state.selectedSlotKey && state.selectedInventoryIndex === null) {
+    state.selectedSlotKey = "mainWeapon";
+  }
+
   let item = null;
   if (state.selectedInventoryIndex !== null && state.inventory && state.inventory[state.selectedInventoryIndex]) {
     item = state.inventory[state.selectedInventoryIndex];
@@ -2673,11 +3584,12 @@ function renderForgeView() {
   const nextPlus = item.plus + 1;
   const needBless = nextPlus <= 6 ? 1 : (nextPlus <= 9 ? 2 : 3);
   const needChaos = nextPlus >= 10 ? 1 : 0;
+  const successRate = nextPlus <= 6 ? 100 : (nextPlus <= 9 ? 70 : 45);
 
   if (txt) {
     txt.innerHTML = `
       Mục tiêu: <b style="color:var(--gold)">${item.name} +${item.plus}</b><br>
-      • Cường hóa lên +${nextPlus}: Tốn <b>${needBless} Bless</b> ${needChaos > 0 ? "+ <b>1 Chaos</b>" : ""}<br>
+      • Cường hóa lên +${nextPlus}: Tốn <b>${needBless} Bless</b> ${needChaos > 0 ? "+ <b>1 Chaos</b>" : ""} (Tỷ lệ: <b style="color:${successRate >= 70 ? "#2ecc71" : "#f1c40f"}">${successRate}%</b>)<br>
       • Tẩy luyện dòng Hoàn Hảo: Tốn <b>1 Jewel of Life</b> (Hiện có: ${state.life})
     `;
   }
@@ -2795,7 +3707,7 @@ function checkOfflineProgress() {
       const currentTier = state.currentMapId || 1;
       const mobsKilledOffline = Math.floor(actualSeconds / 0.5);
       const gainedZen = mobsKilledOffline * 200 * currentTier;
-      const gainedExp = mobsKilledOffline * 25 * currentTier;
+      const gainedExp = mobsKilledOffline * 35 * currentTier;
       const gainedBless = Math.floor(mobsKilledOffline * 0.002);
       const gainedChaos = Math.floor(mobsKilledOffline * 0.0008);
       const gainedLife = Math.floor(mobsKilledOffline * 0.0005);
@@ -2806,11 +3718,28 @@ function checkOfflineProgress() {
       state.chaos += gainedChaos;
       state.life += gainedLife;
 
+      // Immediate Level Up Check for Offline EXP
+      let offlineLevelsGained = 0;
+      while (state.exp >= state.nextExp) {
+        state.exp -= state.nextExp;
+        state.level++;
+        state.nextExp = getRequiredExpForLevel(state.level);
+        state.freePoints = (state.freePoints || 0) + 5;
+        if (state.level % 5 === 0) {
+          state.skillPoints = (state.skillPoints || 0) + 1;
+        }
+        offlineLevelsGained++;
+      }
+      if (state.autoStats !== false && state.freePoints > 0) {
+        autoDistributeClass();
+      }
+
       const hours = (actualSeconds / 3600).toFixed(1);
       const repEl = document.getElementById("offlineReportText");
       if (repEl) {
         repEl.innerHTML = `
           Thời gian offline: <b>${hours} giờ</b> (${mobsKilledOffline.toLocaleString()} quái dọn dẹp)<br><br>
+          ${offlineLevelsGained > 0 ? `• Cấp độ tăng thêm: <b style="color:var(--gold)">+${offlineLevelsGained} Cấp (Hiện tại Lv.${state.level})</b><br>` : ""}
           • Vàng nhặt được: <b style="color:var(--zen)">+${gainedZen.toLocaleString()} Zen</b><br>
           • Kinh nghiệm: <b style="color:#00ffcc">+${gainedExp.toLocaleString()} EXP</b><br>
           • Ngọc Ước Nguyện: <b style="color:var(--bless)">+${gainedBless} Jewel of Bless</b><br>
@@ -2851,8 +3780,11 @@ window.onload = () => {
   const accounts = getAccounts();
 
   if (curUser && accounts[curUser]) {
-    state = Object.assign(getDefaultState(curUser, accounts[curUser].charClass), accounts[curUser].state);
-    if (!state.skills || state.skills.length === 0) state.skills = getClassSkills(state.charClass);
+    let cClass = accounts[curUser].charClass;
+    if (!["dk", "fe", "dw"].includes(cClass)) cClass = "dk";
+    state = Object.assign(getDefaultState(curUser, cClass), accounts[curUser].state);
+    if (!["dk", "fe", "dw"].includes(state.charClass)) state.charClass = cClass;
+    if (!state.skills || state.skills.length === 0 || !state.skills.some(s => s.id)) state.skills = getClassSkills(state.charClass);
     if (!state.inventory) state.inventory = [];
     if (!state.potions) state.potions = { hp: 50, mp: 50 };
     if (!state.autoPotion) state.autoPotion = { hpEnabled: true, hpThreshold: 40 };
@@ -2895,13 +3827,56 @@ const PET_SVGS = {
     <ellipse cx="20" cy="27" rx="8" ry="7" fill="#f1c40f" stroke="#d35400" stroke-width="1"/>
     <circle cx="18" cy="17" r="1.5" fill="#00d2d3"/>
     <circle cx="22" cy="17" r="1.5" fill="#00d2d3"/>
-  </svg>`
+  </svg>`,
+  fairy: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style="width:100%; height:100%;">
+  <circle cx="20" cy="20" r="14" fill="#00d2d3" opacity="0.25"/>
+  <path d="M12 18 Q2 6 6 26 Q14 20 16 22" fill="#7efff5" opacity="0.85" stroke="#ffffff" stroke-width="0.8"/>
+  <path d="M28 18 Q38 6 34 26 Q26 20 24 22" fill="#7efff5" opacity="0.85" stroke="#ffffff" stroke-width="0.8"/>
+  <circle cx="20" cy="18" r="6.5" fill="#fff9d2"/>
+  <circle cx="18" cy="17" r="1.2" fill="#0984e3"/>
+  <circle cx="22" cy="17" r="1.2" fill="#0984e3"/>
+  <ellipse cx="20" cy="27" rx="4" ry="6" fill="#00cec9"/>
+  <circle cx="20" cy="8" r="2.5" fill="#ffd700"/>
+</svg>`,
+  phoenix: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style="width:100%; height:100%;">
+  <path d="M10 20 Q2 8 8 28 Q15 24 16 26" fill="#ff7675" stroke="#ff4757" stroke-width="1"/>
+  <path d="M30 20 Q38 8 32 28 Q25 24 24 26" fill="#ff7675" stroke="#ff4757" stroke-width="1"/>
+  <ellipse cx="20" cy="24" rx="6" ry="9" fill="#ff4757"/>
+  <polygon points="20,6 16,16 24,16" fill="#feca57"/>
+  <circle cx="20" cy="14" r="5" fill="#ee5253"/>
+  <circle cx="18" cy="14" r="1" fill="#ffffff"/>
+  <circle cx="22" cy="14" r="1" fill="#ffffff"/>
+  <polygon points="20,17 18,22 22,22" fill="#f39c12"/>
+</svg>`,
+  drake: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style="width:100%; height:100%;">
+  <path d="M12 20 Q2 10 10 30 Q16 25 18 26" fill="#74b9ff" opacity="0.8" stroke="#0984e3" stroke-width="1"/>
+  <path d="M28 20 Q38 10 30 30 Q24 25 22 26" fill="#74b9ff" opacity="0.8" stroke="#0984e3" stroke-width="1"/>
+  <ellipse cx="20" cy="25" rx="7" ry="8" fill="#2d3436" stroke="#74b9ff" stroke-width="1"/>
+  <polygon points="20,8 14,18 26,18" fill="#dfe6e9"/>
+  <circle cx="20" cy="16" r="6" fill="#636e72"/>
+  <circle cx="18" cy="16" r="1.5" fill="#00d2d3"/>
+  <circle cx="22" cy="16" r="1.5" fill="#00d2d3"/>
+</svg>`,
+  kirin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" style="width:100%; height:100%;">
+  <polygon points="20,2 18,10 22,10" fill="#ffffff" stroke="#ffd700" stroke-width="1.2"/>
+  <circle cx="20" cy="6" r="2.5" fill="#ffd700"/>
+  <ellipse cx="20" cy="26" rx="8" ry="8" fill="#f1c40f" stroke="#d35400" stroke-width="1.2"/>
+  <polygon points="12,12 20,8 28,12 26,22 14,22" fill="#feca57" stroke="#e67e22" stroke-width="1"/>
+  <circle cx="18" cy="16" r="1.5" fill="#00cec9"/>
+  <circle cx="22" cy="16" r="1.5" fill="#00cec9"/>
+  <path d="M14 26 Q4 22 8 34" fill="none" stroke="#ffd700" stroke-width="2"/>
+  <path d="M26 26 Q36 22 32 34" fill="none" stroke="#ffd700" stroke-width="2"/>
+</svg>`
 };
 
 const PETS_DATA = [
-  { id: "angel", name: "Thiên Thần Hộ Mệnh", icon: "👼", desc: "Giảm 15% sát thương nhận, hồi +120 HP/nhịp", cost: 200000, color: "#74b9ff" },
-  { id: "satan", name: "Quỷ Nhỏ Satan", icon: "👿", desc: "Tăng +20% Sát thương đòn đánh, +10% Bạo kích", cost: 250000, color: "#ff7675" },
-  { id: "fenrir", name: "Kỳ Lân Hoàng Kim", icon: "🦄", desc: "Tăng +15% Sát thương, +15% Tốc đánh, +10% Né", cost: 500000, color: "#f1c40f" }
+  { id: "angel", name: "Thiên Thần Hộ Mệnh", icon: "👼", desc: "Giảm 15% ST nhận, hồi +150 HP/nhịp", cost: 150000, color: "#74b9ff" },
+  { id: "satan", name: "Tiểu Ác Ma Satan", icon: "👿", desc: "Tăng +20% Sát thương đòn đánh, +10% Bạo kích", cost: 200000, color: "#ff7675" },
+  { id: "fenrir", name: "Chiến Lang Sói Tinh", icon: "🐺", desc: "Tăng +20% Sát thương, +15% Thủ, phản đòn 10%", cost: 350000, color: "#f1c40f" },
+  { id: "fairy", name: "Tiên Linh Tinh Tú", icon: "🧚‍♀️", desc: "Tăng +35% Zen rơi, +25% EXP nhận được khi farm", cost: 450000, color: "#00cec9" },
+  { id: "phoenix", name: "Hỏa Phượng Hoàng", icon: "🦅", desc: "Tăng +25% ST Phép, thiêu đốt quái mỗi nhịp đánh", cost: 600000, color: "#ff4757" },
+  { id: "drake", name: "Băng Long Cốt Tinh", icon: "🐉", desc: "Tăng +30% ST Bạo kích, làm chậm quái 30%", cost: 800000, color: "#70a1ff" },
+  { id: "kirin", name: "Kỳ Lân Hoàng Kim", icon: "🦄", desc: "Tăng +40% Tất cả Thuộc tính, nhân đôi tỷ lệ rơi Đồ Hiếm & Ngọc", cost: 1200000, color: "#ffd700" }
 ];
 
 function initPetsState() {
@@ -3047,6 +4022,8 @@ let currentQuestTab = "daily";
 function initQuestsState() {
   const today = new Date().toDateString();
   if (!state.quests || state.quests.lastResetDay !== today) {
+    if (!state.bloodCastle) state.bloodCastle = { inEvent: false, timeLeft: 60, kills: 0, attempts: 3 };
+    state.bloodCastle.attempts = 3;
     const oldAchieve = state.quests ? state.quests.achievements : null;
     state.quests = {
       lastResetDay: today,
@@ -3306,4 +4283,41 @@ function challengePlayer(oppIndex) {
 function closePvpResultModal() {
   const modal = document.getElementById("pvpResultModal");
   if (modal) modal.style.display = "none";
+}
+
+// CLASS SELECTION & SWITCH MODAL
+function openClassSelectModal() {
+  const modal = document.getElementById("classSelectModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function closeClassSelectModal() {
+  const modal = document.getElementById("classSelectModal");
+  if (modal) modal.style.display = "none";
+}
+
+function switchClass(newClass) {
+  if (!newClass || !["dk", "fe", "dw"].includes(newClass)) {
+    closeClassSelectModal();
+    return;
+  }
+  if (state.charClass === newClass) {
+    closeClassSelectModal();
+    return;
+  }
+  state.charClass = newClass;
+  state.gender = newClass === "fe" ? "female" : "male";
+  state.skills = getClassSkills(newClass);
+  const classNames = {
+    dk: "Dark Knight (Chiến Binh)",
+    fe: "Fairy Elf (Cung Thủ)",
+    dw: "Dark Wizard (Pháp Sư)"
+  };
+  addLog(`★ CHUYỂN PHÁI THÀNH CÔNG! Bạn đã chuyển sang [${classNames[newClass]}]! Bộ kỹ năng và hình hài mới đã sẵn sàng! ★`, "log-crit");
+  audio.playGateOpen();
+  audio.playKeng();
+  renderHeroSprite(true);
+  closeClassSelectModal();
+  updateUI();
+  saveGameState();
 }
