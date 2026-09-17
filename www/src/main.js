@@ -1223,6 +1223,12 @@ function updateChibiArena(currentMap, mobName, rank) {
   }
   if (mobHpFillEl) {
     mobHpFillEl.style.background = rObj.hpGradient;
+    const curHp = state.currentMob ? Math.max(0, state.currentMob.currentHp) : 1;
+    const maxHp = state.currentMob ? state.currentMob.maxHp : 1;
+    const pct = Math.max(0, Math.min(100, (curHp / maxHp) * 100));
+    mobHpFillEl.style.width = `${pct}%`;
+    const mobHpTextEl = document.getElementById("chibiMobHpText");
+    if (mobHpTextEl) mobHpTextEl.innerText = `HP: ${Math.ceil(curHp).toLocaleString()} / ${maxHp.toLocaleString()} (${pct.toFixed(0)}%)`;
   }
 }
 
@@ -1579,17 +1585,29 @@ function getItemIllustration(item, slotKey) {
 }
 
 const SLOT_TYPES = [
-  { key: "mainWeapon", name: "Vũ Khí Chính" },
-  { key: "offWeapon", name: "Vũ Khí Phụ / Khiên" },
+  { key: "helm", name: "Mũ Giáp", icon: "🪖" },
+  { key: "armor", name: "Áo Giáp", icon: "🥋" },
+  { key: "gloves", name: "Găng Tay", icon: "🥊" },
+  { key: "boots", name: "Giày", icon: "👢" },
+  { key: "mainWeapon", name: "Vũ Khí Chính", icon: "⚔️" },
+  { key: "offWeapon", name: "Khiên / VK Phụ", icon: "🛡️" },
+  { key: "wings", name: "Cánh Thần", icon: "🪽" },
+  { key: "pet", name: "Thú Cưng / Cưỡi", icon: "🐺" },
+  { key: "pendant", name: "Dây Chuyền", icon: "📿" },
+  { key: "ring1", name: "Nhẫn Trái", icon: "💍" },
+  { key: "ring2", name: "Nhẫn Phải", icon: "💍" }
+];
+
+const DROPPABLE_SLOTS = [
   { key: "helm", name: "Mũ Giáp" },
   { key: "armor", name: "Áo Giáp" },
   { key: "gloves", name: "Găng Tay" },
   { key: "boots", name: "Giày" },
-  { key: "pendant1", name: "Dây Chuyền 1" },
-  { key: "pendant2", name: "Dây Chuyền 2" },
-  { key: "ring1", name: "Nhẫn 1" },
-  { key: "ring2", name: "Nhẫn 2" },
-  { key: "wings", name: "Cánh (Wings)" }
+  { key: "mainWeapon", name: "Vũ Khí Chính" },
+  { key: "offWeapon", name: "Khiên / VK Phụ" },
+  { key: "pendant", name: "Dây Chuyền" },
+  { key: "ring1", name: "Nhẫn Trái" },
+  { key: "ring2", name: "Nhẫn Phải" }
 ];
 
 const LEGEND_RANKS = [
@@ -1606,6 +1624,12 @@ const LEGEND_RANKS = [
 ];
 
 // CLASS SKILLS CONFIG
+function getRequiredExpForLevel(level) {
+  const lv = Math.max(1, Math.min(400, level));
+  if (lv >= 400) return 999999999;
+  return Math.floor(180 + Math.pow(lv, 1.85) * 45 + lv * 25);
+}
+
 function getClassSkills(charClass = "dk") {
   if (charClass === "fe") {
     return [
@@ -1665,15 +1689,23 @@ function getDefaultState(username = "Hero_Lorencia", charClass = "dk") {
     life: 0,
     potions: { hp: 50, mp: 50 },
     autoPotion: { hpEnabled: true, hpThreshold: 40 },
+    autoRS: true,
+    feather: 0,
+    flame: 0,
+    beastSoul: 0,
+    fenrirHorn: 0,
+    kirinFragment: 0,
     currentHp: 500,
     currentMp: 200,
     equipped: {
       mainWeapon: null, offWeapon: null, helm: null, armor: null,
-      gloves: null, boots: null, pendant1: null, pendant2: null,
-      ring1: null, ring2: null, wings: null
+      gloves: null, boots: null, wings: null, pet: null,
+      pendant: null, ring1: null, ring2: null
     },
-    inventory: [], // 30 Slots Max
+    inventory: [],
     selectedSlotKey: "mainWeapon",
+    selectedUpgradeKey: "mainWeapon",
+    currentUpgradeSubtab: "enhance",
     selectedInventoryIndex: null,
     lastSaveTime: Date.now(),
     mobsKilled: 0,
@@ -2068,7 +2100,7 @@ function generateItem(targetTier = null, forceRarity = null, preferredClass = nu
   }
 
   const tierData = TIERS[tierIndex] || TIERS[0];
-  const slotDef = SLOT_TYPES[Math.floor(Math.random() * SLOT_TYPES.length)];
+  const slotDef = DROPPABLE_SLOTS[Math.floor(Math.random() * DROPPABLE_SLOTS.length)];
   
   let rarityObj = RARITIES[0];
   if (forceRarity !== null && RARITIES[forceRarity]) {
@@ -2163,46 +2195,30 @@ function generateItem(targetTier = null, forceRarity = null, preferredClass = nu
 
 // INVENTORY & ITEM DROP ENGINE (PRIORITIZING HIGHER RARITY)
 function handleDroppedItem(droppedItem) {
-  if (!state.inventory) state.inventory = [];
+  if (!droppedItem) return;
   const slotKey = droppedItem.slotKey;
   const currentItem = state.equipped[slotKey];
   const newCP = getItemCP(droppedItem);
   const oldCP = getItemCP(currentItem);
 
-  // 1. If higher CP, auto equip!
+  // Auto-equip if slot is empty or dropped item has higher CP
   if (!currentItem || newCP > oldCP) {
     state.equipped[slotKey] = droppedItem;
-    let oldItemMsg = "";
+    let oldMsg = "";
     if (currentItem) {
-      if (state.inventory.length < 30) {
-        state.inventory.push(currentItem);
-        oldItemMsg = ` Đồ cũ [${currentItem.name}] đã chuyển vào Túi Đồ!`;
-      } else {
-        const oldZen = getItemSellPrice(currentItem);
-        state.zen += oldZen;
-        oldItemMsg = ` Túi đầy, đồ cũ bán thu về +${oldZen.toLocaleString()} Zen!`;
-      }
+      const salvageZen = (currentItem.tier || 1) * 30000;
+      state.zen += salvageZen;
+      state.beastSoul = (state.beastSoul || 0) + 1;
+      oldMsg = ` Đồ cũ [${currentItem.name}] tự phân giải thu về +${salvageZen.toLocaleString()} Zen & +1 Hồn Thú!`;
     }
-    addLog(`⚡ [MẶC TRANG BỊ MẠNH HƠN] Tự động mặc [${droppedItem.name}] (CP: ${newCP.toLocaleString()})!${oldItemMsg}`, "log-equip");
+    addLog(`✨ [TỰ ĐỘNG TRANG BỊ] Đã mặc [${droppedItem.name}] (+${(newCP - oldCP).toLocaleString()} CP)!${oldMsg}`, "log-equip");
     audio.playKeng();
-    audio.vibrate(100);
   } else {
-    // 2. newCP <= oldCP:
-    // If inventory has space (< 30), keep in inventory so player can see, enhance, or sell!
-    if (state.inventory.length < 30) {
-      state.inventory.push(droppedItem);
-      const rName = RARITIES[droppedItem.rarity] ? RARITIES[droppedItem.rarity].name : "Thường";
-      addLog(`🎁 [RƠI ĐỒ] Nhặt được [${droppedItem.name}] (${rName}) -> Đã cất vào Túi Đồ (${state.inventory.length}/30)!`, droppedItem.rarity >= 3 ? "log-crit" : "log-equip");
-      if (droppedItem.rarity >= 3) {
-        audio.playKeng();
-        audio.vibrate(120);
-      }
-    } else {
-      // Inventory is full (30/30) -> Auto-sell for Zen
-      const sellZen = getItemSellPrice(droppedItem);
-      state.zen += sellZen;
-      addLog(`💰 [TÚI ĐẦY 30/30] Tự động bán [${droppedItem.name}] thu về +${sellZen.toLocaleString()} Zen!`, "log-zen");
-    }
+    // Weaker item: auto salvage into Zen & Materials
+    const salvageZen = (droppedItem.tier || 1) * 20000;
+    state.zen += salvageZen;
+    state.beastSoul = (state.beastSoul || 0) + 1;
+    addLog(`♻️ [TỰ ĐỘNG THU HỒI] Phân giải [${droppedItem.name}] thành +${salvageZen.toLocaleString()} Zen & +1 Hồn Thú!`, "log-zen");
   }
 }
 
@@ -2301,12 +2317,12 @@ function sellGarbageItems() {
 // COMPREHENSIVE STATS CALCULATION
 // Base stats are strictly calculated without temporary fluctuating combat buffs to prevent CP bugs
 function calculateStats() {
-  const baseStr = Math.min(10000, state.stats.str || 0);
-  const baseAgi = Math.min(10000, state.stats.agi || 0);
-  const baseVit = Math.min(10000, state.stats.vit || 0);
-  const baseEne = Math.min(10000, state.stats.ene || 0);
+  const baseStr = state.stats.str || 0;
+  const baseAgi = state.stats.agi || 0;
+  const baseVit = state.stats.vit || 0;
+  const baseEne = state.stats.ene || 0;
 
-  // Direct Level Stat Growth: Mỗi cấp nhân vật được cộng dồn trực tiếp vào chỉ số cơ bản
+  // Direct Level Stat Growth
   const lvlBonus = Math.max(0, (state.level || 1) - 1);
   const lvlHp = lvlBonus * 35;
   const lvlMp = lvlBonus * 18;
@@ -2375,6 +2391,13 @@ function calculateStats() {
       break;
     }
   }
+
+  // Permanent Reset (RS) Stat Scaling
+  const rsBonus = (state.rs || 0) * 150;
+  rawPhy += rsBonus * 2.0;
+  rawMag += rsBonus * 2.0;
+  rawDef += rsBonus * 1.5;
+  maxHp += rsBonus * 12;
 
   // Super Rebirth Multiplier
   const srsMult = 1 + state.srs * 0.5;
@@ -2620,9 +2643,13 @@ function runCombatTick() {
   const totalHeroDmg = finalPhy + finalMag;
   state.currentMob.currentHp -= totalHeroDmg;
 
-  const mobHpPct = Math.max(0, (state.currentMob.currentHp / state.currentMob.maxHp) * 100);
+  const curMobHp = Math.max(0, state.currentMob.currentHp);
+  const maxMobHp = state.currentMob.maxHp;
+  const mobHpPct = Math.max(0, Math.min(100, (curMobHp / maxMobHp) * 100));
   const mobHpFillEl = document.getElementById("chibiMobHpFill");
+  const mobHpTextEl = document.getElementById("chibiMobHpText");
   if (mobHpFillEl) mobHpFillEl.style.width = `${mobHpPct}%`;
+  if (mobHpTextEl) mobHpTextEl.innerText = `HP: ${Math.ceil(curMobHp).toLocaleString()} / ${maxMobHp.toLocaleString()} (${mobHpPct.toFixed(0)}%)`;
 
   if (activeSkill) {
     animateHeroAction("cast");
@@ -2706,6 +2733,10 @@ function runCombatTick() {
     }
 
     takenDmg = Math.max(1, takenDmg);
+    // Cap damage per hit to max 18% of Max HP (bỏ chết ngay lập tức)
+    const maxAllowedDmg = Math.floor(stats.maxHp * 0.18);
+    takenDmg = Math.min(takenDmg, maxAllowedDmg);
+    takenDmg = Math.max(1, takenDmg);
     state.currentHp -= takenDmg;
     spawnHeroFloatingEffect(`-${takenDmg.toLocaleString()} HP`, "float-hit");
     addLog(`🛡 [BỊ ĐÁNH] ${mobName} phản kích, bạn nhận -${takenDmg.toLocaleString()} HP! (Giáp giảm ${Math.round(defMitigation * 100)}%)`, "log-damage-taken");
@@ -2713,16 +2744,16 @@ function runCombatTick() {
     // Auto-Potion Check
     checkAutoPotion(stats);
 
+    // Immortal Ward: Hero never dies instantly or gets kicked to Lorencia
     if (state.currentHp <= 0) {
-      addLog(`💀 [TỬ VONG] Bạn đã bị ${mobName} hạ gục! Đang hồi sinh tại Lorencia...`, "log-boss");
-      state.currentHp = Math.floor(stats.maxHp * 0.6);
-      state.currentMapId = 1;
+      state.currentHp = Math.floor(stats.maxHp * 0.5);
+      spawnHeroFloatingEffect("🛡️ HỘ MỆNH BẤT TỬ!", "float-crit");
+      addLog(`🛡️ [BẢO HỘ THÁNH] Sinh lực nguy kịch! Khiên thần hộ mệnh kích hoạt, hồi sinh 50% HP và tiếp tục chiến đấu!`, "log-buff");
+      audio.playMagic();
       updateUI();
-      return;
     }
   }
 
-  // Check if Monster is Defeated
   if (state.currentMob.currentHp <= 0) {
     animateMonsterReaction(true);
     spawnMonsterDeathBurst();
@@ -2788,17 +2819,45 @@ function runCombatTick() {
       }
     }
 
-    // 4. GEAR DROP: Đồ thường rơi ổn định, ĐỒ HIẾM TỪ BẬC 3 TRỞ LÊN ĐƯỢC GIẢM MẠNH
+    // 4. GEAR DROP: Trang bị vũ khí, giáp, nhẫn, dây chuyền (KHÔNG RƠI CÁNH & THÚ CƯNG)
     if (Math.random() < mobRank.gearChance) {
       const droppedItem = generateItem(currentMap.tier, mobRank.minRarity, null, mobRank.key);
       spawnFloatingLoot("🎁", `[${droppedItem.name}]`, RARITIES[droppedItem.rarity].color);
       handleDroppedItem(droppedItem);
     }
 
-    // 5. Level Up Check: Tự động cộng chỉ số và phân bổ điểm tiềm năng
-    if (state.exp >= state.nextExp) {
+    // 4b. CRAFT MATERIALS DROP: Lông Vũ, Ngọn Lửa Condor, Hồn Thú, Sừng Sói, Mảnh Kỳ Lân
+    const rollMat = Math.random() * 100;
+    if (rollMat < 14.0) {
+      state.beastSoul = (state.beastSoul || 0) + 1;
+      spawnFloatingLoot("🐾", "+1 Hồn Thú!", "#fdcb6e");
+      addLog(`🐾 Nhặt được 1x Hồn Thú từ ${mobName}!`, "log-buff");
+    }
+    if (currentMap.tier >= 3 && rollMat < 7.0) {
+      state.feather = (state.feather || 0) + 1;
+      spawnFloatingLoot("🪶", "+1 Lông Vũ Chaos!", "#7efff5");
+      addLog(`🪶 Nhặt được 1x Lông Vũ Chaos từ ${mobName}!`, "log-buff");
+    }
+    if (currentMap.tier >= 5 && rollMat < 4.0) {
+      state.fenrirHorn = (state.fenrirHorn || 0) + 1;
+      spawnFloatingLoot("🐺", "+1 Cốt Sừng Sói!", "#ff7675");
+      addLog(`🐺 Nhặt được 1x Cốt Sừng Sói Tinh từ ${mobName}!`, "log-crit");
+    }
+    if (currentMap.tier >= 7 && rollMat < 2.5) {
+      state.flame = (state.flame || 0) + 1;
+      spawnFloatingLoot("🔥", "+1 Ngọn Lửa Condor!", "#ff9f43");
+      addLog(`🔥 Nhặt được 1x Ngọn Lửa Condor từ ${mobName}!`, "log-crit");
+    }
+    if (isBossTier && Math.random() < 0.25) {
+      state.kirinFragment = (state.kirinFragment || 0) + 1;
+      spawnFloatingLoot("🦄", "+1 Mảnh Kỳ Lân!", "#f1c40f");
+      addLog(`🦄 Nhặt được 1x Mảnh Kỳ Lân Hoàng Kim từ ${mobName}!`, "log-crit");
+    }
+
+    // 5. Level Up Check: CẤP ĐỘ GIỚI HẠN LÀ 400
+    if (state.exp >= state.nextExp && state.level < 400) {
       let leveledUp = false;
-      while (state.exp >= state.nextExp) {
+      while (state.exp >= state.nextExp && state.level < 400) {
         state.exp -= state.nextExp;
         state.level++;
         state.nextExp = getRequiredExpForLevel(state.level);
@@ -2808,18 +2867,25 @@ function runCombatTick() {
         }
         leveledUp = true;
       }
+      if (state.level >= 400) {
+        state.level = 400;
+        state.exp = state.nextExp;
+      }
       if (leveledUp) {
         audio.playKeng();
         audio.vibrate(150);
         addLog(`★ LEVEL UP! Bạn đã đạt Cấp ${state.level}! Chỉ số cơ bản & Lực chiến đã tăng mạnh! ★`, "log-crit");
-        
-        // Auto-distribute points if enabled (default true)
         if (state.autoStats !== false) {
           autoDistributeClass();
-        } else {
-          addLog(`💡 Bạn có ${state.freePoints} Điểm Tiềm Năng chưa cộng! Vào Tab [Chỉ Số] để cộng điểm!`, "log-buff");
         }
         checkAutoAdvanceMap();
+      }
+    }
+    if (state.level >= 400) {
+      state.level = 400;
+      state.exp = state.nextExp;
+      if (state.autoRS) {
+        checkAndPerformAutoRS();
       }
     }
 
@@ -2854,6 +2920,16 @@ function updateUI() {
   renderHeroSprite();
   
   // 1. Level, Name, RS
+    const bxhMini = document.getElementById("bxhMiniText");
+  if (bxhMini && typeof LEGEND_RANKS !== "undefined" && LEGEND_RANKS[0]) {
+    bxhMini.innerText = `Top 1: ${LEGEND_RANKS[0].name} (${LEGEND_RANKS[0].rs} RS)`;
+  }
+  const autoRsBtn = document.getElementById("btnAutoRSToggle");
+  if (autoRsBtn) {
+    autoRsBtn.innerHTML = state.autoRS ? "🔄 Auto RS: <b style=\"color:#2ecc71;\">BẬT</b>" : "🔄 Auto RS: <b style=\"color:#e74c3c;\">TẮT</b>";
+  }
+  const chkAutoRsEl = document.getElementById("chkAutoRS");
+  if (chkAutoRsEl) chkAutoRsEl.checked = !!state.autoRS;
   const heroLvEl = document.getElementById("heroLv");
   if (heroLvEl) heroLvEl.innerText = `Lv.${state.level}`;
 
@@ -2987,12 +3063,13 @@ function updateUI() {
 
   // Render Subviews
   renderDetailPanel();
-  renderInventory();
+  // renderInventory removed
+  renderUpgradeView();
   renderSkillsView();
   renderMaps();
   renderStatsView();
   renderRebirthView();
-  renderForgeView();
+  // renderForgeView merged into renderUpgradeView
   renderLeaderboard();
 }
 
@@ -3157,6 +3234,20 @@ function switchRankCategory(cat) {
   renderLeaderboard();
 }
 
+
+function openLeaderboardModal() {
+  const m = document.getElementById("leaderboardModal");
+  if (m) {
+    m.style.display = "flex";
+    renderLeaderboard();
+  }
+}
+
+function closeLeaderboardModal() {
+  const m = document.getElementById("leaderboardModal");
+  if (m) m.style.display = "none";
+}
+
 function renderLeaderboard() {
   const listContainer = document.getElementById("leaderboardListContainer");
   const myRankText = document.getElementById("myRankText");
@@ -3247,19 +3338,28 @@ function renderLeaderboard() {
 
 // TABS SWITCHING (8 TABS)
 function switchTab(tabId) {
-  const tabs = ["gear", "inventory", "skill", "map", "stats", "leaderboard", "rebirth", "forge"];
+  if (tabId === "inventory" || tabId === "forge") tabId = "upgrade";
+  if (tabId === "leaderboard") {
+    openLeaderboardModal();
+    return;
+  }
+  const tabs = ["gear", "upgrade", "skill", "map", "stats", "rebirth"];
   tabs.forEach(t => {
     const content = document.getElementById(`tab-${t}`);
     if (content) content.classList.toggle("active", t === tabId);
+    const btn = document.getElementById(`tabBtn-${t}`);
+    if (btn) btn.classList.toggle("active", t === tabId);
   });
-  const btns = document.querySelectorAll(".tabs .tab-btn");
-  btns.forEach((btn, idx) => {
-    btn.classList.toggle("active", tabs[idx] === tabId);
-  });
+  if (tabId === "upgrade") renderUpgradeView();
+  if (tabId === "rebirth") renderRebirthView();
+  if (tabId === "stats") renderStatsView();
+  if (tabId === "skill") renderSkillsView();
+  if (tabId === "map") renderMaps();
 }
 
 function selectSlot(slotKey) {
   state.selectedSlotKey = slotKey;
+  state.selectedUpgradeKey = slotKey;
   state.selectedInventoryIndex = null;
   updateUI();
 }
@@ -3528,15 +3628,15 @@ function renderRebirthView() {
   if (btn) btn.disabled = !(okLv && okZen && okJewels);
 }
 
-function performRebirth() {
+function performRebirth(isAuto = false) {
   const reqLv = Math.min(400, 300 + state.rs * 20);
   const reqZen = (state.rs + 1) * 2000000;
   const reqBless = Math.min(10, state.rs + 1);
   const reqChaos = Math.min(5, Math.floor(state.rs / 2));
 
   if (state.level < reqLv || state.zen < reqZen || state.bless < reqBless || state.chaos < reqChaos) {
-    addLog("Chưa đủ điều kiện chuyển sinh!", "log-boss");
-    return;
+    if (!isAuto) addLog("Chưa đủ điều kiện chuyển sinh! Cần đạt đủ Cấp, Zen và Ngọc tế lễ.", "log-boss");
+    return false;
   }
 
   state.zen -= reqZen;
@@ -3546,18 +3646,337 @@ function performRebirth() {
   state.level = 1;
   state.exp = 0;
   state.nextExp = getRequiredExpForLevel(1);
-  state.freePoints += state.rs * 500;
+
+  // Bonus Points on RS
+  const rsPoints = 500 + state.rs * 100;
+  state.freePoints = (state.freePoints || 0) + rsPoints;
   state.skillPoints = (state.skillPoints || 0) + 5;
+
+  if (state.autoStats !== false) {
+    autoDistributeClass();
+  }
 
   audio.playKeng();
   audio.vibrate(200);
-  addLog(`★ CHÚC MỪNG! CHUYỂN SINH LẦN THỨ ${state.rs} THÀNH CÔNG! NHẬN THÊM TIỀM NĂNG & ĐIỂM SKILL! ★`, "log-crit");
-  
+  addLog(`★ CHÚC MỪNG! CHUYỂN SINH (RS) LẦN ${state.rs} THÀNH CÔNG! Nhận +${rsPoints} Điểm Tiềm Năng & +5 Điểm Kỹ Năng! ★`, "log-crit");
   updateUI();
+  saveGameState();
+  return true;
+}
+
+function checkAndPerformAutoRS() {
+  if (state.level < 400) return;
+  const reqZen = (state.rs + 1) * 2000000;
+  const reqBless = Math.min(10, state.rs + 1);
+  const reqChaos = Math.min(5, Math.floor(state.rs / 2));
+
+  if (state.zen >= reqZen && state.bless >= reqBless && state.chaos >= reqChaos) {
+    performRebirth(true);
+  } else {
+    if (Math.random() < 0.04) {
+      addLog(`⏳ [AUTO RS] Đạt Lv.400! Đang tích lũy Zen (${state.zen.toLocaleString()}/${reqZen.toLocaleString()}) & Ngọc để tự động Chuyển Sinh...`, "log-buff");
+    }
+  }
+}
+
+function toggleAutoRS() {
+  state.autoRS = !state.autoRS;
+  const btn = document.getElementById("btnAutoRSToggle");
+  if (btn) {
+    btn.innerHTML = state.autoRS ? "🔄 Auto RS: <b style='color:#2ecc71;'>BẬT</b>" : "🔄 Auto RS: <b style='color:#e74c3c;'>TẮT</b>";
+  }
+  const chk = document.getElementById("chkAutoRS");
+  if (chk) chk.checked = !!state.autoRS;
+  addLog(`🔄 [AUTO RS] Chế độ Tự Động Chuyển Sinh (Auto RS) đã được ${state.autoRS ? "BẬT" : "TẮT"}!`, "log-buff");
   saveGameState();
 }
 
 // FORGE GOBLIN WITH ACCURATE CP CHANGE LOGGING
+
+const CRAFT_RECIPES = [
+  {
+    id: "wings_c1",
+    type: "wings",
+    name: "Cánh Hỗn Nguyên Cấp 1 (Wings of Chaos)",
+    desc: "Cánh thần sơ cấp giúp bay lượn, tăng +350 Sát thương, +200 Giáp & +1,500 HP.",
+    stats: { atk: 350, def: 200, hp: 1500, plus: 0, tier: 5, rarity: 3, options: ["Tăng tốc đánh +15"] },
+    cost: { feather: 2, chaos: 3, bless: 5, zen: 100000 }
+  },
+  {
+    id: "wings_c2",
+    type: "wings",
+    name: "Cánh Tinh Thể Cấp 2 (Wings of Spirits/Dragon)",
+    desc: "Cánh thần cấp 2 rực cháy, tăng +850 Sát thương, +550 Giáp, +4,000 HP & +25% Bạo Kích.",
+    stats: { atk: 850, def: 550, hp: 4000, plus: 0, tier: 8, rarity: 4, options: ["Bạo kích +25%", "Bỏ qua phòng thủ 5%"] },
+    cost: { feather: 5, chaos: 8, bless: 10, zen: 300000 }
+  },
+  {
+    id: "wings_c3",
+    type: "wings",
+    name: "Cánh Bão Tố Cấp 3 (Wings of Storm / Illusion)",
+    desc: "Cánh thần tối thượng cõi trời, tăng +2,200 Sát thương, +1,400 Giáp, +10,000 HP & +35% Sát Thương Hoàn Hảo.",
+    stats: { atk: 2200, def: 1400, hp: 10000, plus: 0, tier: 10, rarity: 5, options: ["Sát thương hoàn hảo +35%", "Hồi máu 5%", "Đòn đánh kép 12%"] },
+    cost: { flame: 2, chaos: 15, life: 15, zen: 1000000 }
+  },
+  {
+    id: "pet_satan",
+    type: "pet",
+    name: "Tiểu Ác Ma (Satan Pet)",
+    desc: "Linh thú hắc ám bay kèm hiệp sĩ, tăng +25% Sát thương đòn đánh và +10% Bạo kích.",
+    stats: { atk: 250, def: 100, hp: 800, plus: 0, tier: 4, rarity: 3, petKey: "satan", options: ["+25% Sát thương tổng", "+10% Bạo kích"] },
+    cost: { beastSoul: 5, chaos: 3, zen: 50000 }
+  },
+  {
+    id: "pet_angel",
+    type: "pet",
+    name: "Thiên Thần Hộ Mệnh (Angel Pet)",
+    desc: "Thiên sứ bảo hộ, giảm 20% sát thương nhận vào và hồi phục +250 HP mỗi nhịp.",
+    stats: { atk: 100, def: 350, hp: 2000, plus: 0, tier: 4, rarity: 3, petKey: "angel", options: ["Giảm 20% sát thương", "Hồi +250 HP/s"] },
+    cost: { beastSoul: 5, bless: 3, zen: 50000 }
+  },
+  {
+    id: "mount_fenrir",
+    type: "pet",
+    name: "Chiến Lang Sói Tinh (Fenrir Mount)",
+    desc: "Thú cưỡi thần chiến, tăng +600 Sát thương, +450 Giáp, +20% Tốc độ & Phản đòn 15%.",
+    stats: { atk: 600, def: 450, hp: 3500, plus: 0, tier: 7, rarity: 4, petKey: "fenrir", options: ["Tăng 20% Sát thương", "Phản hồi 15% Sát thương"] },
+    cost: { fenrirHorn: 1, beastSoul: 10, chaos: 10, zen: 200000 }
+  },
+  {
+    id: "mount_kirin",
+    type: "pet",
+    name: "Thần Thú Kỳ Lân Hoàng Kim (Golden Kirin Mount)",
+    desc: "Thần thú cưỡi tối thượng Lục địa MU, tăng +1,500 Sát thương, +1,200 Giáp, +40% Tất cả thuộc tính & x2 Rơi đồ hiếm.",
+    stats: { atk: 1500, def: 1200, hp: 8000, plus: 0, tier: 10, rarity: 5, petKey: "kirin", options: ["+40% Tất cả thuộc tính", "Nhân đôi tỷ lệ rơi ngọc"] },
+    cost: { kirinFragment: 1, beastSoul: 15, bless: 15, zen: 500000 }
+  }
+];
+
+function switchUpgradeSubtab(subtab) {
+  state.currentUpgradeSubtab = subtab;
+  const btnEnhance = document.getElementById("btnSubnavEnhance");
+  const btnCraft = document.getElementById("btnSubnavCraft");
+  const viewEnhance = document.getElementById("subviewEnhance");
+  const viewCraft = document.getElementById("subviewCraft");
+
+  if (btnEnhance) btnEnhance.classList.toggle("active", subtab === "enhance");
+  if (btnCraft) btnCraft.classList.toggle("active", subtab === "craft");
+  if (viewEnhance) viewEnhance.style.display = subtab === "enhance" ? "block" : "none";
+  if (viewCraft) viewCraft.style.display = subtab === "craft" ? "block" : "none";
+
+  renderUpgradeView();
+}
+
+function selectUpgradeSlot(slotKey) {
+  state.selectedUpgradeKey = slotKey;
+  state.selectedSlotKey = slotKey;
+  renderUpgradeView();
+  updateUI();
+}
+
+function renderUpgradeView() {
+  // 1. Update Material Counters
+  const cFeather = document.getElementById("craftFeather");
+  const cFlame = document.getElementById("craftFlame");
+  const cBeastSoul = document.getElementById("craftBeastSoul");
+  const cFenrirHorn = document.getElementById("craftFenrirHorn");
+  const cKirin = document.getElementById("craftKirin");
+
+  if (cFeather) cFeather.innerText = (state.feather || 0).toLocaleString();
+  if (cFlame) cFlame.innerText = (state.flame || 0).toLocaleString();
+  if (cBeastSoul) cBeastSoul.innerText = (state.beastSoul || 0).toLocaleString();
+  if (cFenrirHorn) cFenrirHorn.innerText = (state.fenrirHorn || 0).toLocaleString();
+  if (cKirin) cKirin.innerText = (state.kirinFragment || 0).toLocaleString();
+
+  // 2. Render Slot Selector Pills in Enhance Subtab
+  const pillsContainer = document.getElementById("upgradeSlotPills");
+  if (pillsContainer) {
+    let pillsHtml = "";
+    SLOT_TYPES.forEach(s => {
+      const item = state.equipped[s.key];
+      const isActive = (state.selectedUpgradeKey || "mainWeapon") === s.key;
+      const plusTag = item && item.plus > 0 ? ` +${item.plus}` : "";
+      pillsHtml += `<button class="upgrade-slot-pill ${isActive ? "active" : ""}" onclick="selectUpgradeSlot('${s.key}')">${s.icon} ${s.name}${plusTag}</button>`;
+    });
+    pillsContainer.innerHTML = pillsHtml;
+  }
+
+  // 3. Render Forge Target Item Details
+  const curKey = state.selectedUpgradeKey || "mainWeapon";
+  const targetItem = state.equipped[curKey];
+  const nameEl = document.getElementById("forgeItemName");
+  const statsEl = document.getElementById("forgeItemStats");
+  const optsEl = document.getElementById("forgeItemOpts");
+  const iconEl = document.getElementById("forgeItemIcon");
+  const forecastText = document.getElementById("forgeForecastText");
+  const rateText = document.getElementById("forgeSuccessRateText");
+  const costText = document.getElementById("forgeCostText");
+  const btnEnhance = document.getElementById("btnForgeEnhance");
+
+  if (!targetItem) {
+    if (nameEl) nameEl.innerHTML = `<span style="color:#8fa0b8;">Ô [${SLOT_TYPES.find(s=>s.key===curKey)?.name || curKey}] chưa có trang bị!</span>`;
+    if (statsEl) statsEl.innerText = "Hãy đánh quái để tự động nhặt hoặc chế tạo tại tab Xưởng Chế Tạo.";
+    if (optsEl) optsEl.innerText = "";
+    if (iconEl) iconEl.innerText = "❓";
+    if (forecastText) forecastText.innerText = "Chưa có trang bị để nâng cấp.";
+    if (rateText) rateText.innerText = "";
+    if (costText) costText.innerText = "";
+    if (btnEnhance) btnEnhance.disabled = true;
+  } else {
+    const r = RARITIES[targetItem.rarity] || RARITIES[0];
+    if (nameEl) nameEl.innerHTML = `<span style="color:${r.color};">${targetItem.name} +${targetItem.plus}</span> (Tier ${targetItem.tier})`;
+    if (statsEl) statsEl.innerText = `Công: +${targetItem.atk || 0} | Thủ: +${targetItem.def || 0} | HP: +${targetItem.hp || 0}`;
+    if (optsEl) optsEl.innerText = targetItem.options && targetItem.options.length > 0 ? `★ ${targetItem.options.join(" • ")}` : "★ Đồ trắng chưa có dòng";
+    if (iconEl) iconEl.innerHTML = getItemIllustration(targetItem, curKey);
+
+    const nextPlus = targetItem.plus + 1;
+    if (nextPlus > 15) {
+      if (forecastText) forecastText.innerHTML = `<b style="color:var(--gold);">★ ĐÃ ĐẠT CẤP ĐỘ CƯỜNG HÓA TỐI ĐA (+15) ★</b>`;
+      if (rateText) rateText.innerText = "";
+      if (costText) costText.innerText = "";
+      if (btnEnhance) btnEnhance.disabled = true;
+    } else {
+      const rate = nextPlus <= 6 ? 100 : (nextPlus <= 9 ? 85 : (nextPlus <= 12 ? 70 : 55));
+      const reqBless = nextPlus <= 6 ? 1 : (nextPlus <= 9 ? 2 : 4);
+      const reqChaos = nextPlus >= 10 ? Math.floor(nextPlus / 2) : 0;
+      const reqZen = nextPlus * 40000;
+
+      if (forecastText) forecastText.innerHTML = `Lên <b>+${nextPlus}</b>: Sát thương & Phòng thủ <b>+12%</b> • Kích hoạt Hào quang Thần thoại!`;
+      if (rateText) rateText.innerHTML = `Tỷ lệ thành công: <b style="color:${rate >= 80 ? "#2ecc71" : "#f1c40f"};">${rate}%</b>`;
+      if (costText) costText.innerHTML = `Chi phí: <b>${reqBless}x Bless</b>${reqChaos > 0 ? ` • <b>${reqChaos}x Chaos</b>` : ""} • <b>${reqZen.toLocaleString()} Zen</b>`;
+      if (btnEnhance) {
+        btnEnhance.disabled = false;
+        btnEnhance.innerText = `CƯỜNG HÓA (+${nextPlus})`;
+      }
+    }
+  }
+
+  // 4. Render Craft Recipes in Subview 2
+  const craftList = document.getElementById("craftRecipesList");
+  if (craftList) {
+    let recipesHtml = "";
+    CRAFT_RECIPES.forEach(rcp => {
+      let canCraft = true;
+      let costBadges = [];
+
+      if (rcp.cost.feather) {
+        const ok = (state.feather || 0) >= rcp.cost.feather;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🪶 ${state.feather || 0}/${rcp.cost.feather} Lông Vũ</span>`);
+      }
+      if (rcp.cost.flame) {
+        const ok = (state.flame || 0) >= rcp.cost.flame;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🔥 ${state.flame || 0}/${rcp.cost.flame} Lửa Condor</span>`);
+      }
+      if (rcp.cost.beastSoul) {
+        const ok = (state.beastSoul || 0) >= rcp.cost.beastSoul;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🐾 ${state.beastSoul || 0}/${rcp.cost.beastSoul} Hồn Thú</span>`);
+      }
+      if (rcp.cost.fenrirHorn) {
+        const ok = (state.fenrirHorn || 0) >= rcp.cost.fenrirHorn;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🐺 ${state.fenrirHorn || 0}/${rcp.cost.fenrirHorn} Sừng Sói</span>`);
+      }
+      if (rcp.cost.kirinFragment) {
+        const ok = (state.kirinFragment || 0) >= rcp.cost.kirinFragment;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🦄 ${state.kirinFragment || 0}/${rcp.cost.kirinFragment} Mảnh Kỳ Lân</span>`);
+      }
+      if (rcp.cost.bless) {
+        const ok = (state.bless || 0) >= rcp.cost.bless;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">💎 ${state.bless || 0}/${rcp.cost.bless} Bless</span>`);
+      }
+      if (rcp.cost.chaos) {
+        const ok = (state.chaos || 0) >= rcp.cost.chaos;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🔥 ${state.chaos || 0}/${rcp.cost.chaos} Chaos</span>`);
+      }
+      if (rcp.cost.life) {
+        const ok = (state.life || 0) >= rcp.cost.life;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🌿 ${state.life || 0}/${rcp.cost.life} Life</span>`);
+      }
+      if (rcp.cost.zen) {
+        const ok = (state.zen || 0) >= rcp.cost.zen;
+        if (!ok) canCraft = false;
+        costBadges.push(`<span class="craft-cost-tag ${ok ? "cost-met" : "cost-unmet"}">🪙 ${rcp.cost.zen.toLocaleString()} Zen</span>`);
+      }
+
+      recipesHtml += `
+        <div class="craft-recipe-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <b style="color:var(--gold); font-size:11px;">${rcp.name}</b>
+              <div style="font-size:8.5px; color:#8fa0b8; margin-top:2px;">${rcp.desc}</div>
+            </div>
+            <button class="btn btn-sm ${canCraft ? "btn-success" : ""}" style="padding:4px 8px; font-weight:bold;" ${canCraft ? "" : "disabled"} onclick="craftRecipe('${rcp.id}')">CHẾ TẠO</button>
+          </div>
+          <div class="craft-cost-tags">${costBadges.join("")}</div>
+        </div>
+      `;
+    });
+    craftList.innerHTML = recipesHtml;
+  }
+}
+
+function craftRecipe(recipeId) {
+  const rcp = CRAFT_RECIPES.find(r => r.id === recipeId);
+  if (!rcp) return;
+
+  // Verify costs
+  if (rcp.cost.feather && (state.feather || 0) < rcp.cost.feather) { addLog("Chưa đủ Lông Vũ Chaos!", "log-boss"); return; }
+  if (rcp.cost.flame && (state.flame || 0) < rcp.cost.flame) { addLog("Chưa đủ Ngọn Lửa Condor!", "log-boss"); return; }
+  if (rcp.cost.beastSoul && (state.beastSoul || 0) < rcp.cost.beastSoul) { addLog("Chưa đủ Hồn Thú!", "log-boss"); return; }
+  if (rcp.cost.fenrirHorn && (state.fenrirHorn || 0) < rcp.cost.fenrirHorn) { addLog("Chưa đủ Cốt Sừng Sói Tinh!", "log-boss"); return; }
+  if (rcp.cost.kirinFragment && (state.kirinFragment || 0) < rcp.cost.kirinFragment) { addLog("Chưa đủ Mảnh Kỳ Lân!", "log-boss"); return; }
+  if (rcp.cost.bless && (state.bless || 0) < rcp.cost.bless) { addLog("Chưa đủ Jewel of Bless!", "log-boss"); return; }
+  if (rcp.cost.chaos && (state.chaos || 0) < rcp.cost.chaos) { addLog("Chưa đủ Jewel of Chaos!", "log-boss"); return; }
+  if (rcp.cost.life && (state.life || 0) < rcp.cost.life) { addLog("Chưa đủ Jewel of Life!", "log-boss"); return; }
+  if (rcp.cost.zen && (state.zen || 0) < rcp.cost.zen) { addLog("Chưa đủ Zen!", "log-boss"); return; }
+
+  // Deduce costs
+  if (rcp.cost.feather) state.feather -= rcp.cost.feather;
+  if (rcp.cost.flame) state.flame -= rcp.cost.flame;
+  if (rcp.cost.beastSoul) state.beastSoul -= rcp.cost.beastSoul;
+  if (rcp.cost.fenrirHorn) state.fenrirHorn -= rcp.cost.fenrirHorn;
+  if (rcp.cost.kirinFragment) state.kirinFragment -= rcp.cost.kirinFragment;
+  if (rcp.cost.bless) state.bless -= rcp.cost.bless;
+  if (rcp.cost.chaos) state.chaos -= rcp.cost.chaos;
+  if (rcp.cost.life) state.life -= rcp.cost.life;
+  if (rcp.cost.zen) state.zen -= rcp.cost.zen;
+
+  // Create crafted item
+  const newItem = {
+    id: Math.random().toString(36).substring(2, 9),
+    name: rcp.name.split(" (")[0],
+    slotKey: rcp.type,
+    tier: rcp.stats.tier,
+    rarity: rcp.stats.rarity,
+    plus: 0,
+    atk: rcp.stats.atk,
+    def: rcp.stats.def,
+    hp: rcp.stats.hp,
+    options: [...rcp.stats.options]
+  };
+
+  state.equipped[rcp.type] = newItem;
+  if (rcp.stats.petKey) {
+    state.activePet = rcp.stats.petKey;
+  }
+
+  audio.playGateOpen();
+  audio.playKeng();
+  audio.vibrate(200);
+  addLog(`🧙 [CHAOS GOBLIN] CHẾ TẠO THÀNH CÔNG [${rcp.name}]! Đã tự động trang bị lên người!`, "log-crit");
+  spawnFloatingLoot("✨", `[${newItem.name}]`, RARITIES[newItem.rarity].color);
+  renderUpgradeView();
+  updateUI();
+  saveGameState();
+}
+
 function renderForgeView() {
   if (!state.selectedSlotKey && state.selectedInventoryIndex === null) {
     state.selectedSlotKey = "mainWeapon";
@@ -3602,12 +4021,8 @@ function forgeEnhance() {
   if (state.quests && state.quests.daily && state.quests.daily.forgeOnce) {
     state.quests.daily.forgeOnce.cur++;
   }
-  let targetItem = null;
-  if (state.selectedInventoryIndex !== null && state.inventory && state.inventory[state.selectedInventoryIndex]) {
-    targetItem = state.inventory[state.selectedInventoryIndex];
-  } else {
-    targetItem = state.equipped[state.selectedSlotKey];
-  }
+  const curKey = state.selectedUpgradeKey || state.selectedSlotKey || "mainWeapon";
+  let targetItem = state.equipped[curKey];
 
   if (!targetItem || targetItem.plus >= 15) return;
 
@@ -3662,12 +4077,8 @@ function forgeEnhance() {
 }
 
 function forgeReforge() {
-  let targetItem = null;
-  if (state.selectedInventoryIndex !== null && state.inventory && state.inventory[state.selectedInventoryIndex]) {
-    targetItem = state.inventory[state.selectedInventoryIndex];
-  } else {
-    targetItem = state.equipped[state.selectedSlotKey];
-  }
+  const curKey = state.selectedUpgradeKey || state.selectedSlotKey || "mainWeapon";
+  let targetItem = state.equipped[curKey];
 
   if (!targetItem || state.life < 1) return;
 
