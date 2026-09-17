@@ -267,18 +267,49 @@
       transition: width 0.2s ease;
     }
 
-    /* Boss & Elite Effects */
-    .monster-actor.is-boss .actor-sprite-box {
-      width: 82px;
-      height: 92px;
-      filter: drop-shadow(0 0 12px rgba(231,76,60,0.9));
+    /* 7 Monster Ranks Effects */
+    .monster-actor.rank-normal .actor-sprite-box {
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
     }
-    .monster-actor.is-boss .mob-name-text {
-      color: #ff4757;
-      font-weight: 900;
+    .monster-actor.rank-elite .actor-sprite-box {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px rgba(46, 204, 113, 0.9));
     }
-    .monster-actor.is-elite .actor-sprite-box {
-      filter: drop-shadow(0 0 8px rgba(241,196,15,0.8));
+    .monster-actor.rank-dark-gold .actor-sprite-box {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 10px rgba(155, 89, 182, 0.95)) drop-shadow(0 0 4px #000);
+    }
+    .monster-actor.rank-golden .actor-sprite-box {
+      transform: scale(1.22);
+      filter: drop-shadow(0 0 12px rgba(241, 196, 15, 1)) drop-shadow(0 0 5px #ffd700);
+      animation: goldenShimmer 1.5s infinite alternate;
+    }
+    .monster-actor.rank-overlord .actor-sprite-box {
+      transform: scale(1.30);
+      filter: drop-shadow(0 0 15px rgba(230, 126, 34, 1)) drop-shadow(0 0 6px #d35400);
+    }
+    .monster-actor.rank-legendary .actor-sprite-box {
+      transform: scale(1.42);
+      filter: drop-shadow(0 0 18px rgba(255, 71, 87, 1)) drop-shadow(0 0 8px #ff4757);
+      animation: pulseRedBoss 1.2s infinite alternate;
+    }
+    .monster-actor.rank-mythical .actor-sprite-box {
+      transform: scale(1.52);
+      filter: drop-shadow(0 0 24px rgba(224, 86, 253, 1)) drop-shadow(0 0 10px #eb4d4b);
+      animation: mythicalPulse 1.0s infinite alternate;
+    }
+
+    @keyframes goldenShimmer {
+      0% { filter: drop-shadow(0 0 8px #f1c40f); }
+      100% { filter: drop-shadow(0 0 16px #ffd700) drop-shadow(0 0 5px #fff); }
+    }
+    @keyframes pulseRedBoss {
+      0% { filter: drop-shadow(0 0 10px #e74c3c); }
+      100% { filter: drop-shadow(0 0 22px #ff4757) drop-shadow(0 0 6px #fff); }
+    }
+    @keyframes mythicalPulse {
+      0% { filter: drop-shadow(0 0 14px #e056fd) drop-shadow(0 0 6px #eb4d4b); }
+      100% { filter: drop-shadow(0 0 28px #e056fd) drop-shadow(0 0 14px #ffd700) drop-shadow(0 0 8px #fff); }
     }
 
     /* FX Layer */
