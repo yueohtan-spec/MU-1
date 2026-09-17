@@ -24,65 +24,413 @@
       --c-yellow: #f1c40f;
       --c-purple: #9b59b6;
       --c-red: #e74c3c;
+      --phy-dmg: #ff9f43;
+      --mag-dmg: #a29bfe;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: var(--bg); color: #f0f0f0; }
-    #app { width: 100%; height: 100%; /* full-width */ display: flex; flex-direction: column; background: var(--bg); position: relative; }
+    #app { width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--bg); position: relative; }
     
-    /* 1. Login Gate Screen */
+    /* 1. Login & Register Gate */
     #loginGate { position: absolute; inset: 0; background: radial-gradient(circle at center, #1b202e 0%, #07090d 100%); z-index: 200; display: flex; flex-direction: column; justify-content: space-between; padding: 25px 20px; }
-    .gate-logo { text-align: center; margin-top: 20px; }
+    .gate-logo { text-align: center; margin-top: 10px; }
     .gate-title { font-size: 26px; font-weight: 900; letter-spacing: 2px; color: var(--gold); text-shadow: 0 0 15px rgba(255,215,0,0.6); }
     .gate-subtitle { font-size: 11px; color: #8fa0b8; text-transform: uppercase; letter-spacing: 3px; margin-top: 4px; }
-    .gate-box { background: rgba(20, 24, 34, 0.9); border: 2px solid #3d465c; border-radius: 8px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 25px rgba(0,0,0,0.8); }
+    
+    .gate-tabs { display: flex; border-bottom: 2px solid #2e3547; margin-bottom: 12px; }
+    .gate-tab-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: #8fa0b8; background: transparent; border: none; cursor: pointer; border-bottom: 3px solid transparent; }
+    .gate-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .gate-box { background: rgba(20, 24, 34, 0.95); border: 2px solid #3d465c; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 25px rgba(0,0,0,0.8); }
     .gate-input { width: 100%; background: #0c0e14; border: 1px solid #2e3547; border-radius: 5px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none; }
     .gate-input:focus { border-color: var(--gold); }
+    .gate-select { width: 100%; background: #0c0e14; border: 1px solid #2e3547; border-radius: 5px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none; }
+    .gate-msg { font-size: 11px; min-height: 14px; text-align: center; font-weight: bold; }
+    .gate-msg.err { color: #ff6b6b; }
+    .gate-msg.ok { color: #2ecc71; }
     .btn-gate { width: 100%; background: linear-gradient(180deg, #f39c12 0%, #d35400 100%); border: 1px solid #f1c40f; color: #fff; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; text-shadow: 0 1px 2px #000; box-shadow: 0 0 15px rgba(243,156,18,0.5); }
     .btn-gate:active { transform: scale(0.98); }
     .gate-footer { text-align: center; font-size: 11px; color: #2ecc71; }
 
-    /* 2. Top Header & Prominent CP Banner */
-    .header { background: #10131a; padding: 6px 10px; border-bottom: 1px solid #222633; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
-    .header-row1 { display: flex; justify-content: space-between; align-items: center; }
-    .hero-title { font-size: 13px; font-weight: bold; color: var(--gold); }
-    .currency-bar { display: flex; gap: 5px; font-size: 10.5px; font-weight: bold; }
-    .curr-item { padding: 2px 5px; border-radius: 4px; background: #191d26; }
-    .curr-zen { color: var(--zen); }
+    /* 2. Top Header */
+    .header { background: #10131a; padding: 6px 10px; border-bottom: 2px solid #222633; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+    .hero-info-row { display: flex; justify-content: space-between; align-items: center; }
+    .hero-badge { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .hero-lv { background: var(--gold); color: #000; font-weight: 900; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+    .hero-title { font-size: 12.5px; font-weight: bold; color: #fff; }
+    .hero-rs { font-size: 10px; color: #00ffcc; font-weight: bold; }
+    .btn-rename-icon { background: #1e2433; border: 1px solid #3d4966; color: #f1c40f; font-size: 9.5px; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
+    .btn-overview-icon { background: #1f2b38; border: 1px solid #3867d6; color: #74b9ff; font-size: 9.5px; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-logout-icon { background: #2c1a1d; border: 1px solid #632d30; color: #ff7675; font-size: 9.5px; padding: 2px 5px; border-radius: 4px; cursor: pointer; }
+    .current-map-badge { font-size: 10px; color: #74b9ff; font-weight: bold; background: #1a2233; padding: 2px 6px; border-radius: 4px; border: 1px solid #3867d6; }
+
+    .cp-banner { background: linear-gradient(90deg, rgba(243,156,18,0.2) 0%, rgba(241,196,15,0.4) 50%, rgba(243,156,18,0.2) 100%); border: 1px solid var(--gold); border-radius: 5px; padding: 3px 8px; text-align: center; font-size: 12px; font-weight: 900; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .cp-val { color: var(--gold); font-size: 14px; font-weight: 900; }
+
+    /* Damage Sub-bar */
+    .dmg-subbar { display: flex; justify-content: space-between; font-size: 9.5px; background: #0c0e14; border: 1px solid #1f2738; border-radius: 4px; padding: 2px 6px; }
+    .dmg-phy { color: var(--phy-dmg); font-weight: bold; }
+    .dmg-mag { color: var(--mag-dmg); font-weight: bold; }
+
+    /* HP, MP & EXP Bars */
+    .bars-container { display: flex; gap: 5px; }
+    .bar-wrapper { flex: 1; height: 16px; background: #161922; border-radius: 4px; position: relative; overflow: hidden; border: 1px solid #2e3547; }
+    .bar-fill { height: 100%; transition: width 0.25s ease; }
+    .bar-hp { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+    .bar-mp { background: linear-gradient(90deg, #2980b9, #3498db); }
+    .bar-text { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-size: 9.5px; font-weight: bold; color: #fff; text-shadow: 0 1px 2px #000; }
+
+    .exp-bar-wrapper { width: 100%; height: 10px; background: #141720; border-radius: 3px; position: relative; overflow: hidden; border: 1px solid #1f2738; }
+    .bar-exp { background: linear-gradient(90deg, #00b894, #00cec9); }
+
+    /* Potion Quick Bar */
+    .potion-bar { display: flex; gap: 5px; align-items: center; background: #0c0f16; border: 1px solid #222938; border-radius: 5px; padding: 3px 6px; }
+    .btn-potion { flex: 1; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; border: 1px solid transparent; text-align: center; }
+    .btn-potion-hp { background: #4a1515; border-color: #e74c3c; color: #ff7675; }
+    .btn-potion-mp { background: #152b4a; border-color: #3498db; color: #74b9ff; }
+    .btn-potion:active { transform: scale(0.96); }
+    .auto-potion-toggle { display: flex; align-items: center; gap: 3px; font-size: 9.5px; color: #8fa0b8; white-space: nowrap; cursor: pointer; }
+    .auto-potion-toggle input { width: 13px; height: 13px; accent-color: var(--gold); }
+
+    /* Currencies */
+    .currency-dashboard { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3px; font-size: 10.5px; font-weight: bold; }
+    .curr-badge { padding: 3px 5px; border-radius: 4px; background: #181d28; border: 1px solid #283144; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .curr-zen { color: var(--zen); font-size: 11px; }
     .curr-bless { color: var(--bless); }
     .curr-chaos { color: var(--chaos); }
     .curr-life { color: var(--life); }
 
-    /* Prominent CP Banner */
-    .cp-banner { background: linear-gradient(90deg, rgba(243,156,18,0.15) 0%, rgba(241,196,15,0.3) 50%, rgba(243,156,18,0.15) 100%); border: 1px solid var(--gold); border-radius: 5px; padding: 4px; text-align: center; font-size: 13px; font-weight: 900; color: #fff; text-shadow: 0 0 8px rgba(255,215,0,0.8); box-shadow: 0 0 10px rgba(255,215,0,0.25); display: flex; justify-content: space-between; align-items: center; padding: 4px 10px; }
-    .cp-val { color: var(--gold); font-size: 14px; font-weight: 900; }
-    .current-map-badge { font-size: 10px; color: #74b9ff; font-weight: bold; background: #1c2333; padding: 2px 6px; border-radius: 4px; border: 1px solid #3867d6; }
+    /* Buff / Debuff Chips Bar */
+    .status-effects-bar { display: flex; gap: 4px; overflow-x: auto; min-height: 20px; align-items: center; }
+    .status-chip { font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; border: 1px solid transparent; }
+    .buff-fortitude { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border-color: #2ecc71; }
+    .buff-berserk { background: rgba(231, 76, 60, 0.2); color: #ff7675; border-color: #e74c3c; }
+    .buff-speed { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border-color: #f1c40f; }
+    .buff-shield { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border-color: #3498db; }
+    .debuff-freeze { background: rgba(0, 206, 201, 0.2); color: #81ecec; border-color: #00cec9; }
+    .debuff-burn { background: rgba(225, 112, 85, 0.2); color: #fab1a0; border-color: #e17055; }
+    .debuff-armor { background: rgba(253, 203, 110, 0.2); color: #ffeaa7; border-color: #fdcb6e; }
+    .debuff-poison { background: rgba(108, 92, 231, 0.2); color: #a29bfe; border-color: #6c5ce7; }
 
-    /* HP & MP Bar */
-    .bars-container { display: flex; gap: 6px; }
-    .bar-wrapper { flex: 1; height: 14px; background: #181a20; border-radius: 3px; position: relative; overflow: hidden; border: 1px solid #2e3547; }
-    .bar-fill { height: 100%; transition: width 0.25s ease; }
-    .bar-hp { background: linear-gradient(90deg, #c0392b, #e74c3c); }
-    .bar-mp { background: linear-gradient(90deg, #2980b9, #3498db); }
-    .bar-text { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-size: 9px; font-weight: bold; color: #fff; text-shadow: 0 1px 2px #000; }
+    /* 3. Combat Log Box */
+    /* 3. 2D Chibi Battle Arena Stage */
+    .battle-arena-container {
+      height: 24%;
+      min-height: 155px;
+      max-height: 195px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 2px solid #232a3d;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+      background: #080a10;
+    }
+    .arena-background {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #101c2e 0%, #0d2818 70%, #041208 100%);
+      transition: background 0.6s ease;
+      opacity: 0.92;
+    }
+    .arena-background::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 100%, rgba(255,255,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .arena-stage {
+      position: absolute;
+      inset: 0;
+      bottom: 23px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 6px 18px 6px 18px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .chibi-actor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .actor-badge {
+      background: rgba(12, 16, 24, 0.85);
+      border: 1px solid #3d4966;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 8.5px;
+      font-weight: bold;
+      color: var(--gold);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+    .actor-sprite-box {
+      width: 68px;
+      height: 78px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: chibiIdle 1.8s infinite ease-in-out;
+    }
+    .chibi-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+    }
+    .actor-shadow {
+      width: 48px;
+      height: 8px;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, transparent 75%);
+      border-radius: 50%;
+      margin-top: -3px;
+    }
+    .arena-vs-badge {
+      font-size: 11px;
+      font-weight: 900;
+      color: #ffd700;
+      background: rgba(20, 24, 34, 0.7);
+      border: 1px solid #d35400;
+      padding: 2px 5px;
+      border-radius: 50%;
+      margin-bottom: 30px;
+      box-shadow: 0 0 8px rgba(243,156,18,0.5);
+      opacity: 0.75;
+    }
 
-    /* 3. Combat Log Box (1/3) */
-    .log-container { height: 26%; background: #07080b; border-bottom: 2px solid #1c202a; overflow-y: auto; padding: 6px 10px; font-size: 11px; line-height: 1.45; display: flex; flex-direction: column; flex-shrink: 0; }
+    /* Monster Head Badge with HP */
+    .mob-header-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2px;
+      width: 82px;
+    }
+    .mob-name-text {
+      font-size: 8.5px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 1px 2px #000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 82px;
+    }
+    .mob-hp-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: #141720;
+      border: 1px solid #3d465c;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 1px;
+    }
+    .mob-hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e74c3c, #f39c12);
+      transition: width 0.2s ease;
+    }
+
+    /* Boss & Elite Effects */
+    .monster-actor.is-boss .actor-sprite-box {
+      width: 82px;
+      height: 92px;
+      filter: drop-shadow(0 0 12px rgba(231,76,60,0.9));
+    }
+    .monster-actor.is-boss .mob-name-text {
+      color: #ff4757;
+      font-weight: 900;
+    }
+    .monster-actor.is-elite .actor-sprite-box {
+      filter: drop-shadow(0 0 8px rgba(241,196,15,0.8));
+    }
+
+    /* FX Layer */
+    .arena-fx-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    /* Floating Damage Numbers */
+    .floating-number {
+      position: absolute;
+      font-family: Impact, -apple-system, sans-serif;
+      font-weight: 900;
+      pointer-events: none;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px #000, 0 0 5px rgba(0,0,0,0.8);
+      animation: floatDamageUp 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+      z-index: 20;
+    }
+    .float-phy { color: #ff9f43; font-size: 13px; }
+    .float-mag { color: #a29bfe; font-size: 13.5px; text-shadow: 0 0 8px rgba(162,155,254,0.8); }
+    .float-crit { color: #00ff66; font-size: 16px; text-shadow: 0 0 10px rgba(0,255,102,0.9); }
+    .float-hit { color: #ff6b6b; font-size: 12.5px; }
+    .float-miss { color: #55efc4; font-size: 13px; }
+
+    /* Floating Loot */
+    .floating-loot {
+      position: absolute;
+      font-size: 10px;
+      font-weight: bold;
+      pointer-events: none;
+      white-space: nowrap;
+      text-shadow: 0 1px 3px #000;
+      animation: floatLootBounce 0.9s ease-out forwards;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      background: rgba(12, 16, 24, 0.85);
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid var(--gold);
+    }
+
+    /* Combat Slashes */
+    .combat-slash-fx {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      pointer-events: none;
+      z-index: 18;
+      border-radius: 50%;
+      border-right: 4px solid #ffd700;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 4px solid transparent;
+      filter: drop-shadow(0 0 8px #ff9f43);
+      animation: slashArc 0.35s ease-out forwards;
+    }
+    .fx-magic {
+      border-right-color: #00d2d3;
+      filter: drop-shadow(0 0 10px #706fd3);
+    }
+    .fx-crit {
+      border-right-color: #00ff66;
+      border-right-width: 6px;
+      filter: drop-shadow(0 0 12px #00ff66);
+    }
+
+    /* Keyframe Animations */
+    @keyframes chibiIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    .anim-attack {
+      animation: heroAttackStrike 0.35s ease-in-out forwards !important;
+    }
+    @keyframes heroAttackStrike {
+      0% { transform: translateX(0); }
+      40% { transform: translateX(35px) scale(1.08, 0.95); }
+      100% { transform: translateX(0); }
+    }
+    .anim-hit {
+      animation: mobHitShake 0.3s ease-in-out forwards !important;
+    }
+    @keyframes mobHitShake {
+      0% { transform: translateX(0); filter: brightness(1); }
+      30% { transform: translateX(10px) scale(0.92, 1.08); filter: brightness(2) drop-shadow(0 0 8px #ff4757); }
+      60% { transform: translateX(-4px); filter: brightness(1.4); }
+      100% { transform: translateX(0); filter: brightness(1); }
+    }
+    .anim-die {
+      animation: mobDieRespawn 0.5s ease-in-out forwards !important;
+    }
+    @keyframes mobDieRespawn {
+      0% { opacity: 1; transform: scale(1); }
+      40% { opacity: 0; transform: scale(0.2) rotate(30deg); }
+      60% { opacity: 0; transform: scale(0.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes floatDamageUp {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
+      20% { opacity: 1; transform: translate(-50%, -15px) scale(1.25); }
+      60% { opacity: 1; transform: translate(-50%, -30px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -48px) scale(0.9); }
+    }
+    @keyframes floatLootBounce {
+      0% { opacity: 0; transform: translateY(8px) scale(0.6); }
+      30% { opacity: 1; transform: translateY(-16px) scale(1.2); }
+      70% { opacity: 1; transform: translateY(-28px) scale(1); }
+      100% { opacity: 0; transform: translateY(-42px) scale(0.8); }
+    }
+    @keyframes slashArc {
+      0% { opacity: 1; transform: translate(-50%, -50%) rotate(-30deg) scale(0.3); }
+      50% { opacity: 1; transform: translate(-50%, -50%) rotate(15deg) scale(1.2); }
+      100% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(1.5); }
+    }
+
+    /* Mini-Ticker Bar */
+    .arena-ticker-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 22px;
+      background: rgba(10, 13, 19, 0.94);
+      border-top: 1px solid #1f2738;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 9.5px;
+      gap: 5px;
+      z-index: 12;
+    }
+    .ticker-dot { color: #2ecc71; font-size: 7.5px; animation: pulseDot 1.2s infinite; }
+    @keyframes pulseDot { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    .ticker-text { flex: 1; color: #c8d6e5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-ticker-log { background: #1c2333; border: 1px solid #384966; color: var(--gold); font-size: 8.5px; font-weight: bold; padding: 1px 6px; border-radius: 3px; cursor: pointer; }
+
+    /* Full Log Overlay */
+    .full-log-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 8, 11, 0.97);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+    }
+    .full-log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 8px;
+      background: #131722;
+      border-bottom: 1px solid #232a3d;
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--gold);
+    }
+    .btn-close-log { background: #2c1a1d; border: 1px solid #632d30; color: #ff7675; font-size: 9px; font-weight: bold; padding: 1px 6px; border-radius: 3px; cursor: pointer; }
+    .log-container { flex: 1; background: #07080b; overflow-y: auto; padding: 4px 8px; font-size: 10px; line-height: 1.4; display: flex; flex-direction: column; }
     .log-entry { margin-bottom: 2px; word-break: break-word; }
-    .log-time { color: #576574; font-size: 10px; margin-right: 4px; }
+    .log-time { color: #576574; font-size: 9px; margin-right: 3px; }
     .log-norm { color: #c8d6e5; }
+    .log-phy { color: var(--phy-dmg); font-weight: bold; }
+    .log-mag { color: var(--mag-dmg); font-weight: bold; }
     .log-crit { color: var(--crit); font-weight: bold; }
     .log-zen { color: var(--zen); }
-    .log-bless { color: var(--bless); font-weight: bold; text-shadow: 0 0 5px rgba(191,85,236,0.6); }
+    .log-bless { color: var(--bless); font-weight: bold; }
     .log-chaos { color: var(--chaos); font-weight: bold; }
     .log-life { color: var(--life); font-weight: bold; }
-    .log-boss { color: #ff4757; font-weight: bold; text-shadow: 0 0 6px rgba(255,71,87,0.7); }
+    .log-boss { color: #ff4757; font-weight: bold; }
     .log-elite { color: #f1c40f; font-weight: bold; }
     .log-damage-taken { color: #ff6b6b; font-weight: bold; }
     .log-equip { color: #00ffff; font-weight: bold; }
+    .log-buff { color: #2ecc71; font-weight: bold; }
+    .log-debuff { color: #fdcb6e; font-weight: bold; }
 
     /* Navigation Tabs */
-    .tabs { display: flex; background: #13161f; border-bottom: 1px solid #222633; flex-shrink: 0; }
-    .tab-btn { flex: 1; padding: 7px 2px; font-size: 10.5px; font-weight: bold; color: #8fa0b8; border: none; background: transparent; cursor: pointer; text-align: center; border-bottom: 2px solid transparent; }
+    .tabs { display: flex; background: #13161f; border-bottom: 1px solid #222633; flex-shrink: 0; overflow-x: auto; }
+    .tab-btn { flex: 1; min-width: 52px; padding: 7px 1px; font-size: 9.5px; font-weight: bold; color: #8fa0b8; border: none; background: transparent; cursor: pointer; text-align: center; border-bottom: 2px solid transparent; white-space: nowrap; }
     .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: #181c28; }
 
     /* Main View Area */
@@ -90,45 +438,55 @@
     .tab-content { display: none; flex-direction: column; gap: 6px; height: 100%; }
     .tab-content.active { display: flex; }
 
-    /* Paperdoll 11 Slots Grid with SVG Icons */
+    /* Paperdoll 11 Slots Grid */
     .paperdoll-container { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px; }
     .set-bonus-badge { font-size: 10px; color: #2ecc71; text-align: center; font-weight: bold; padding: 2px; margin-bottom: 4px; background: rgba(46, 204, 113, 0.1); border-radius: 4px; border: 1px dashed #2ecc71; display: none; }
     .paperdoll-layout { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
     .paperdoll-col { display: flex; flex-direction: column; gap: 5px; }
     .slot-card { background: #0c0e14; border: 1px solid #242936; border-radius: 5px; height: 46px; padding: 3px 5px; display: flex; align-items: center; gap: 6px; cursor: pointer; position: relative; }
     .slot-card.selected { outline: 2px solid var(--gold); }
-    .slot-icon-box { width: 34px; height: 34px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; border-radius: 4px; background: #151822; }
-    .slot-icon-svg { width: 26px; height: 26px; }
+    .slot-icon-box { width: 32px; height: 32px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; border-radius: 4px; background: #151822; }
+    .slot-icon-svg { width: 24px; height: 24px; }
     .slot-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
-    .slot-label { font-size: 8.5px; color: #576574; text-transform: uppercase; font-weight: bold; }
-    .slot-name { font-size: 10px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .slot-opt { font-size: 8.5px; color: #8fa0b8; }
-    .slot-plus-tag { position: absolute; top: 2px; right: 4px; font-size: 8.5px; font-weight: bold; color: var(--gold); }
+    .slot-label { font-size: 8px; color: #576574; text-transform: uppercase; font-weight: bold; }
+    .slot-name { font-size: 9.5px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .slot-opt { font-size: 8px; color: #8fa0b8; }
+    .slot-plus-tag { position: absolute; top: 2px; right: 4px; font-size: 8px; font-weight: bold; color: var(--gold); }
 
-    /* 7 Rarity Glow classes */
+    /* Inventory Grid */
+    .inv-header { display: flex; justify-content: space-between; align-items: center; background: #131722; padding: 5px 8px; border-radius: 5px; font-size: 10.5px; border: 1px solid #242c3d; }
+    .inv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; max-height: 250px; overflow-y: auto; padding: 4px; background: #0c0e14; border: 1px solid #1f2738; border-radius: 5px; }
+    .inv-cell { aspect-ratio: 1; background: #141720; border: 1px solid #242b3b; border-radius: 4px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; position: relative; font-size: 8.5px; padding: 2px; text-align: center; }
+    .inv-cell.selected { outline: 2px solid var(--gold); }
+    .inv-cell-tag { position: absolute; top: 1px; right: 2px; font-size: 7.5px; font-weight: bold; color: var(--gold); }
+
+    /* Skills List */
+    .skill-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .skill-icon-box { font-size: 24px; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; background: #0c0e14; border-radius: 5px; border: 1px solid #283144; }
+
+    /* Rarities */
     .r-white { color: var(--c-white); border-color: #4b5563; }
     .r-green { color: var(--c-green); border-color: #2ecc71; box-shadow: 0 0 4px rgba(46,204,113,0.3); }
     .r-blue { color: var(--c-blue); border-color: #3498db; box-shadow: 0 0 6px rgba(52,152,219,0.4); }
     .r-orange { color: var(--c-orange); border-color: #e67e22; box-shadow: 0 0 7px rgba(230,126,34,0.5); }
     .r-yellow { color: var(--c-yellow); border-color: #f1c40f; box-shadow: 0 0 8px rgba(241,196,15,0.6); }
     .r-purple { color: var(--c-purple); border-color: #9b59b6; box-shadow: 0 0 10px rgba(155,89,182,0.7); }
-    .r-red { color: var(--c-red); border-color: #e74c3c; box-shadow: 0 0 12px rgba(231,76,60,0.8); animation: pulseRed 1.5s infinite alternate; }
-    @keyframes pulseRed { 0% { box-shadow: 0 0 5px #e74c3c; } 100% { box-shadow: 0 0 14px #ff4757; } }
+    .r-red { color: var(--c-red); border-color: #e74c3c; box-shadow: 0 0 12px rgba(231,76,60,0.8); }
 
-    /* Map Selection Tab */
-    .map-card { background: #0c0e14; border: 1px solid #242936; border-radius: 6px; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    /* Maps */
+    .map-card { background: #0c0e14; border: 1px solid #242936; border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .map-card.active-map { border-color: #74b9ff; background: #141b2b; }
-    .map-title { font-size: 11.5px; font-weight: bold; color: var(--gold); }
-    .map-req { font-size: 9.5px; color: #8fa0b8; margin-top: 1px; }
+    .map-title { font-size: 11px; font-weight: bold; color: var(--gold); }
+    .map-req { font-size: 9px; color: #8fa0b8; }
 
-    /* Fixed Item Inspection Panel (Bottom) */
-    .detail-panel { background: #11141b; border-top: 2px solid #232836; padding: 6px 10px; flex-shrink: 0; min-height: 125px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; }
+    /* Detail / Action Panel */
+    .detail-panel { background: #11141b; border-top: 2px solid #232836; padding: 6px 10px; flex-shrink: 0; min-height: 110px; display: flex; flex-direction: column; justify-content: space-between; font-size: 10.5px; }
     .detail-header { display: flex; justify-content: space-between; align-items: center; }
-    .detail-title { font-size: 12px; font-weight: bold; }
-    .detail-stats { font-size: 10px; color: #a4b0be; margin-top: 1px; }
-    .detail-options { display: flex; flex-direction: column; gap: 1px; max-height: 50px; overflow-y: auto; font-size: 9.5px; margin-top: 2px; }
-    .detail-actions { display: flex; gap: 6px; margin-top: 4px; }
-    .btn { background: #1c212d; border: 1px solid #384154; color: #f1f2f6; padding: 5px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; }
+    .detail-title { font-size: 11.5px; font-weight: bold; }
+    .detail-stats { font-size: 9.5px; color: #a4b0be; }
+    .detail-options { display: flex; flex-direction: column; gap: 1px; max-height: 40px; overflow-y: auto; font-size: 9px; margin-top: 2px; }
+    .detail-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+    .btn { background: #1c212d; border: 1px solid #384154; color: #f1f2f6; padding: 4px 7px; border-radius: 4px; font-size: 9.5px; font-weight: bold; cursor: pointer; }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: #0984e3; border-color: #74b9ff; }
     .btn-success { background: #00b894; border-color: #55efc4; }
@@ -136,26 +494,34 @@
     .btn-danger { background: #d63031; border-color: #ff7675; }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    /* Stats Tab Controls */
+    /* Stat Rows */
     .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: var(--card-bg); border-radius: 4px; border: 1px solid var(--border); margin-bottom: 4px; font-size: 11px; }
     .stat-controls { display: flex; gap: 3px; align-items: center; }
-    .btn-sm { padding: 2px 5px; font-size: 9.5px; }
-    .stat-max { color: var(--gold); font-weight: bold; font-size: 10px; }
-    .check-pass { color: #2ecc71; font-weight: bold; }
-    .check-fail { color: #e74c3c; font-weight: bold; }
+    .btn-sm { padding: 2px 5px; font-size: 9px; }
 
-    /* Checkbox Style */
-    .auto-check-box { display: flex; align-items: center; gap: 6px; background: #1a202c; border: 1px solid var(--gold); border-radius: 5px; padding: 6px 10px; margin-bottom: 6px; font-size: 11px; color: var(--gold); font-weight: bold; cursor: pointer; }
-    .auto-check-box input { width: 15px; height: 15px; accent-color: var(--gold); cursor: pointer; }
+    .combat-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px; }
+    .stat-chip-box { background: #0d1017; border: 1px solid #232938; border-radius: 4px; padding: 4px 6px; font-size: 9.5px; }
+    .stat-chip-label { color: #8fa0b8; font-size: 8.5px; }
+    .stat-chip-val { font-weight: bold; font-size: 10.5px; margin-top: 1px; }
 
-    /* Offline Progress Modal */
+    /* Leaderboard */
+    .rank-filters { display: flex; gap: 4px; margin-bottom: 6px; }
+    .rank-filter-btn { flex: 1; padding: 5px 2px; font-size: 9px; font-weight: bold; background: #161a24; border: 1px solid #2e3547; color: #8fa0b8; border-radius: 4px; cursor: pointer; text-align: center; }
+    .rank-filter-btn.active { background: #1f2738; color: var(--gold); border-color: var(--gold); }
+    .my-rank-banner { background: linear-gradient(90deg, #1b202e 0%, #2a3348 100%); border: 1px solid var(--gold); border-radius: 5px; padding: 5px 8px; margin-bottom: 5px; font-size: 10.5px; display: flex; justify-content: space-between; align-items: center; }
+    .rank-list { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; }
+    .rank-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; font-size: 10px; }
+    .rank-row.is-me { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
+    .rank-num { font-weight: 900; width: 20px; text-align: center; }
+
+    /* Modals */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 300; }
-    .modal-card { background: #161a24; border: 2px solid var(--gold); border-radius: 8px; padding: 14px; max-width: 380px; width: 90%; text-align: center; }
+    .modal-card { background: #161a24; border: 2px solid var(--gold); border-radius: 8px; padding: 12px; max-width: 380px; width: 92%; max-height: 85vh; overflow-y: auto; }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- 1. Startup Login Gate Screen -->
+    <!-- 1. Startup Login & Register Gate -->
     <div id="loginGate">
       <div class="gate-logo">
         <div class="gate-title">MU: IDLE AWAKENING</div>
@@ -163,15 +529,46 @@
       </div>
 
       <div class="gate-box">
-        <div>
-          <label style="font-size:11px; color:#8fa0b8; margin-bottom:4px; display:block;">Tên Tài Khoản</label>
-          <input type="text" class="gate-input" id="gateUser" value="Hero_Lorencia" placeholder="Nhập tên nhân vật...">
+        <div class="gate-tabs">
+          <button class="gate-tab-btn active" id="btnTabLogin" onclick="switchGateTab('login')">ĐĂNG NHẬP</button>
+          <button class="gate-tab-btn" id="btnTabRegister" onclick="switchGateTab('register')">ĐĂNG KÝ MỚI</button>
         </div>
-        <div>
-          <label style="font-size:11px; color:#8fa0b8; margin-bottom:4px; display:block;">Mật Khẩu</label>
-          <input type="password" class="gate-input" id="gatePass" value="••••••" placeholder="Nhập mật khẩu...">
+
+        <!-- Form Login -->
+        <div id="formLogin" style="display:flex; flex-direction:column; gap:8px;">
+          <div>
+            <label style="font-size:10.5px; color:#8fa0b8; margin-bottom:3px; display:block;">Tên Tài Khoản</label>
+            <input type="text" class="gate-input" id="loginUser" placeholder="Nhập tài khoản...">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:#8fa0b8; margin-bottom:3px; display:block;">Mật Khẩu</label>
+            <input type="password" class="gate-input" id="loginPass" placeholder="Nhập mật khẩu...">
+          </div>
+          <div class="gate-msg err" id="loginMsg"></div>
+          <button class="btn-gate" onclick="submitLogin()">ĐĂNG NHẬP VÀO LỤC ĐỊA</button>
         </div>
-        <button class="btn-gate" onclick="enterGameGate()">BƯỚC VÀO LỤC ĐỊA MU</button>
+
+        <!-- Form Register -->
+        <div id="formRegister" style="display:none; flex-direction:column; gap:8px;">
+          <div>
+            <label style="font-size:10.5px; color:#8fa0b8; margin-bottom:3px; display:block;">Tên Tài Khoản Mới</label>
+            <input type="text" class="gate-input" id="regUser" placeholder="Tên đăng nhập (3-16 ký tự)...">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:#8fa0b8; margin-bottom:3px; display:block;">Mật Khẩu Mới</label>
+            <input type="password" class="gate-input" id="regPass" placeholder="Mật khẩu bảo mật...">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:#8fa0b8; margin-bottom:3px; display:block;">Chọn Hệ Phái Khởi Nghiệp</label>
+            <select class="gate-select" id="regClass">
+              <option value="dk">⚔️ Dark Knight (Chiến Binh - Sát Thương Vật Lý & Máu)</option>
+              <option value="fe">🏹 Fairy Elf (Cung Thủ - Nhanh Nhẹn & Né Tránh)</option>
+              <option value="dw">🧙 Dark Wizard (Pháp Sư - Sát Thương Phép & Khiên MP)</option>
+            </select>
+          </div>
+          <div class="gate-msg err" id="regMsg"></div>
+          <button class="btn-gate" onclick="submitRegister()">TẠO TÀI KHOẢN & VÀO GAME</button>
+        </div>
       </div>
 
       <div class="gate-footer">
@@ -179,72 +576,159 @@
       </div>
     </div>
 
-    <!-- 2. Header, Currency, Total CP Banner, HP/MP Bars -->
+    <!-- 2. Header -->
     <div class="header">
-      <div class="header-row1">
-        <div class="hero-title" id="heroName">Dark Knight [Nam]</div>
-        <div class="currency-bar">
-          <div class="curr-item curr-zen" id="valZen">Zen: 0</div>
-          <div class="curr-item curr-bless" id="valBless">B: 0</div>
-          <div class="curr-item curr-chaos" id="valChaos">C: 0</div>
-          <div class="curr-item curr-life" id="valLife">L: 0</div>
+      <div class="hero-info-row">
+        <div class="hero-badge">
+          <span class="hero-lv" id="heroLv">Lv.1</span>
+          <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
+          <button class="btn-rename-icon" onclick="openRenameModal()" title="Đổi tên">✏️</button>
+          <button class="btn-overview-icon" onclick="openOverviewStatsModal()" title="Bảng chỉ số tổng hợp">📜 Chỉ Số</button>
+          <span class="hero-rs" id="heroRs">(RS: 0)</span>
+          <button class="btn-logout-icon" onclick="logoutAccount()" title="Đổi tài khoản">🚪</button>
         </div>
+        <div class="current-map-badge" id="currentMapBadge">Map 1: Lorencia</div>
       </div>
 
       <!-- Prominent Total CP Banner -->
       <div class="cp-banner">
         <span>⚔ TỔNG LỰC CHIẾN</span>
         <span class="cp-val" id="valTotalCP">120 CP</span>
-        <span class="current-map-badge" id="currentMapBadge">Map 1: Lorencia</span>
       </div>
 
-      <!-- HP & MP Bar -->
+      <!-- Damage Sub-bar -->
+      <div class="dmg-subbar">
+        <span class="dmg-phy" id="subbarPhyDmg">⚔ Vật Lý: 0 ~ 0</span>
+        <span class="dmg-mag" id="subbarMagDmg">🔮 Pháp Thuật: 0 ~ 0</span>
+      </div>
+
+      <!-- HP & MP Bars -->
       <div class="bars-container">
         <div class="bar-wrapper">
           <div class="bar-fill bar-hp" id="barHpFill" style="width: 100%;"></div>
-          <div class="bar-text" id="txtHpBar">HP: 500 / 500</div>
+          <div class="bar-text" id="txtHpBar">❤️ HP: 500 / 500</div>
         </div>
         <div class="bar-wrapper">
           <div class="bar-fill bar-mp" id="barMpFill" style="width: 100%;"></div>
-          <div class="bar-text" id="txtMpBar">MP: 200 / 200</div>
+          <div class="bar-text" id="txtMpBar">💙 MP: 200 / 200</div>
         </div>
+      </div>
+
+      <!-- Potion Quick Bar -->
+      <div class="potion-bar">
+        <button class="btn-potion btn-potion-hp" onclick="usePotion('hp')">
+          🧪 HP (<span id="txtCountHpPotion">50</span>)
+        </button>
+        <button class="btn-potion btn-potion-mp" onclick="usePotion('mp')">
+          🧪 MP (<span id="txtCountMpPotion">50</span>)
+        </button>
+        <label class="auto-potion-toggle">
+          <input type="checkbox" id="chkAutoHpPotion" checked onchange="toggleAutoPotion()">
+          <span>Tự uống (< 40%)</span>
+        </label>
+        <button class="btn btn-sm btn-warn" onclick="openPotionShopModal()">🛒 Mua</button>
+      </div>
+
+      <!-- EXP Progress Bar -->
+      <div class="exp-bar-wrapper">
+        <div class="bar-fill bar-exp" id="barExpFill" style="width: 0%;"></div>
+        <div class="bar-text" id="txtExpBar">EXP: 0 / 100 (0%)</div>
+      </div>
+
+      <!-- Currency Dashboard -->
+      <div class="currency-dashboard">
+        <div class="curr-badge curr-zen" id="valZen">🪙 Zen: 0</div>
+        <div class="curr-badge curr-bless" id="valBless">💎 B: 0</div>
+        <div class="curr-badge curr-chaos" id="valChaos">🔥 C: 0</div>
+        <div class="curr-badge curr-life" id="valLife">🌿 L: 0</div>
+      </div>
+
+      <!-- Buff & Debuff Chips Bar -->
+      <div class="status-effects-bar" id="statusEffectsBar">
+        <span style="font-size:9px; color:#576574;">Hiệu ứng: Bình Thường</span>
       </div>
     </div>
 
-    <!-- 3. Top Combat Log Box (1/3) -->
-    <div class="log-container" id="logBox"></div>
+    <!-- 3. 2D Chibi Battle Arena Stage (Đấu Trường Chibi 2D) -->
+    <div class="battle-arena-container" id="battleArena">
+      <div class="arena-background" id="arenaBg"></div>
+      
+      <!-- Stage Layer with Hero & Monster -->
+      <div class="arena-stage">
+        <!-- Hero Chibi -->
+        <div class="chibi-actor hero-actor" id="chibiHeroActor">
+          <div class="actor-badge" id="chibiHeroBadge">Lv.1 Dark Knight</div>
+          <div class="actor-sprite-box" id="heroSpriteEl"></div>
+          <div class="actor-shadow"></div>
+        </div>
 
-    <!-- 4. Navigation Tabs -->
+        <!-- VS Center Badge -->
+        <div class="arena-vs-badge" id="arenaVsBadge">VS</div>
+
+        <!-- Monster Chibi -->
+        <div class="chibi-actor monster-actor" id="chibiMonsterActor">
+          <div class="mob-header-badge">
+            <div class="mob-name-text" id="chibiMobName">Nhện Độc</div>
+            <div class="mob-hp-bar-bg">
+              <div class="mob-hp-bar-fill" id="chibiMobHpFill" style="width: 100%;"></div>
+            </div>
+          </div>
+          <div class="actor-sprite-box" id="monsterSpriteEl"></div>
+          <div class="actor-shadow"></div>
+        </div>
+      </div>
+
+      <!-- FX Layer (Floating Damage Numbers, Slashes, Loot Pops) -->
+      <div class="arena-fx-layer" id="arenaFxLayer"></div>
+
+      <!-- Bottom Mini-Ticker Log Bar -->
+      <div class="arena-ticker-bar">
+        <span class="ticker-dot">●</span>
+        <span class="ticker-text" id="arenaTickerText">Đang tự động chiến đấu...</span>
+        <button class="btn-ticker-log" onclick="toggleFullLog()">📜 Log</button>
+      </div>
+
+      <!-- Collapsible Full Combat Log Overlay -->
+      <div class="full-log-overlay" id="fullLogOverlay" style="display:none;">
+        <div class="full-log-header">
+          <span>📜 NHẬT KÝ CHIẾN ĐẤU CHI TIẾT</span>
+          <button class="btn-close-log" onclick="toggleFullLog()">✕ Đóng</button>
+        </div>
+        <div class="log-container" id="logBox"></div>
+      </div>
+    </div>
+
+    <!-- 4. Navigation Tabs (8 Tabs) -->
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('gear')">11 Trang Bị</button>
+      <button class="tab-btn" onclick="switchTab('inventory')">Túi Đồ</button>
+      <button class="tab-btn" onclick="switchTab('skill')">Kỹ Năng</button>
       <button class="tab-btn" onclick="switchTab('map')">Bản Đồ</button>
       <button class="tab-btn" onclick="switchTab('stats')">Chỉ Số</button>
+      <button class="tab-btn" onclick="switchTab('leaderboard')">BXH</button>
       <button class="tab-btn" onclick="switchTab('rebirth')">Chuyển Sinh</button>
       <button class="tab-btn" onclick="switchTab('forge')">Lò Rèn</button>
     </div>
 
-    <!-- 5. Main Content View -->
+    <!-- 5. Main View Area -->
     <div class="main-view">
-      <!-- Tab 1: 11 Gear Slots (Zero-Inventory with SVG Icons) -->
+      <!-- Tab 1: 11 Equipment Paperdoll -->
       <div class="tab-content active" id="tab-gear">
         <div class="paperdoll-container">
           <div class="set-bonus-badge" id="setBonusBadge">★ KÍCH HOẠT SET 4 MÓN: +20% HP & THỦ ★</div>
           <div class="paperdoll-layout">
-            <!-- Cột trái -->
             <div class="paperdoll-col">
               <div class="slot-card" id="slot-mainWeapon" onclick="selectSlot('mainWeapon')"></div>
               <div class="slot-card" id="slot-pendant1" onclick="selectSlot('pendant1')"></div>
               <div class="slot-card" id="slot-ring1" onclick="selectSlot('ring1')"></div>
               <div class="slot-card" id="slot-wings" onclick="selectSlot('wings')"></div>
             </div>
-            <!-- Cột giữa -->
             <div class="paperdoll-col">
               <div class="slot-card" id="slot-helm" onclick="selectSlot('helm')"></div>
               <div class="slot-card" id="slot-armor" onclick="selectSlot('armor')"></div>
               <div class="slot-card" id="slot-gloves" onclick="selectSlot('gloves')"></div>
               <div class="slot-card" id="slot-boots" onclick="selectSlot('boots')"></div>
             </div>
-            <!-- Cột phải -->
             <div class="paperdoll-col">
               <div class="slot-card" id="slot-offWeapon" onclick="selectSlot('offWeapon')"></div>
               <div class="slot-card" id="slot-pendant2" onclick="selectSlot('pendant2')"></div>
@@ -254,61 +738,136 @@
           </div>
         </div>
 
-        <div style="background:var(--card-bg); padding:6px 8px; border-radius:6px; border:1px solid var(--border); font-size:10.5px; color:#8fa0b8; line-height:1.4;">
-          ⚡ <b>Cơ chế Tự Động Mặc:</b> Trang bị mới có <b>CP cao hơn</b> sẽ <b>mặc thẳng vào người</b>, đồ cũ tự động thanh lý thu về <b>30% Zen</b>. Quái vật rơi Zen 100% nhân theo cấp độ quái!
+        <div style="background:var(--card-bg); padding:5px 8px; border-radius:5px; border:1px solid var(--border); font-size:9.5px; color:#8fa0b8; line-height:1.4;">
+          ⚡ <b>Quy tắc Trang Bị:</b> Đồ mới có <b>CP cao hơn</b> sẽ tự động mặc vào. Đồ có <b>phẩm cấp cao hơn</b> (Cam, Vàng, Tím, Đỏ) dù chưa nâng cấp sẽ được <b>ưu tiên giữ lại trong Túi Đồ</b>!
         </div>
       </div>
 
-      <!-- Tab 2: Map Selection Tab -->
+      <!-- Tab 2: Inventory (Túi Đồ) -->
+      <div class="tab-content" id="tab-inventory">
+        <div class="inv-header">
+          <span>📦 Túi Đồ: <b id="invCapacityText" style="color:var(--gold)">0 / 30</b></span>
+          <button class="btn btn-sm btn-warn" onclick="sellGarbageItems()">🧹 Bán Đồ Trắng & Lục</button>
+        </div>
+        <div class="inv-grid" id="inventoryGrid"></div>
+      </div>
+
+      <!-- Tab 3: Skills (Kỹ Năng) -->
+      <div class="tab-content" id="tab-skill">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#131722; padding:5px 8px; border-radius:5px; font-size:10.5px; border:1px solid #242c3d;">
+          <span>Điểm Kỹ Năng: <b id="txtSkillPoints" style="color:var(--gold);">0</b></span>
+          <span style="font-size:9.5px; color:#8fa0b8;">(Nhận mỗi khi Lên Cấp & Chuyển Sinh)</span>
+        </div>
+        <div id="skillsListContainer" style="display:flex; flex-direction:column; gap:5px;"></div>
+      </div>
+
+      <!-- Tab 4: Map Selection -->
       <div class="tab-content" id="tab-map">
-        <div style="font-size:11px; color:#8fa0b8; margin-bottom:4px;">Chủ động chọn 10 Vùng đất Lục địa MU (EXP x10.000 lần):</div>
+        <div style="font-size:10.5px; color:#8fa0b8; margin-bottom:4px;">Chủ động chọn 10 Vùng đất Lục địa MU (EXP x10.000 lần):</div>
         <div id="mapListContainer" style="display:flex; flex-direction:column; gap:4px;"></div>
       </div>
 
-      <!-- Tab 3: Stats Tab (Auto Points Checkbox & Max 10.000) -->
+      <!-- Tab 5: Attributes & Combat Stats -->
       <div class="tab-content" id="tab-stats">
-        <!-- Auto Points Checkbox -->
-        <label class="auto-check-box">
-          <input type="checkbox" id="chkAutoStats" checked onchange="toggleAutoStats()">
-          <span>Tự động cộng điểm tiềm năng (Mặc định: BẬT)</span>
-        </label>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <label class="auto-check-box" style="margin-bottom:0; flex:1;">
+            <input type="checkbox" id="chkAutoStats" checked onchange="toggleAutoStats()">
+            <span>Tự động cộng điểm tiềm năng</span>
+          </label>
+          <button class="btn btn-sm btn-primary" onclick="openOverviewStatsModal()">📜 Xem Tổng Hợp</button>
+        </div>
 
-        <div style="background:var(--card-bg); padding:8px; border-radius:6px; border:1px solid var(--border); font-size:11.5px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-            <span>Điểm tiềm năng còn: <b id="statFreePoints" style="color:var(--gold)">0</b></span>
-            <button class="btn btn-sm btn-primary" onclick="autoDistributeStats()">Tự cộng đều</button>
+        <!-- Combat Stats Dashboard -->
+        <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); margin-bottom:5px;">
+          <div style="font-size:10.5px; font-weight:bold; color:var(--gold); margin-bottom:4px;">📊 THỐNG KÊ CHIẾN LỰC</div>
+          <div class="combat-stat-grid">
+            <div class="stat-chip-box">
+              <div class="stat-chip-label">⚔ Sát Thương Vật Lý</div>
+              <div class="stat-chip-val" id="statPhyDmgVal" style="color:var(--phy-dmg)">0 ~ 0</div>
+            </div>
+            <div class="stat-chip-box">
+              <div class="stat-chip-label">🔮 Sát Thương Phép</div>
+              <div class="stat-chip-val" id="statMagDmgVal" style="color:var(--mag-dmg)">0 ~ 0</div>
+            </div>
+            <div class="stat-chip-box">
+              <div class="stat-chip-label">🛡 Phòng Thủ</div>
+              <div class="stat-chip-val" id="statDefVal" style="color:#74b9ff">0</div>
+            </div>
+            <div class="stat-chip-box">
+              <div class="stat-chip-label">💨 Tỷ Lệ Né Tránh</div>
+              <div class="stat-chip-val" id="statDodgeVal" style="color:#55efc4">0%</div>
+            </div>
+            <div class="stat-chip-box">
+              <div class="stat-chip-label">⚡ Tỷ Lệ Bạo Kích</div>
+              <div class="stat-chip-val" id="statCritVal" style="color:var(--crit)">0%</div>
+            </div>
+            <div class="stat-chip-box">
+              <div class="stat-chip-label">🩸 Hồi Máu / Nhịp</div>
+              <div class="stat-chip-val" id="statRegenVal" style="color:#ff7675">+0 HP</div>
+            </div>
           </div>
+        </div>
+
+        <!-- Attribute Points Management -->
+        <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <span>Điểm tiềm năng còn: <b id="statFreePoints" style="color:var(--gold)">0</b></span>
+            <div style="display:flex; gap:3px;">
+              <button class="btn btn-sm btn-primary" onclick="autoDistributeClass()">Theo Phái</button>
+              <button class="btn btn-sm" onclick="autoDistributeEven()">Cộng đều</button>
+            </div>
+          </div>
+
+          <!-- STR -->
           <div class="stat-row">
-            <span>Sức Mạnh (STR)</span>
+            <div>
+              <span style="font-weight:bold; color:var(--phy-dmg);">Sức Mạnh (STR)</span>
+              <div style="font-size:8px; color:#8fa0b8;">+3.2 ST Vật Lý, Phá Giáp</div>
+            </div>
             <div class="stat-controls">
-              <span id="txtSTR">10</span>
+              <span id="txtSTR" style="font-weight:bold; min-width:30px; text-align:right;">10</span>
               <button class="btn btn-sm btn-stat" onclick="addStat('str', 1)">+1</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('str', 10)">+10</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('str', 100)">+100</button>
             </div>
           </div>
+
+          <!-- AGI -->
           <div class="stat-row">
-            <span>Nhanh Nhẹn (AGI)</span>
+            <div>
+              <span style="font-weight:bold; color:#55efc4;">Nhanh Nhẹn (AGI)</span>
+              <div style="font-size:8px; color:#8fa0b8;">+2.0 Thủ, Né đòn & Bạo kích</div>
+            </div>
             <div class="stat-controls">
-              <span id="txtAGI">10</span>
+              <span id="txtAGI" style="font-weight:bold; min-width:30px; text-align:right;">10</span>
               <button class="btn btn-sm btn-stat" onclick="addStat('agi', 1)">+1</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('agi', 10)">+10</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('agi', 100)">+100</button>
             </div>
           </div>
+
+          <!-- VIT -->
           <div class="stat-row">
-            <span>Thể Lực (VIT)</span>
+            <div>
+              <span style="font-weight:bold; color:#ff7675;">Thể Lực (VIT)</span>
+              <div style="font-size:8px; color:#8fa0b8;">+28 Max HP, Hồi phục & Giảm ST</div>
+            </div>
             <div class="stat-controls">
-              <span id="txtVIT">10</span>
+              <span id="txtVIT" style="font-weight:bold; min-width:30px; text-align:right;">10</span>
               <button class="btn btn-sm btn-stat" onclick="addStat('vit', 1)">+1</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('vit', 10)">+10</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('vit', 100)">+100</button>
             </div>
           </div>
+
+          <!-- ENE -->
           <div class="stat-row">
-            <span>Năng Lượng (ENE)</span>
+            <div>
+              <span style="font-weight:bold; color:var(--mag-dmg);">Năng Lượng (ENE)</span>
+              <div style="font-size:8px; color:#8fa0b8;">+3.8 ST Phép, Max MP, Lực Buff</div>
+            </div>
             <div class="stat-controls">
-              <span id="txtENE">10</span>
+              <span id="txtENE" style="font-weight:bold; min-width:30px; text-align:right;">10</span>
               <button class="btn btn-sm btn-stat" onclick="addStat('ene', 1)">+1</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('ene', 10)">+10</button>
               <button class="btn btn-sm btn-stat" onclick="addStat('ene', 100)">+100</button>
@@ -316,32 +875,54 @@
           </div>
         </div>
 
-        <div style="background:var(--card-bg); padding:8px; border-radius:6px; border:1px solid var(--border); font-size:11px; display:flex; justify-content:space-between; align-items:center;">
-          <span>Giới tính nhân vật:</span>
+        <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); font-size:10.5px; display:flex; justify-content:space-between; align-items:center;">
+          <span>Giới tính / Ngoại hình:</span>
           <button class="btn btn-sm" onclick="toggleGender()">Đổi Nam / Nữ</button>
         </div>
       </div>
 
-      <!-- Tab 4: Rebirth Requirements Checklist -->
+      <!-- Tab 6: Leaderboard (BXH) -->
+      <div class="tab-content" id="tab-leaderboard">
+        <div class="rank-filters">
+          <button class="rank-filter-btn active" id="btnRankCP" onclick="switchRankCategory('cp')">🏆 Lực Chiến CP</button>
+          <button class="rank-filter-btn" id="btnRankRS" onclick="switchRankCategory('rs')">🌀 Chuyển Sinh</button>
+          <button class="rank-filter-btn" id="btnRankBoss" onclick="switchRankCategory('boss')">💀 Diệt Boss</button>
+        </div>
+
+        <div class="my-rank-banner" id="myRankBanner">
+          <div>
+            <span style="color:#8fa0b8; font-size:9.5px;">Vị trí của bạn:</span>
+            <div style="font-size:12px; font-weight:900; color:var(--gold);" id="myRankText">Hạng #...</div>
+          </div>
+          <div style="text-align:right;">
+            <span style="color:#8fa0b8; font-size:9.5px;" id="myRankScoreLabel">Điểm số:</span>
+            <div style="font-size:11.5px; font-weight:bold; color:#00ffcc;" id="myRankScoreVal">...</div>
+          </div>
+        </div>
+
+        <div class="rank-list" id="leaderboardListContainer"></div>
+      </div>
+
+      <!-- Tab 7: Rebirth -->
       <div class="tab-content" id="tab-rebirth">
-        <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border); font-size:11.5px;">
-          <div style="font-weight:bold; color:var(--gold); margin-bottom:6px;">ĐIỀU KIỆN CHUYỂN SINH (RESET CHECKLIST)</div>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+        <div style="background:var(--card-bg); padding:8px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
+          <div style="font-weight:bold; color:var(--gold); margin-bottom:5px;">ĐIỀU KIỆN CHUYỂN SINH (RESET CHECKLIST)</div>
+          <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
             <div class="stat-row"><span id="chkLevel">Cấp độ: Đang tải...</span></div>
-            <div class="stat-row"><span id="chkZen">Phí Zen Hardcore: Đang tải...</span></div>
+            <div class="stat-row"><span id="chkZen">Phí Zen: Đang tải...</span></div>
             <div class="stat-row"><span id="chkJowels">Ngọc tế lễ: Đang tải...</span></div>
           </div>
-          <div id="rsInfoText" style="color:#8fa0b8; font-size:10px; margin-bottom:10px; line-height:1.4;"></div>
-          <button class="btn btn-warn" id="btnDoRebirth" style="width:100%; padding:9px;" onclick="performRebirth()">CHUYỂN SINH NGAY</button>
+          <div id="rsInfoText" style="color:#8fa0b8; font-size:9.5px; margin-bottom:8px; line-height:1.4;"></div>
+          <button class="btn btn-warn" id="btnDoRebirth" style="width:100%; padding:8px;" onclick="performRebirth()">CHUYỂN SINH NGAY</button>
         </div>
       </div>
 
-      <!-- Tab 5: Chaos Goblin Forge -->
+      <!-- Tab 8: Forge Goblin -->
       <div class="tab-content" id="tab-forge">
-        <div style="background:var(--card-bg); padding:10px; border-radius:6px; border:1px solid var(--border); font-size:11.5px;">
-          <div style="font-weight:bold; color:var(--gold); margin-bottom:6px;">LÒ RÈN CHAOS GOBLIN</div>
-          <div id="forgeTargetText" style="color:#8fa0b8; margin-bottom:8px;">Hãy chọn một trang bị ở Tab 1 để nâng cấp hoặc tẩy luyện.</div>
-          <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="background:var(--card-bg); padding:8px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
+          <div style="font-weight:bold; color:var(--gold); margin-bottom:5px;">LÒ RÈN CHAOS GOBLIN</div>
+          <div id="forgeTargetText" style="color:#8fa0b8; margin-bottom:8px;">Hãy chọn một trang bị ở Tab 1 hoặc Túi Đồ để thao tác.</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
             <button class="btn btn-success" id="btnForgeEnhance" style="padding:8px;" onclick="forgeEnhance()">CƯỜNG HÓA (+1 ĐẾN +15)</button>
             <button class="btn btn-primary" id="btnForgeReforge" style="padding:8px;" onclick="forgeReforge()">TẨY LUYỆN DÒNG (JEWEL OF LIFE)</button>
           </div>
@@ -349,29 +930,72 @@
       </div>
     </div>
 
-    <!-- 6. Bottom Fixed Item Inspection Panel -->
+    <!-- Detail Panel -->
     <div class="detail-panel" id="detailPanel">
       <div>
         <div class="detail-header">
           <div class="detail-title" id="dTitle">Chưa chọn trang bị</div>
-          <div id="dLockTag" style="font-size:10px; color:#f1c40f;"></div>
+          <div id="dLockTag" style="font-size:9.5px; color:#f1c40f;"></div>
         </div>
-        <div class="detail-stats" id="dStats">Chạm vào bất kỳ món đồ nào trong 11 ô để xem chi tiết.</div>
+        <div class="detail-stats" id="dStats">Chạm vào bất kỳ món đồ nào để xem chi tiết.</div>
         <div class="detail-options" id="dOptions"></div>
       </div>
       <div class="detail-actions" id="dActions" style="display:none;">
-        <button class="btn btn-success btn-sm" onclick="quickForgeEnhance()">Cường hóa đồ này</button>
-        <button class="btn btn-primary btn-sm" onclick="quickForgeReforge()">Tẩy luyện dòng</button>
+        <button class="btn btn-primary btn-sm" id="btnEquipInventory" style="display:none;" onclick="equipSelectedItem()">Mặc vào người</button>
+        <button class="btn btn-danger btn-sm" id="btnSellInventory" style="display:none;" onclick="sellSelectedItem()">Bán món này</button>
+        <button class="btn btn-success btn-sm" onclick="quickForgeEnhance()">Cường hóa</button>
+        <button class="btn btn-primary btn-sm" onclick="quickForgeReforge()">Tẩy dòng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bảng Chỉ Số Tổng Hợp Modal -->
+  <div class="modal-overlay" id="overviewStatsModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:900; color:var(--gold);">📜 BẢNG CHỈ SỐ TỔNG HỢP</div>
+        <button class="btn btn-sm" onclick="closeOverviewStatsModal()">✕ Đóng</button>
+      </div>
+      <div id="overviewStatsBody" style="font-size:10px; display:flex; flex-direction:column; gap:6px; max-height:65vh; overflow-y:auto; text-align:left;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Potion Shop Modal -->
+  <div class="modal-overlay" id="potionShopModal">
+    <div class="modal-card" style="text-align:center;">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:8px;">🏪 TIỆM DƯỢC PHẨM LORENCIA</div>
+      <div style="font-size:10.5px; color:#8fa0b8; margin-bottom:10px;">Bình Máu và Mana giúp bạn sống sót qua những vùng đất hiểm ác:</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:10px;">
+        <button class="btn btn-sm btn-primary" style="padding:7px;" onclick="buyPotion('hp', 20, 10000)">🧪 20 Bình Máu<br><b style="color:var(--gold);">10.000 Zen</b></button>
+        <button class="btn btn-sm btn-primary" style="padding:7px;" onclick="buyPotion('hp', 100, 45000)">🧪 100 Bình Máu<br><b style="color:var(--gold);">45.000 Zen</b></button>
+        <button class="btn btn-sm btn-primary" style="padding:7px;" onclick="buyPotion('mp', 20, 10000)">🧪 20 Bình Mana<br><b style="color:var(--gold);">10.000 Zen</b></button>
+        <button class="btn btn-sm btn-primary" style="padding:7px;" onclick="buyPotion('mp', 100, 45000)">🧪 100 Bình Mana<br><b style="color:var(--gold);">45.000 Zen</b></button>
+      </div>
+      <button class="btn" style="width:100%; padding:6px;" onclick="closePotionShopModal()">Đóng Cửa Hàng</button>
+    </div>
+  </div>
+
+  <!-- Rename Modal -->
+  <div class="modal-overlay" id="renameModal">
+    <div class="modal-card">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:6px;">✏️ ĐỔI TÊN NHÂN VẬT</div>
+      <div style="font-size:10.5px; color:#8fa0b8; margin-bottom:8px;">Nhập danh xưng mới của hiệp sĩ trên Lục địa MU (Miễn phí):</div>
+      <input type="text" class="gate-input" id="renameInput" placeholder="Nhập tên mới (2-16 ký tự)..." style="margin-bottom:6px;">
+      <div id="renameErr" style="font-size:10px; color:#ff7675; min-height:14px; margin-bottom:6px;"></div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-primary" style="flex:1; padding:7px;" onclick="submitRename()">XÁC NHẬN</button>
+        <button class="btn" style="flex:1; padding:7px;" onclick="closeRenameModal()">HỦY</button>
       </div>
     </div>
   </div>
 
   <!-- Offline Progress Modal -->
   <div class="modal-overlay" id="offlineModal">
-    <div class="modal-card">
-      <div style="font-size:14px; font-weight:bold; color:var(--gold); margin-bottom:8px;">BÁO CÁO THU HOẠCH TREO MÁY</div>
-      <div id="offlineReportText" style="font-size:11.5px; color:#c8d6e5; margin-bottom:12px; line-height:1.5;"></div>
-      <button class="btn btn-success" style="width:100%; padding:8px;" onclick="closeOfflineModal()">NHẬN TẤT CẢ VÀO TÚI</button>
+    <div class="modal-card" style="text-align:center;">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:6px;">BÁO CÁO THU HOẠCH TREO MÁY</div>
+      <div id="offlineReportText" style="font-size:10.5px; color:#c8d6e5; margin-bottom:10px; line-height:1.5;"></div>
+      <button class="btn btn-success" style="width:100%; padding:7px;" onclick="closeOfflineModal()">NHẬN TẤT CẢ VÀO TÚI</button>
     </div>
   </div>
 
