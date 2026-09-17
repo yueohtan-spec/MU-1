@@ -325,7 +325,154 @@ function updateArenaBackground(mapId) {
   bg.style.background = bgThemes[mapId] || bgThemes[1];
 }
 
-function updateChibiArena(currentMap, mobName, mobCategory) {
+
+// 7 MONSTER RANKS: Quái thường, Tinh anh, Ám kim, Hoàng kim, Lĩnh chủ, Truyền thuyết, Thần thoại
+const MONSTER_RANKS = [
+  {
+    key: "normal",
+    name: "Quái Thường",
+    prefix: "[Thường]",
+    color: "#c8d6e5",
+    colorClass: "log-norm",
+    hpMult: 1.0,
+    dmgMult: 1.0,
+    zenChance: 0.35,
+    zenMult: 1.0,
+    gearChance: 0.04, // 4.0% (đồ phổ thông rơi ổn định)
+    jewelBoost: 1,
+    minRarity: null,
+    auraClass: "rank-normal",
+    scale: 1.0,
+    icon: "",
+    hpGradient: "linear-gradient(90deg, #e74c3c, #f39c12)"
+  },
+  {
+    key: "elite",
+    name: "Tinh Anh",
+    prefix: "[Tinh Anh]",
+    color: "#2ecc71",
+    colorClass: "log-elite",
+    hpMult: 2.5,
+    dmgMult: 1.8,
+    zenChance: 0.60,
+    zenMult: 1.8,
+    gearChance: 0.15, // 15%
+    jewelBoost: 2,
+    minRarity: null,
+    auraClass: "rank-elite",
+    scale: 1.08,
+    icon: "★",
+    hpGradient: "linear-gradient(90deg, #27ae60, #2ecc71)"
+  },
+  {
+    key: "dark_gold",
+    name: "Ám Kim",
+    prefix: "[Ám Kim]",
+    color: "#9b59b6",
+    colorClass: "log-chaos",
+    hpMult: 5.0,
+    dmgMult: 2.8,
+    zenChance: 0.80,
+    zenMult: 3.0,
+    gearChance: 0.30, // 30%
+    jewelBoost: 4,
+    minRarity: null,
+    auraClass: "rank-dark-gold",
+    scale: 1.15,
+    icon: "⚔️",
+    hpGradient: "linear-gradient(90deg, #8e44ad, #9b59b6)"
+  },
+  {
+    key: "golden",
+    name: "Hoàng Kim",
+    prefix: "[Hoàng Kim]",
+    color: "#f1c40f",
+    colorClass: "log-crit",
+    hpMult: 9.0,
+    dmgMult: 4.2,
+    zenChance: 1.0,
+    zenMult: 5.0,
+    gearChance: 0.50, // 50%
+    jewelBoost: 8,
+    minRarity: null,
+    auraClass: "rank-golden",
+    scale: 1.22,
+    icon: "✨",
+    hpGradient: "linear-gradient(90deg, #d35400, #f1c40f)"
+  },
+  {
+    key: "overlord",
+    name: "Lĩnh Chủ",
+    prefix: "[Lĩnh Chủ]",
+    color: "#e67e22",
+    colorClass: "log-boss",
+    hpMult: 18.0,
+    dmgMult: 6.5,
+    zenChance: 1.0,
+    zenMult: 8.0,
+    gearChance: 0.75, // 75%
+    jewelBoost: 12,
+    minRarity: null,
+    auraClass: "rank-overlord",
+    scale: 1.30,
+    icon: "🥈",
+    hpGradient: "linear-gradient(90deg, #c0392b, #e67e22)"
+  },
+  {
+    key: "legendary",
+    name: "Truyền Thuyết",
+    prefix: "[Truyền Thuyết]",
+    color: "#ff4757",
+    colorClass: "log-boss",
+    hpMult: 35.0,
+    dmgMult: 10.0,
+    zenChance: 1.0,
+    zenMult: 12.0,
+    gearChance: 0.90, // 90%
+    jewelBoost: 20,
+    minRarity: null,
+    auraClass: "rank-legendary",
+    scale: 1.42,
+    icon: "👑",
+    hpGradient: "linear-gradient(90deg, #b71540, #ff4757)"
+  },
+  {
+    key: "mythical",
+    name: "Thần Thoại",
+    prefix: "[THẦN THOẠI]",
+    color: "#e056fd",
+    colorClass: "log-crit",
+    hpMult: 70.0,
+    dmgMult: 18.0,
+    zenChance: 1.0,
+    zenMult: 25.0,
+    gearChance: 1.0, // 100% Chắc chắn rơi đồ
+    jewelBoost: 35,
+    minRarity: null,
+    auraClass: "rank-mythical",
+    scale: 1.52,
+    icon: "👑✨",
+    hpGradient: "linear-gradient(90deg, #8e44ad, #e056fd, #00d2d3)"
+  }
+];
+
+function rollMonsterRank(mobsKilled) {
+  if ((mobsKilled + 1) % 60 === 0) return MONSTER_RANKS[6]; // Mythical
+  if ((mobsKilled + 1) % 30 === 0) return MONSTER_RANKS[5]; // Legendary
+  if ((mobsKilled + 1) % 15 === 0) return MONSTER_RANKS[4]; // Overlord
+  if ((mobsKilled + 1) % 8 === 0) return MONSTER_RANKS[3];  // Golden
+
+  const roll = Math.random() * 100;
+  if (roll < 0.6) return MONSTER_RANKS[6]; // 0.6% Mythical
+  if (roll < 2.0) return MONSTER_RANKS[5]; // 1.4% Legendary
+  if (roll < 5.0) return MONSTER_RANKS[4]; // 3.0% Overlord
+  if (roll < 10.0) return MONSTER_RANKS[3]; // 5.0% Golden
+  if (roll < 20.0) return MONSTER_RANKS[2]; // 10.0% Dark Gold
+  if (roll < 38.0) return MONSTER_RANKS[1]; // 18.0% Elite
+  return MONSTER_RANKS[0]; // 62.0% Normal
+}
+
+function updateChibiArena(currentMap, mobName, rank) {
   // 1. Hero Chibi
   const heroBadge = document.getElementById("chibiHeroBadge");
   const heroSprite = document.getElementById("heroSpriteEl");
@@ -340,30 +487,37 @@ function updateChibiArena(currentMap, mobName, mobCategory) {
   // 3. Monster Chibi
   const mobActor = document.getElementById("chibiMonsterActor");
   const mobNameEl = document.getElementById("chibiMobName");
+  const mobHpFillEl = document.getElementById("chibiMobHpFill");
   const mobSprite = document.getElementById("monsterSpriteEl");
 
-  let archetype = "spider";
-  if (currentMap.tier <= 2) archetype = "spider";
-  else if (currentMap.tier <= 4) archetype = "golem";
-  else if (currentMap.tier === 5) archetype = "sea";
-  else if (currentMap.tier <= 8) archetype = "demon";
-  else archetype = "dragon";
+  const rObj = typeof rank === "object" ? rank : (MONSTER_RANKS.find(r => r.key === rank) || MONSTER_RANKS[0]);
 
-  if (mobCategory === "boss") archetype = "dragon";
+  let archetype = "spider";
+  if (rObj.key === "mythical" || rObj.key === "legendary") archetype = "dragon";
+  else if (rObj.key === "overlord") archetype = "demon";
+  else if (rObj.key === "golden") archetype = "dragon";
+  else {
+    if (currentMap.tier <= 2) archetype = "spider";
+    else if (currentMap.tier <= 4) archetype = "golem";
+    else if (currentMap.tier === 5) archetype = "sea";
+    else if (currentMap.tier <= 8) archetype = "demon";
+    else archetype = "dragon";
+  }
 
   if (mobSprite) {
     mobSprite.innerHTML = CHIBI_MONSTERS[archetype] || CHIBI_MONSTERS.spider;
   }
 
   if (mobActor) {
-    mobActor.classList.toggle("is-boss", mobCategory === "boss");
-    mobActor.classList.toggle("is-elite", mobCategory === "elite");
+    mobActor.className = `chibi-actor monster-actor ${rObj.auraClass}`;
   }
 
   if (mobNameEl) {
-    if (mobCategory === "boss") mobNameEl.innerText = `👑 ${mobName}`;
-    else if (mobCategory === "elite") mobNameEl.innerText = `★ ${mobName}`;
-    else mobNameEl.innerText = mobName;
+    mobNameEl.innerText = `${rObj.icon ? rObj.icon + " " : ""}${mobName}`;
+    mobNameEl.style.color = rObj.color;
+  }
+  if (mobHpFillEl) {
+    mobHpFillEl.style.background = rObj.hpGradient;
   }
 }
 
@@ -1132,8 +1286,16 @@ function generateItemForClass(targetTier = null, forceRarity = null, charClass =
   return generateItem(targetTier, forceRarity, c);
 }
 
-function generateItem(targetTier = null, forceRarity = null, preferredClass = null) {
-  const tierIndex = targetTier !== null ? targetTier - 1 : Math.min(9, state.currentMapId - 1);
+function generateItem(targetTier = null, forceRarity = null, preferredClass = null, rankKey = "normal") {
+  let tierIndex = targetTier !== null ? targetTier - 1 : Math.min(9, state.currentMapId - 1);
+
+  // Giảm tỷ lệ rơi đồ Tier cao (Tier 3+) khi đánh quái thường
+  if (tierIndex >= 2 && rankKey === "normal") {
+    if (Math.random() < 0.65) {
+      tierIndex = Math.floor(Math.random() * 2); // Rớt Tier 1 hoặc 2
+    }
+  }
+
   const tierData = TIERS[tierIndex] || TIERS[0];
   const slotDef = SLOT_TYPES[Math.floor(Math.random() * SLOT_TYPES.length)];
   
@@ -1141,14 +1303,52 @@ function generateItem(targetTier = null, forceRarity = null, preferredClass = nu
   if (forceRarity !== null && RARITIES[forceRarity]) {
     rarityObj = RARITIES[forceRarity];
   } else {
-    const roll = Math.random() * 100;
-    if (roll < 45) rarityObj = RARITIES[0];
-    else if (roll < 72) rarityObj = RARITIES[1];
-    else if (roll < 88) rarityObj = RARITIES[2];
-    else if (roll < 95) rarityObj = RARITIES[3];
-    else if (roll < 98.2) rarityObj = RARITIES[4];
-    else if (roll < 99.6) rarityObj = RARITIES[5];
-    else rarityObj = RARITIES[6];
+    // CHỈ GIẢM TỶ LỆ RỚT ĐỒ HIẾM TỪ BẬC 3 TRỞ LÊN (Cam, Vàng, Tím, Đỏ)
+    const r = Math.random() * 100;
+    let rIdx = 0;
+    if (rankKey === "mythical") {
+      if (r < 25) rIdx = 4; // Vàng (25%)
+      else if (r < 75) rIdx = 5; // Tím (50%)
+      else rIdx = 6; // Đỏ Siêu Cấp (25%)
+    } else if (rankKey === "legendary") {
+      if (r < 5) rIdx = 2; // Lam
+      else if (r < 38) rIdx = 3; // Cam
+      else if (r < 80) rIdx = 4; // Vàng
+      else if (r < 95) rIdx = 5; // Tím
+      else rIdx = 6; // Đỏ
+    } else if (rankKey === "overlord") {
+      if (r < 25) rIdx = 2; // Lam
+      else if (r < 72) rIdx = 3; // Cam
+      else if (r < 92) rIdx = 4; // Vàng
+      else if (r < 98.5) rIdx = 5; // Tím
+      else rIdx = 6; // Đỏ
+    } else if (rankKey === "golden") {
+      if (r < 60) rIdx = 2; // Lam
+      else if (r < 88) rIdx = 3; // Cam
+      else if (r < 97) rIdx = 4; // Vàng
+      else if (r < 99.6) rIdx = 5; // Tím
+      else rIdx = 6; // Đỏ
+    } else if (rankKey === "dark_gold") {
+      if (r < 35) rIdx = 1; // Lục
+      else if (r < 85) rIdx = 2; // Lam
+      else if (r < 96.5) rIdx = 3; // Cam
+      else if (r < 99.4) rIdx = 4; // Vàng
+      else rIdx = 5; // Tím
+    } else if (rankKey === "elite") {
+      if (r < 40) rIdx = 0; // Trắng (40%)
+      else if (r < 82) rIdx = 1; // Lục (42%)
+      else if (r < 97.5) rIdx = 2; // Lam (15.5%)
+      else if (r < 99.6) rIdx = 3; // Cam (2.1%)
+      else rIdx = 4; // Vàng (0.4%)
+    } else {
+      // Quái Thường: Đồ phổ thông (Trắng, Lục, Lam) chiếm 99.2%, đồ hiếm bậc 3+ chỉ chiếm 0.8%
+      if (r < 70) rIdx = 0; // Trắng (70%)
+      else if (r < 92) rIdx = 1; // Lục (22%)
+      else if (r < 99.2) rIdx = 2; // Lam (7.2%)
+      else if (r < 99.9) rIdx = 3; // Cam (0.7%)
+      else rIdx = 4; // Vàng (0.1%)
+    }
+    rarityObj = RARITIES[rIdx] || RARITIES[0];
   }
 
   const pClass = preferredClass || state.charClass || "dk";
@@ -1504,53 +1704,59 @@ function runCombatTick() {
     state.enemyDebuffs = {};
   }
 
-  // Monster Persistence & 10x HP System
+  // 7 Monster Ranks Persistence & 10x HP System
   if (!state.currentMob || state.currentMob.tier !== currentMap.tier) {
-    let mobCategory = "normal";
-    let mobMult = 1;
-    let mobColorClass = "log-norm";
+    const rank = rollMonsterRank(state.mobsKilled);
+    let rawMobName = "";
 
-    const rollMob = Math.random() * 100;
-    if ((state.mobsKilled + 1) % 10 === 0 || rollMob < 2.0) {
-      mobCategory = "boss";
-      mobMult = 5;
-      mobColorClass = "log-boss";
-    } else if (rollMob < 20.0) {
-      mobCategory = "elite";
-      mobMult = 2;
-      mobColorClass = "log-elite";
-    }
-
-    let mobName = "";
-    if (mobCategory === "boss") {
-      mobName = `[BOSS THỦ LĨNH] ${currentMap.boss}`;
-    } else if (mobCategory === "elite") {
+    if (rank.key === "mythical") {
+      rawMobName = `${currentMap.boss} Thức Tỉnh`;
+    } else if (rank.key === "legendary") {
+      rawMobName = `${currentMap.boss}`;
+    } else if (rank.key === "overlord") {
+      rawMobName = `Thống Soái ${currentMap.boss}`;
+    } else if (rank.key === "golden") {
       const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-      mobName = `[TINH ANH] ${rName} Đột Biến`;
+      rawMobName = `${rName} Hoàng Kim`;
+    } else if (rank.key === "dark_gold") {
+      const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
+      rawMobName = `${rName} Ám Kim`;
+    } else if (rank.key === "elite") {
+      const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
+      rawMobName = `${rName} Đột Biến`;
     } else {
-      mobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
+      rawMobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
     }
 
-    // 10x Monster HP
-    const maxMobHp = Math.floor((currentMap.tier * 400 + 400) * 10 * mobMult);
+    const fullMobName = `${rank.prefix} ${rawMobName}`;
+    const maxMobHp = Math.floor((currentMap.tier * 400 + 400) * 10 * rank.hpMult);
+
     state.currentMob = {
-      name: mobName,
-      category: mobCategory,
-      mult: mobMult,
-      colorClass: mobColorClass,
+      name: fullMobName,
+      rawName: rawMobName,
+      rank: rank,
+      category: rank.key,
+      mult: rank.dmgMult,
       maxHp: maxMobHp,
       currentHp: maxMobHp,
       tier: currentMap.tier
     };
+
+    if (rank.key === "mythical" || rank.key === "legendary") {
+      audio.playGateOpen();
+      audio.playKeng();
+      addLog(`⚡⚡ [CẢNH BÁO] QUÁI VẬT ${rank.name.toUpperCase()} [${fullMobName}] ĐÃ XUẤT HIỆN! ⚡⚡`, "log-boss");
+    }
   }
 
   const mobName = state.currentMob.name;
-  const mobCategory = state.currentMob.category;
-  const mobMult = state.currentMob.mult;
-  const mobColorClass = state.currentMob.colorClass;
+  const mobRank = state.currentMob.rank;
+  const mobCategory = mobRank.key;
+  const mobMult = mobRank.dmgMult;
+  const mobColorClass = mobRank.colorClass;
 
-  // Update Chibi Arena Visuals
-  updateChibiArena(currentMap, mobName, mobCategory);
+  // Update Chibi Arena Visuals with Rank
+  updateChibiArena(currentMap, mobName, mobRank);
 
   // Random Buff Trigger by Stats
   if (state.stats.vit >= 30 && (!state.buffs.fortitude || state.buffs.fortitude <= 0) && (Math.random() < 0.08 || state.currentHp < stats.maxHp * 0.5)) {
@@ -1692,30 +1898,36 @@ function runCombatTick() {
     animateMonsterReaction(true);
     state.mobsKilled++;
 
-    // Track Boss Kills
-    if (mobCategory === "boss") {
+    // Track Boss & Overlord Kills
+    const isBossTier = ["overlord", "legendary", "mythical"].includes(mobCategory);
+    if (isBossTier) {
       state.bossKilled = (state.bossKilled || 0) + 1;
       if (state.quests && state.quests.daily && state.quests.daily.killBosses) {
         state.quests.daily.killBosses.cur++;
       }
     }
 
-    // 1. REDUCED ZEN DROP CHANCE (Giảm tỷ lệ rơi Zen: Boss 100%, Elite 60%, Normal 35%)
-    const zenDropChance = mobCategory === "boss" ? 1.0 : (mobCategory === "elite" ? 0.60 : 0.35);
-    if (Math.random() < zenDropChance) {
-      const earnedZen = Math.floor((Math.random() * 200 + 150) * currentMap.tier * mobMult * (1 + state.rs * 0.20));
+    if (mobCategory === "mythical") {
+      addLog(`🏆 [THẦN THOẠI DIỆT ĐẾ] Bạn đã đả bại quái vật [${mobName}] tối thượng!`, "log-crit");
+      audio.playKeng();
+      audio.vibrate(200);
+    }
+
+    // 1. Zen Drop according to 7 Ranks
+    if (Math.random() < mobRank.zenChance) {
+      const earnedZen = Math.floor((Math.random() * 200 + 150) * currentMap.tier * mobRank.zenMult * (1 + state.rs * 0.20));
       state.zen += earnedZen;
       spawnFloatingLoot("🪙", `+${earnedZen.toLocaleString()} Zen`, "#ffec8b");
       addLog(`🪙 [NHẶT ZEN] +${earnedZen.toLocaleString()} Zen!`, "log-zen");
     }
 
     // 2. Standard Balanced EXP Gain
-    const earnedExp = Math.floor((Math.random() * 15 + 20) * currentMap.tier * mobMult);
+    const earnedExp = Math.floor((Math.random() * 15 + 20) * currentMap.tier * mobRank.hpMult * 0.6);
     state.exp += earnedExp;
 
-    // 3. Jewel & Potion Drops
+    // 3. Jewel & Potion Drops scaled by Rank
     const rollJewel = Math.random() * 100;
-    const jewelBoost = mobCategory === "boss" ? 10 : (mobCategory === "elite" ? 3 : 1);
+    const jewelBoost = mobRank.jewelBoost;
 
     if (rollJewel < 3.0 * jewelBoost) {
       state.bless++;
@@ -1735,7 +1947,7 @@ function runCombatTick() {
       audio.playKeng();
     }
 
-    // Potion drop chance (15%)
+    // Potion drop chance
     if (Math.random() < 0.15) {
       if (Math.random() < 0.5) {
         state.potions.hp++;
@@ -1746,11 +1958,9 @@ function runCombatTick() {
       }
     }
 
-    // 4. GEAR DROP REDUCED BY 70% (Boss: 4.5%, Elite: 0.9%, Normal: 0.15%)
-    const gearDropChance = mobCategory === "boss" ? 0.045 : (mobCategory === "elite" ? 0.009 : 0.0015);
-    if (Math.random() < gearDropChance) {
-      const forceR = mobCategory === "boss" ? Math.min(6, 3 + Math.floor(Math.random() * 4)) : (mobCategory === "elite" ? Math.min(3, 2 + Math.floor(Math.random() * 2)) : null);
-      const droppedItem = generateItem(currentMap.tier, forceR);
+    // 4. GEAR DROP: Đồ thường rơi ổn định, ĐỒ HIẾM TỪ BẬC 3 TRỞ LÊN ĐƯỢC GIẢM MẠNH
+    if (Math.random() < mobRank.gearChance) {
+      const droppedItem = generateItem(currentMap.tier, mobRank.minRarity, null, mobRank.key);
       spawnFloatingLoot("🎁", `[${droppedItem.name}]`, RARITIES[droppedItem.rarity].color);
       handleDroppedItem(droppedItem);
     }
