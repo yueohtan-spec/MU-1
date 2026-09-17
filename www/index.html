@@ -1144,6 +1144,244 @@
     /* Modals */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 300; }
     .modal-card { background: #161a24; border: 2px solid var(--gold); border-radius: 8px; padding: 12px; max-width: 380px; width: 92%; max-height: 85vh; overflow-y: auto; }
+  
+    /* BXH & Auto RS Mini Log in Header */
+    .btn-bxh-badge {
+      background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+      border: 1px solid #f1c40f;
+      color: #f1c40f;
+      font-size: 8.5px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      box-shadow: 0 0 5px rgba(241, 196, 15, 0.3);
+    }
+    .btn-bxh-badge:hover { background: #34495e; border-color: #ffd700; }
+
+    .btn-autors-badge {
+      background: linear-gradient(180deg, #16a085 0%, #0e6655 100%);
+      border: 1px solid #1abc9c;
+      color: #fff;
+      font-size: 8px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Monster HP Text & Enhanced Bar */
+    .mob-hp-bar-bg {
+      width: 100%;
+      min-width: 95px;
+      height: 9px;
+      background: #0f121a;
+      border: 1px solid #e74c3c;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 1px;
+      box-shadow: 0 0 4px rgba(231, 76, 60, 0.4);
+    }
+    .mob-hp-text {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #ff7675;
+      text-shadow: 0 1px 2px #000, 0 0 4px #000;
+      margin-top: 1px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Human Mannequin Paperdoll Layout */
+    .human-paperdoll-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr 1fr;
+      gap: 5px;
+      position: relative;
+      margin-top: 4px;
+    }
+    .paperdoll-side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .paperdoll-center-col {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+    .mannequin-silhouette-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 6px;
+      background: radial-gradient(circle, rgba(26, 36, 56, 0.75) 0%, rgba(10, 14, 22, 0.95) 100%);
+      border: 1px solid #24334a;
+      padding: 4px;
+    }
+    .human-mannequin-svg {
+      position: absolute;
+      width: 110px;
+      height: 195px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.25));
+    }
+    .mannequin-slots {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      justify-content: space-between;
+    }
+    .body-slot {
+      width: 100%;
+      background: rgba(12, 16, 24, 0.88) !important;
+      backdrop-filter: blur(4px);
+    }
+    .quick-enhance-card {
+      border: 1px dashed #2ecc71 !important;
+    }
+
+    /* Upgrade & Crafting Tab Styles */
+    .craft-mat-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      background: #111520;
+      border: 1px solid #252d42;
+      border-radius: 5px;
+      padding: 4px 6px;
+      margin-bottom: 6px;
+    }
+    .mat-badge {
+      font-size: 8.5px;
+      color: #c8d6e5;
+      background: #192030;
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid #2e3954;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .mat-badge b { color: var(--gold); }
+
+    .upgrade-subnav {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .upgrade-subnav-btn {
+      flex: 1;
+      padding: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      background: #151a26;
+      border: 1px solid #2c364d;
+      color: #8fa0b8;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .upgrade-subnav-btn.active {
+      background: linear-gradient(180deg, #2980b9 0%, #1b4f72 100%);
+      border-color: #3498db;
+      color: #fff;
+    }
+
+    .upgrade-slot-pills {
+      display: flex;
+      gap: 3px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+      scrollbar-width: thin;
+    }
+    .upgrade-slot-pill {
+      flex-shrink: 0;
+      padding: 3px 6px;
+      font-size: 9px;
+      font-weight: bold;
+      background: #141924;
+      border: 1px solid #273145;
+      color: #c8d6e5;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .upgrade-slot-pill.active {
+      background: var(--gold);
+      color: #000;
+      border-color: #fff;
+    }
+
+    .forge-detail-box {
+      background: #111622;
+      border: 1px solid #28344c;
+      border-radius: 6px;
+      padding: 8px;
+    }
+    .upgrade-forecast-box {
+      background: #0b0e14;
+      border: 1px dashed #3a4763;
+      border-radius: 4px;
+      padding: 6px;
+      margin-top: 6px;
+    }
+
+    .craft-recipes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 52vh;
+      overflow-y: auto;
+    }
+    .craft-recipe-card {
+      background: #121724;
+      border: 1px solid #28344c;
+      border-radius: 6px;
+      padding: 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .craft-recipe-card:hover { border-color: var(--gold); }
+    .craft-cost-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin: 2px 0;
+    }
+    .craft-cost-tag {
+      font-size: 8.5px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #1a2335;
+      border: 1px solid #2e3e5c;
+    }
+    .cost-met { color: #2ecc71; border-color: #27ae60; }
+    .cost-unmet { color: #e74c3c; border-color: #c0392b; }
+
   </style>
 </head>
 <body>
@@ -1211,6 +1449,8 @@
           <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
           <button class="btn-rename-icon" onclick="openRenameModal()" title="Đổi tên">✏️</button>
           <button class="btn-sound-icon" id="btnSoundToggle" onclick="toggleSound()" title="Bật/Tắt Âm thanh">🔊</button>
+          <button class="btn-bxh-badge" onclick="openLeaderboardModal()" title="Bảng Xếp Hạng Lục Địa MU">🏆 <span id="bxhMiniText">Top 1: SoulMaster (16 RS)</span></button>
+          <button class="btn-autors-badge" id="btnAutoRSToggle" onclick="toggleAutoRS()" title="Tự động Chuyển Sinh khi đạt Cấp 400">🔄 Auto RS: BẬT</button>
           <button class="btn-overview-icon" onclick="openOverviewStatsModal()" title="Bảng chỉ số tổng hợp">📜 Chỉ Số</button>
           <button class="btn-quest-icon" onclick="openQuestsModal()" title="Nhiệm vụ & Thành tựu">🎯 Nhiệm Vụ <span class="notif-dot" id="questNotifDot" style="display:none;">●</span></button>
           <span class="hero-rs" id="heroRs">(RS: 0)</span>
@@ -1317,6 +1557,7 @@
             <div class="mob-hp-bar-bg">
               <div class="mob-hp-bar-fill" id="chibiMobHpFill" style="width: 100%;"></div>
             </div>
+            <div class="mob-hp-text" id="chibiMobHpText">HP: 1,500 / 1,500 (100%)</div>
           </div>
           <div class="actor-sprite-box" id="monsterSpriteEl"></div>
           <div class="mob-foot-ring" id="mobFootRing"></div>
@@ -1344,16 +1585,14 @@
       </div>
     </div>
 
-    <!-- 4. Navigation Tabs (8 Tabs) -->
+    <!-- 4. Navigation Tabs (6 Tabs) -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('gear')">11 Trang Bị</button>
-      <button class="tab-btn" onclick="switchTab('inventory')">Túi Đồ</button>
-      <button class="tab-btn" onclick="switchTab('skill')">Kỹ Năng</button>
-      <button class="tab-btn" onclick="switchTab('map')">Bản Đồ</button>
-      <button class="tab-btn" onclick="switchTab('stats')">Chỉ Số</button>
-      <button class="tab-btn" onclick="switchTab('leaderboard')">BXH</button>
-      <button class="tab-btn" onclick="switchTab('rebirth')">Chuyển Sinh</button>
-      <button class="tab-btn" onclick="switchTab('forge')">Lò Rèn</button>
+      <button class="tab-btn active" id="tabBtn-gear" onclick="switchTab('gear')">Trang Bị</button>
+      <button class="tab-btn" id="tabBtn-upgrade" onclick="switchTab('upgrade')">Nâng Cấp</button>
+      <button class="tab-btn" id="tabBtn-skill" onclick="switchTab('skill')">Kỹ Năng</button>
+      <button class="tab-btn" id="tabBtn-map" onclick="switchTab('map')">Bản Đồ</button>
+      <button class="tab-btn" id="tabBtn-stats" onclick="switchTab('stats')">Chỉ Số</button>
+      <button class="tab-btn" id="tabBtn-rebirth" onclick="switchTab('rebirth')">Chuyển Sinh</button>
     </div>
 
     <!-- 5. Main View Area -->
@@ -1362,48 +1601,130 @@
       <div class="tab-content active" id="tab-gear">
         <div class="paperdoll-container">
           <div class="set-bonus-badge" id="setBonusBadge">★ KÍCH HOẠT SET 4 MÓN: +20% HP & THỦ ★</div>
-          <div class="paperdoll-layout">
-            <div class="paperdoll-col">
-              <div class="slot-card" id="slot-mainWeapon" onclick="selectSlot('mainWeapon')"></div>
-              <div class="slot-card" id="slot-pendant1" onclick="selectSlot('pendant1')"></div>
-              <div class="slot-card" id="slot-ring1" onclick="selectSlot('ring1')"></div>
-              <div class="slot-card" id="slot-wings" onclick="selectSlot('wings')"></div>
+          
+          <!-- Human Mannequin Silhouette Paperdoll Layout (10 Slots) -->
+          <div class="human-paperdoll-wrapper">
+            <!-- Left Column: Wings, Main Weapon, Pendant, Ring 1 -->
+            <div class="paperdoll-side-col">
+              <div class="slot-card" id="slot-wings" onclick="selectSlot('wings')" title="Cánh Thần"></div>
+              <div class="slot-card" id="slot-mainWeapon" onclick="selectSlot('mainWeapon')" title="Vũ Khí Chính"></div>
+              <div class="slot-card" id="slot-pendant" onclick="selectSlot('pendant')" title="Dây Chuyền"></div>
+              <div class="slot-card" id="slot-ring1" onclick="selectSlot('ring1')" title="Nhẫn Trái"></div>
             </div>
-            <div class="paperdoll-col">
-              <div class="slot-card" id="slot-helm" onclick="selectSlot('helm')"></div>
-              <div class="slot-card" id="slot-armor" onclick="selectSlot('armor')"></div>
-              <div class="slot-card" id="slot-gloves" onclick="selectSlot('gloves')"></div>
-              <div class="slot-card" id="slot-boots" onclick="selectSlot('boots')"></div>
+
+            <!-- Center Column: Glowing Human Mannequin with Helm, Armor, Gloves, Boots -->
+            <div class="paperdoll-center-col">
+              <div class="mannequin-silhouette-box">
+                <!-- SVG Human Body Silhouette -->
+                <svg viewBox="0 0 120 220" class="human-mannequin-svg">
+                  <defs>
+                    <linearGradient id="mannequinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#3d465c"/>
+                      <stop offset="50%" stop-color="#1e2433"/>
+                      <stop offset="100%" stop-color="#0e1118"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Head contour -->
+                  <circle cx="60" cy="24" r="13" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1.2" opacity="0.65"/>
+                  <!-- Neck & Shoulders -->
+                  <path d="M 52 37 L 68 37 L 88 52 L 32 52 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
+                  <!-- Torso -->
+                  <path d="M 32 52 L 88 52 L 78 108 L 42 108 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1.2" opacity="0.6"/>
+                  <!-- Belt -->
+                  <path d="M 42 108 L 78 108 L 74 125 L 46 125 Z" fill="url(#mannequinGrad)" stroke="#ffd700" stroke-width="1.2" opacity="0.6"/>
+                  <!-- Arms -->
+                  <path d="M 30 54 L 16 95 L 24 125 L 30 115 L 22 95 L 32 60 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="0.8" opacity="0.4"/>
+                  <path d="M 90 54 L 104 95 L 96 125 L 90 115 L 98 95 L 88 60 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="0.8" opacity="0.4"/>
+                  <!-- Legs -->
+                  <path d="M 46 125 L 58 128 L 54 185 L 42 210 L 32 208 L 44 175 L 44 125 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
+                  <path d="M 74 125 L 62 128 L 66 185 L 78 210 L 88 208 L 76 175 L 76 125 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
+                </svg>
+
+                <div class="mannequin-slots">
+                  <div class="slot-card body-slot" id="slot-helm" onclick="selectSlot('helm')" title="Mũ Giáp (Đầu)"></div>
+                  <div class="slot-card body-slot" id="slot-armor" onclick="selectSlot('armor')" title="Áo Giáp (Ngực)"></div>
+                  <div class="slot-card body-slot" id="slot-gloves" onclick="selectSlot('gloves')" title="Găng Tay (Tay)"></div>
+                  <div class="slot-card body-slot" id="slot-boots" onclick="selectSlot('boots')" title="Giày (Chân)"></div>
+                </div>
+              </div>
             </div>
-            <div class="paperdoll-col">
-              <div class="slot-card" id="slot-offWeapon" onclick="selectSlot('offWeapon')"></div>
-              <div class="slot-card" id="slot-pendant2" onclick="selectSlot('pendant2')"></div>
-              <div class="slot-card" id="slot-ring2" onclick="selectSlot('ring2')"></div>
-              <div class="slot-card" style="opacity:0.25; pointer-events:none;"><div class="slot-label" style="text-align:center; width:100%;">Trống</div></div>
+
+            <!-- Right Column: Pet / Mount, Off-Weapon, Ring 2, Quick Forge -->
+            <div class="paperdoll-side-col">
+              <div class="slot-card" id="slot-pet" onclick="selectSlot('pet')" title="Thú Cưng / Thú Cưỡi"></div>
+              <div class="slot-card" id="slot-offWeapon" onclick="selectSlot('offWeapon')" title="Vũ Khí Phụ / Khiên"></div>
+              <div class="slot-card" id="slot-ring2" onclick="selectSlot('ring2')" title="Nhẫn Phải"></div>
+              <div class="slot-card quick-enhance-card" onclick="switchTab('upgrade')" title="Chuyển sang Nâng Cấp & Chế Tạo">
+                <div class="slot-icon-box" style="background:#27ae60; color:#fff;">⚒️</div>
+                <div class="slot-info">
+                  <div class="slot-label" style="color:#2ecc71;">NÂNG CẤP</div>
+                  <div class="slot-name" style="color:#fff; font-size:9.5px;">Cường Hóa & Chế Tạo</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="background:var(--card-bg); padding:5px 8px; border-radius:5px; border:1px solid var(--border); font-size:9.5px; color:#8fa0b8; line-height:1.4;">
-          ⚡ <b>Quy tắc Trang Bị:</b> Đồ mới có <b>CP cao hơn</b> sẽ tự động mặc vào. Đồ có <b>phẩm cấp cao hơn</b> (Cam, Vàng, Tím, Đỏ) dù chưa nâng cấp sẽ được <b>ưu tiên giữ lại trong Túi Đồ</b>!
+        <div style="background:var(--card-bg); padding:5px 8px; border-radius:5px; border:1px solid var(--border); font-size:9.5px; color:#8fa0b8; line-height:1.4; margin-top:4px;">
+          ⚡ <b>Cơ Chế Tự Động:</b> Đồ rơi mạnh hơn sẽ <b>tự động trang bị</b> lên người. Đồ yếu hơn được <b>tự động phân giải</b> thành Zen & Nguyên liệu chế tạo! Cánh, Thú cưng và Thú cưỡi được chế tạo tại Tab <b>Nâng Cấp</b>!
         </div>
       </div>
 
-      <!-- Tab 2: Inventory (Túi Đồ) -->
-      <div class="tab-content" id="tab-inventory">
-        <div class="inv-header">
-          <span>📦 Túi Đồ: <b id="invCapacityText" style="color:var(--gold)">0 / 30</b></span>
-          <div style="display:flex; gap:3px;">
-            <button class="btn btn-sm btn-danger" onclick="sellAllInventory()" title="Bán toàn bộ trang bị trong túi">💰 Bán Hết</button>
-            <button class="btn btn-sm btn-warn" onclick="sellGarbageItems()" title="Bán đồ trắng và lục">🧹 Dọn Rác</button>
-            <button class="btn btn-sm btn-primary" onclick="openPetShopModal()">👼 Trợ Thủ</button>
+      <!-- Tab 2: Nâng Cấp & Chế Tạo Thần Vật (Replaces Inventory & Combines Forge) -->
+      <div class="tab-content" id="tab-upgrade">
+        <!-- Material Storage Dashboard -->
+        <div class="craft-mat-bar" id="craftMatBar">
+          <div class="mat-badge" title="Lông Vũ Chaos">🪶 Lông Vũ: <b id="craftFeather">0</b></div>
+          <div class="mat-badge" title="Ngọn Lửa Condor">🔥 Lửa Condor: <b id="craftFlame">0</b></div>
+          <div class="mat-badge" title="Hồn Thú">🐾 Hồn Thú: <b id="craftBeastSoul">0</b></div>
+          <div class="mat-badge" title="Cốt Sừng Sói Tinh">🐺 Sừng Sói: <b id="craftFenrirHorn">0</b></div>
+          <div class="mat-badge" title="Mảnh Kỳ Lân Hoàng Kim">🦄 Kỳ Lân: <b id="craftKirin">0</b></div>
+        </div>
+
+        <!-- Subnav: 1. Cường Hóa | 2. Xưởng Chế Tạo -->
+        <div class="upgrade-subnav">
+          <button class="upgrade-subnav-btn active" id="btnSubnavEnhance" onclick="switchUpgradeSubtab('enhance')">⚒️ Cường Hóa Trang Bị (+15)</button>
+          <button class="upgrade-subnav-btn" id="btnSubnavCraft" onclick="switchUpgradeSubtab('craft')">🧙 Xưởng Chế Tạo Cánh & Thú</button>
+        </div>
+
+        <!-- Subview 1: Cường Hóa Trang Bị Đang Mặc -->
+        <div class="upgrade-subview" id="subviewEnhance">
+          <div style="font-size:10px; color:#8fa0b8; margin-bottom:4px;">Chọn trang bị đang mặc trên người để cường hóa:</div>
+          <div class="upgrade-slot-pills" id="upgradeSlotPills"></div>
+
+          <!-- Forge Detail Box -->
+          <div class="forge-detail-box" id="forgeDetailBox">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div class="slot-icon-box" id="forgeItemIcon" style="width:38px; height:38px; font-size:18px;">⚔️</div>
+              <div style="flex:1;">
+                <div id="forgeItemName" style="font-size:12px; font-weight:bold; color:var(--gold);">Đại Đao Khởi Nguyên +0</div>
+                <div id="forgeItemStats" style="font-size:9.5px; color:#c8d6e5;">Công: +45 | Thủ: +0 | HP: +120</div>
+                <div id="forgeItemOpts" style="font-size:8.5px; color:#55efc4;">★ Tăng tốc độ tấn công</div>
+              </div>
+            </div>
+
+            <!-- Forecast -->
+            <div class="upgrade-forecast-box" id="upgradeForecastBox">
+              <div style="color:var(--gold); font-weight:bold; font-size:10px;">DỰ ĐOÁN KHI CƯỜNG HÓA LÊN CẤP TIẾP THEO:</div>
+              <div id="forgeForecastText" style="font-size:9.5px; color:#2ecc71; margin-top:2px;">Sát thương & Phòng thủ +12% • Kích hoạt Hào quang ánh sáng!</div>
+              <div id="forgeSuccessRateText" style="font-size:10px; color:#00ffff; font-weight:bold; margin-top:2px;">Tỷ lệ thành công: 100%</div>
+              <div id="forgeCostText" style="font-size:9.5px; color:#ff9f43; margin-top:2px;">Chi phí: 1x Jewel of Bless • 50.000 Zen</div>
+            </div>
+
+            <div style="display:flex; gap:6px; margin-top:8px;">
+              <button class="btn btn-success" id="btnForgeEnhance" style="flex:1; padding:8px; font-weight:bold;" onclick="forgeEnhance()">CƯỜNG HÓA (+1)</button>
+              <button class="btn btn-primary" id="btnForgeReforge" style="flex:1; padding:8px;" onclick="forgeReforge()">TẨY DÒNG (LIFE)</button>
+            </div>
           </div>
         </div>
-        <div class="inv-grid" id="inventoryGrid"></div>
-      </div>
 
-      <!-- Tab 3: Skills (Kỹ Năng) -->
-      <div class="tab-content" id="tab-skill">
+        <!-- Subview 2: Xưởng Chế Tạo Cánh & Thú Cưng / Thú Cưỡi -->
+        <div class="upgrade-subview" id="subviewCraft" style="display:none;">
+          <div style="font-size:10px; color:#8fa0b8; margin-bottom:6px;">Cánh, Thú cưng và Thú cưỡi được ghép từ các nguyên liệu thu thập qua đánh quái và boss:</div>
+          <div class="craft-recipes-list" id="craftRecipesList"></div>
+        </div>
+      </div>
+<div class="tab-content" id="tab-skill">
         <div style="display:flex; justify-content:space-between; align-items:center; background:#131722; padding:5px 8px; border-radius:5px; font-size:10.5px; border:1px solid #242c3d;">
           <span>Điểm Kỹ Năng: <b id="txtSkillPoints" style="color:var(--gold);">0</b></span>
           <span style="font-size:9.5px; color:#8fa0b8;">(Nhận mỗi khi Lên Cấp & Chuyển Sinh)</span>
@@ -1550,28 +1871,6 @@
       </div>
 
       <!-- Tab 6: Leaderboard (BXH) -->
-      <div class="tab-content" id="tab-leaderboard">
-        <div class="rank-filters">
-          <button class="rank-filter-btn active" id="btnRankCP" onclick="switchRankCategory('cp')">🏆 Lực Chiến CP</button>
-          <button class="rank-filter-btn" id="btnRankRS" onclick="switchRankCategory('rs')">🌀 Chuyển Sinh</button>
-          <button class="rank-filter-btn" id="btnRankBoss" onclick="switchRankCategory('boss')">💀 Diệt Boss</button>
-        </div>
-
-        <div class="my-rank-banner" id="myRankBanner">
-          <div>
-            <span style="color:#8fa0b8; font-size:9.5px;">Vị trí của bạn:</span>
-            <div style="font-size:12px; font-weight:900; color:var(--gold);" id="myRankText">Hạng #...</div>
-          </div>
-          <div style="text-align:right;">
-            <span style="color:#8fa0b8; font-size:9.5px;" id="myRankScoreLabel">Điểm số:</span>
-            <div style="font-size:11.5px; font-weight:bold; color:#00ffcc;" id="myRankScoreVal">...</div>
-          </div>
-        </div>
-
-        <div class="rank-list" id="leaderboardListContainer"></div>
-      </div>
-
-      <!-- Tab 7: Rebirth -->
       <div class="tab-content" id="tab-rebirth">
         <div style="background:var(--card-bg); padding:8px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
           <div style="font-weight:bold; color:var(--gold); margin-bottom:5px;">ĐIỀU KIỆN CHUYỂN SINH (RESET CHECKLIST)</div>
@@ -1586,19 +1885,7 @@
       </div>
 
       <!-- Tab 8: Forge Goblin -->
-      <div class="tab-content" id="tab-forge">
-        <div style="background:var(--card-bg); padding:8px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
-          <div style="font-weight:bold; color:var(--gold); margin-bottom:5px;">LÒ RÈN CHAOS GOBLIN</div>
-          <div id="forgeTargetText" style="color:#8fa0b8; margin-bottom:8px;">Hãy chọn một trang bị ở Tab 1 hoặc Túi Đồ để thao tác.</div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <button class="btn btn-success" id="btnForgeEnhance" style="padding:8px;" onclick="forgeEnhance()">CƯỜNG HÓA (+1 ĐẾN +15)</button>
-            <button class="btn btn-primary" id="btnForgeReforge" style="padding:8px;" onclick="forgeReforge()">TẨY LUYỆN DÒNG (JEWEL OF LIFE)</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Detail Panel -->
+      <!-- Detail Panel -->
     <div class="detail-panel" id="detailPanel">
       <div style="display:flex; gap:8px; align-items:flex-start;">
         <div class="detail-item-showcase" id="dItemShowcase" style="display:none;"></div>
@@ -1744,5 +2031,35 @@
   </div>
 
   <script src="src/main.js"></script>
+
+  <!-- Leaderboard Modal (BXH Lục Địa MU) -->
+  <div class="modal-overlay" id="leaderboardModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:900; color:var(--gold);">🏆 BẢNG XẾP HẠNG LỤC ĐỊA MU</div>
+        <button class="btn btn-sm" onclick="closeLeaderboardModal()">✕ Đóng</button>
+      </div>
+
+      <div class="rank-filters" style="margin-bottom:6px;">
+        <button class="rank-filter-btn active" id="btnRankCP" onclick="switchRankCategory('cp')">🏆 Lực Chiến CP</button>
+        <button class="rank-filter-btn" id="btnRankRS" onclick="switchRankCategory('rs')">🌀 Chuyển Sinh</button>
+        <button class="rank-filter-btn" id="btnRankBoss" onclick="switchRankCategory('boss')">💀 Diệt Boss</button>
+      </div>
+
+      <div class="my-rank-banner" id="myRankBanner" style="margin-bottom:6px;">
+        <div>
+          <span style="color:#8fa0b8; font-size:9.5px;">Vị trí của bạn:</span>
+          <div style="font-size:12px; font-weight:900; color:var(--gold);" id="myRankText">Hạng #...</div>
+        </div>
+        <div style="text-align:right;">
+          <span style="color:#8fa0b8; font-size:9.5px;" id="myRankScoreLabel">Điểm số:</span>
+          <div style="font-size:11.5px; font-weight:bold; color:#00ffcc;" id="myRankScoreVal">...</div>
+        </div>
+      </div>
+
+      <div class="rank-list" id="leaderboardListContainer" style="max-height:55vh; overflow-y:auto;"></div>
+    </div>
+  </div>
+
 </body>
 </html>
