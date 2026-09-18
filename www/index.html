@@ -1518,6 +1518,196 @@
       text-align: left;
     }
 
+  
+    /* Full-Screen Architecture & Layout */
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top Persistent Status Header */
+    .top-header {
+      background: #0d1017;
+      border-bottom: 1.5px solid #22293a;
+      padding: 5px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .top-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
+    .top-header-left {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .top-header-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Main Screens Container */
+    .main-screens-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+    }
+    .screen-view {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 8px;
+      gap: 6px;
+      background: var(--bg);
+    }
+    .screen-view.active {
+      display: flex;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav-bar {
+      height: 52px;
+      background: #0b0e14;
+      border-top: 2px solid #202738;
+      display: flex;
+      flex-shrink: 0;
+      z-index: 100;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.6);
+    }
+    .nav-tab-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: #7d8da6;
+      font-size: 9px;
+      font-weight: bold;
+      cursor: pointer;
+      gap: 2px;
+      transition: all 0.2s ease;
+      position: relative;
+      padding: 3px 0;
+    }
+    .nav-tab-btn .nav-icon {
+      font-size: 16px;
+      line-height: 1;
+      transition: transform 0.2s;
+    }
+    .nav-tab-btn.active {
+      color: var(--gold);
+      background: linear-gradient(180deg, rgba(255,215,0,0.08) 0%, rgba(0,0,0,0) 100%);
+    }
+    .nav-tab-btn.active::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
+      height: 2.5px;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+      border-radius: 2px;
+    }
+    .nav-tab-btn.active .nav-icon {
+      transform: scale(1.15);
+    }
+
+    /* In-Tab Gear Detail Box (Replaces blocking detailPanel) */
+    .gear-detail-box {
+      background: #0f131c;
+      border: 1.5px solid #2b354a;
+      border-radius: 6px;
+      padding: 8px;
+      margin-top: 6px;
+      display: none;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+
+    /* Tower Screen Styles */
+    .tower-arena-box {
+      background: radial-gradient(circle at 50% 30%, #2b0b14 0%, #0c050a 100%);
+      border: 1.5px solid #e74c3c;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(231, 76, 60, 0.35);
+      margin-bottom: 6px;
+    }
+    .tower-boss-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      min-height: 130px;
+      justify-content: center;
+      width: 100%;
+    }
+    .tower-boss-sprite-box {
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 15px rgba(255, 71, 87, 0.7));
+      animation: bossPulse 2s infinite ease-in-out;
+    }
+    @keyframes bossPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(255, 71, 87, 0.6)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 22px rgba(255, 71, 87, 0.95)); }
+    }
+    .tower-hp-bar-bg {
+      width: 100%;
+      max-width: 260px;
+      height: 13px;
+      background: #141720;
+      border: 1.5px solid #e74c3c;
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+      margin-top: 6px;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.9);
+    }
+    .tower-hp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff4757 0%, #c0392b 100%);
+      transition: width 0.3s ease;
+    }
+    .tower-hp-bar-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8.5px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 1px 2px #000, 0 0 3px #000;
+    }
+
   </style>
 </head>
 <body>
@@ -1577,167 +1767,227 @@
       </div>
     </div>
 
-    <!-- 2. Header -->
-    <div class="header">
-      <div class="hero-info-row">
-        <div class="hero-badge">
+    <!-- 2. Top Persistent Header -->
+    <div class="top-header">
+      <div class="top-header-row">
+        <div class="top-header-left">
           <span class="hero-lv" id="heroLv">Lv.1</span>
           <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
+          <span class="hero-rs" id="heroRs">(RS: 0)</span>
           <button class="btn-rename-icon" onclick="openRenameModal()" title="Đổi tên">✏️</button>
           <button class="btn-sound-icon" id="btnSoundToggle" onclick="toggleSound()" title="Bật/Tắt Âm thanh">🔊</button>
-          <button class="btn-shop-badge" onclick="openShopModal()" title="Cửa Hàng Lorencia">🏪 Shop</button>
-          <button class="btn-tower-badge" onclick="openTowerModal()" title="Tháp Boss Ma Vương">🗼 Tháp Boss <span id="txtTowerFloorBadge">T.1</span></button>
-          <div class="exp-x50-pill">🔥 EXP x50</div>
-          <button class="btn-bxh-badge" onclick="openLeaderboardModal()" title="Bảng Xếp Hạng Lục Địa MU">🏆 <span id="bxhMiniText">Top 1: SoulMaster (16 RS)</span></button>
           <button class="btn-autors-badge" id="btnAutoRSToggle" onclick="toggleAutoRS()" title="Tự động Chuyển Sinh khi đạt Cấp 400">🔄 Auto RS: BẬT</button>
-          <button class="btn-overview-icon" onclick="openOverviewStatsModal()" title="Bảng chỉ số tổng hợp">📜 Chỉ Số</button>
+        </div>
+        <div class="top-header-right">
+          <button class="btn-bxh-badge" onclick="openLeaderboardModal()" title="Bảng Xếp Hạng Lục Địa MU">🏆 <span id="bxhMiniText">Top 1: SoulMaster (16 RS)</span></button>
           <button class="btn-quest-icon" onclick="openQuestsModal()" title="Nhiệm vụ & Thành tựu">🎯 Nhiệm Vụ <span class="notif-dot" id="questNotifDot" style="display:none;">●</span></button>
-          <span class="hero-rs" id="heroRs">(RS: 0)</span>
           <button class="btn-logout-icon" onclick="logoutAccount()" title="Đổi tài khoản">🚪</button>
         </div>
-        <div class="current-map-badge" id="currentMapBadge">Map 1: Lorencia</div>
       </div>
 
-      <!-- Prominent Total CP Banner -->
-      <div class="cp-banner">
-        <span>⚔ TỔNG LỰC CHIẾN</span>
-        <span class="cp-val" id="valTotalCP">120 CP</span>
-      </div>
-
-      <!-- Damage Sub-bar -->
-      <div class="dmg-subbar">
-        <span class="dmg-phy" id="subbarPhyDmg">⚔ Vật Lý: 0 ~ 0</span>
-        <span class="dmg-mag" id="subbarMagDmg">🔮 Pháp Thuật: 0 ~ 0</span>
-      </div>
-
-      <!-- HP & MP Bars -->
-      <div class="bars-container">
-        <div class="bar-wrapper">
-          <div class="bar-fill bar-hp" id="barHpFill" style="width: 100%;"></div>
-          <div class="bar-text" id="txtHpBar">❤️ HP: 500 / 500</div>
-        </div>
-        <div class="bar-wrapper">
-          <div class="bar-fill bar-mp" id="barMpFill" style="width: 100%;"></div>
-          <div class="bar-text" id="txtMpBar">💙 MP: 200 / 200</div>
-        </div>
-      </div>
-
-      <!-- Potion Quick Bar -->
-      <div class="potion-bar">
-        <button class="btn-potion btn-potion-hp" onclick="usePotion('hp')">
-          🧪 HP (<span id="txtCountHpPotion">50</span>)
-        </button>
-        <button class="btn-potion btn-potion-mp" onclick="usePotion('mp')">
-          🧪 MP (<span id="txtCountMpPotion">50</span>)
-        </button>
-        <label class="auto-potion-toggle">
-          <input type="checkbox" id="chkAutoHpPotion" checked onchange="toggleAutoPotion()">
-          <span>Tự uống (< 40%)</span>
-        </label>
-        <button class="btn btn-sm btn-warn" onclick="openPotionShopModal()">🛒 Mua</button>
-      </div>
-
-      <!-- EXP Progress Bar -->
-      <div class="exp-bar-wrapper">
-        <div class="bar-fill bar-exp" id="barExpFill" style="width: 0%;"></div>
-        <div class="bar-text" id="txtExpBar">EXP: 0 / 100 (0%)</div>
-      </div>
-
-      <!-- Currency Dashboard -->
-      <div class="currency-dashboard">
+      <!-- Compact Currency Dashboard -->
+      <div class="currency-dashboard" style="margin-top:2px;">
         <div class="curr-badge curr-zen" id="valZen">🪙 Zen: 0</div>
         <div class="curr-badge curr-bless" id="valBless">💎 B: 0</div>
         <div class="curr-badge curr-chaos" id="valChaos">🔥 C: 0</div>
         <div class="curr-badge curr-life" id="valLife">🌿 L: 0</div>
       </div>
-
-      <!-- Buff & Debuff Chips Bar -->
-      <div class="status-effects-bar" id="statusEffectsBar">
-        <span style="font-size:9px; color:#576574;">Hiệu ứng: Bình Thường</span>
-      </div>
     </div>
 
-    <!-- 3. 2.5D Chibi Battle Arena Stage (Đấu Trường 2.5D MU Nâng Cấp) -->
-    <div class="battle-arena-container" id="battleArena">
-      <div class="arena-background" id="arenaBg"></div>
-      <!-- Ambient Weather & Atmospheric Particle Layer -->
-      <div class="arena-weather-layer" id="arenaWeatherLayer"></div>
+    <!-- 3. Full-Screen Main Screens Container -->
+    <div class="main-screens-container">
       
-      <!-- 2.5D Isometric Pedestal / Arena Floor -->
-      <div class="arena-pedestal">
-        <div class="arena-runic-circle"></div>
-      </div>
-      
-      <!-- Blood Castle Countdown Banner (Hidden by default) -->
-      <div class="bc-timer-banner" id="bcTimerBanner" style="display:none;">
-        <span>🏰 HUYẾT LÂU:</span>
-        <span id="txtBcTimer" style="color:var(--gold);">⏱️ 60s</span>
-        <span>| Diệt: <b id="txtBcKills" style="color:#00ffcc;">0</b></span>
-      </div>
-
-      <!-- Stage Layer with Hero & Monster -->
-      <div class="arena-stage">
-        <!-- Hero Chibi -->
-        <div class="chibi-actor hero-actor" id="chibiHeroActor">
-          <div class="actor-badge" id="chibiHeroBadge">Lv.1 Dark Knight</div>
-          <div class="actor-sprite-box" id="heroSpriteEl"></div>
-          <div class="hero-foot-ring" id="heroFootRing"></div>
-          <div class="actor-shadow"></div>
-          <div class="chibi-pet-box" id="chibiPetEl" onclick="openPetShopModal()" title="Trợ thủ MU"></div>
-        </div>
-
-        <!-- VS Center Badge -->
-        <div class="arena-vs-badge" id="arenaVsBadge">VS</div>
-
-        <!-- Monster Chibi -->
-        <div class="chibi-actor monster-actor" id="chibiMonsterActor">
-          <div class="mob-header-badge">
-            <div class="mob-name-text" id="chibiMobName">Nhện Độc</div>
-            <div class="mob-hp-bar-bg">
-              <div class="mob-hp-bar-fill" id="chibiMobHpFill" style="width: 100%;"></div>
-            </div>
-            <div class="mob-hp-text" id="chibiMobHpText">HP: 1,500 / 1,500 (100%)</div>
+      <!-- SCREEN 1: CHIẾN ĐẤU (BATTLE ARENA) -->
+      <div class="screen-view active" id="screen-battle">
+        <!-- Map & Event Status Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#121622; border:1px solid #28324a; border-radius:6px; padding:5px 8px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="current-map-badge" id="currentMapBadge" style="font-size:11px; font-weight:bold; color:var(--gold);">Map 1: Lorencia</span>
+            <label class="auto-check-box" style="margin-bottom:0; font-size:9.5px;">
+              <input type="checkbox" id="chkAutoMap" onchange="toggleAutoMap()">
+              <span>🚩 Tự chuyển map</span>
+            </label>
           </div>
-          <div class="actor-sprite-box" id="monsterSpriteEl"></div>
-          <div class="mob-foot-ring" id="mobFootRing"></div>
-          <div class="actor-shadow"></div>
+          <button class="btn btn-sm btn-danger" style="font-weight:bold; box-shadow:0 0 6px rgba(231,76,60,0.5);" onclick="startBloodCastleEvent()">🏰 Huyết Lâu (<span id="txtBcAttempts">3/3</span>)</button>
+        </div>
+
+        <!-- Prominent Total CP Banner with EXP x50 Pill -->
+        <div class="cp-banner" style="position:relative;">
+          <span>⚔ TỔNG LỰC CHIẾN</span>
+          <span class="cp-val" id="valTotalCP">120 CP</span>
+          <div class="exp-x50-pill" style="position:absolute; right:10px;">🔥 EXP x50 BÙNG NỔ</div>
+        </div>
+
+        <!-- Damage Subbar -->
+        <div class="dmg-subbar">
+          <span class="dmg-phy" id="subbarPhyDmg">⚔ Vật Lý: 0 ~ 0</span>
+          <span class="dmg-mag" id="subbarMagDmg">🔮 Pháp Thuật: 0 ~ 0</span>
+        </div>
+
+        <!-- HP & MP Bars -->
+        <div class="bars-container">
+          <div class="bar-wrapper">
+            <div class="bar-fill bar-hp" id="barHpFill" style="width: 100%;"></div>
+            <div class="bar-text" id="txtHpBar">❤️ HP: 500 / 500</div>
+          </div>
+          <div class="bar-wrapper">
+            <div class="bar-fill bar-mp" id="barMpFill" style="width: 100%;"></div>
+            <div class="bar-text" id="txtMpBar">💙 MP: 200 / 200</div>
+          </div>
+        </div>
+
+        <!-- Potion Quick Bar -->
+        <div class="potion-bar">
+          <button class="btn-potion btn-potion-hp" onclick="usePotion('hp')">
+            🧪 HP (<span id="txtCountHpPotion">50</span>)
+          </button>
+          <button class="btn-potion btn-potion-mp" onclick="usePotion('mp')">
+            🧪 MP (<span id="txtCountMpPotion">50</span>)
+          </button>
+          <label class="auto-potion-toggle">
+            <input type="checkbox" id="chkAutoHpPotion" checked onchange="toggleAutoPotion()">
+            <span>Tự uống (< 40%)</span>
+          </label>
+          <button class="btn btn-sm btn-warn" onclick="switchTab('shop')">🛒 Tiệm Thuốc</button>
+        </div>
+
+        <!-- EXP Progress Bar -->
+        <div class="exp-bar-wrapper">
+          <div class="bar-fill bar-exp" id="barExpFill" style="width: 0%;"></div>
+          <div class="bar-text" id="txtExpBar">EXP: 0 / 100 (0%)</div>
+        </div>
+
+        <!-- Buff & Debuff Chips Bar -->
+        <div class="status-effects-bar" id="statusEffectsBar">
+          <span style="font-size:9px; color:#576574;">Hiệu ứng: Bình Thường</span>
+        </div>
+
+        <!-- 2.5D Chibi Battle Arena Stage -->
+        <div class="battle-arena-container" id="battleArena" style="margin-top:2px;">
+          <div class="arena-background" id="arenaBg"></div>
+          <div class="arena-weather-layer" id="arenaWeatherLayer"></div>
+          
+          <div class="arena-pedestal">
+            <div class="arena-runic-circle"></div>
+          </div>
+          
+          <div class="bc-timer-banner" id="bcTimerBanner" style="display:none;">
+            <span>🏰 HUYẾT LÂU:</span>
+            <span id="txtBcTimer" style="color:var(--gold);">⏱️ 60s</span>
+            <span>| Diệt: <b id="txtBcKills" style="color:#00ffcc;">0</b></span>
+          </div>
+
+          <div class="arena-stage">
+            <!-- Hero Chibi -->
+            <div class="chibi-actor hero-actor" id="chibiHeroActor">
+              <div class="actor-badge" id="chibiHeroBadge">Lv.1 Dark Knight</div>
+              <div class="actor-sprite-box" id="heroSpriteEl"></div>
+              <div class="hero-foot-ring" id="heroFootRing"></div>
+              <div class="actor-shadow"></div>
+              <div class="chibi-pet-box" id="chibiPetEl" onclick="switchTab('upgrade')" title="Trợ thủ MU"></div>
+            </div>
+
+            <!-- VS Center Badge -->
+            <div class="arena-vs-badge" id="arenaVsBadge">VS</div>
+
+            <!-- Monster Chibi -->
+            <div class="chibi-actor monster-actor" id="chibiMonsterActor">
+              <div class="mob-header-badge">
+                <div class="mob-name-text" id="chibiMobName">Nhện Độc</div>
+                <div class="mob-hp-bar-bg">
+                  <div class="mob-hp-bar-fill" id="chibiMobHpFill" style="width: 100%;"></div>
+                </div>
+                <div class="mob-hp-text" id="chibiMobHpText">HP: 1,500 / 1,500 (100%)</div>
+              </div>
+              <div class="actor-sprite-box" id="monsterSpriteEl"></div>
+              <div class="mob-foot-ring" id="mobFootRing"></div>
+              <div class="actor-shadow"></div>
+            </div>
+          </div>
+
+          <div class="arena-fx-layer" id="arenaFxLayer"></div>
+
+          <div class="arena-ticker-bar">
+            <span class="ticker-dot">●</span>
+            <span class="ticker-text" id="arenaTickerText">Đang tự động chiến đấu...</span>
+            <button class="btn-ticker-log" onclick="toggleFullLog()">📜 Log</button>
+          </div>
+
+          <div class="full-log-overlay" id="fullLogOverlay" style="display:none;">
+            <div class="full-log-header">
+              <span>📜 NHẬT KÝ CHIẾN ĐẤU CHI TIẾT</span>
+              <button class="btn-close-log" onclick="toggleFullLog()">✕ Đóng</button>
+            </div>
+            <div class="log-container" id="logBox"></div>
+          </div>
+        </div>
+
+        <!-- Map Selection List Container -->
+        <div style="background:#111520; border:1px solid #252d42; border-radius:6px; padding:6px; margin-top:2px;">
+          <div style="font-size:10px; font-weight:bold; color:var(--gold); margin-bottom:4px;">🗺️ 10 VÙNG ĐẤT DÃ NGOẠI LỤC ĐỊA MU:</div>
+          <div id="mapListContainer" style="display:flex; flex-direction:column; gap:3px;"></div>
         </div>
       </div>
 
-      <!-- FX Layer (Floating Damage Numbers, Slashes, Loot Pops) -->
-      <div class="arena-fx-layer" id="arenaFxLayer"></div>
-
-      <!-- Bottom Mini-Ticker Log Bar -->
-      <div class="arena-ticker-bar">
-        <span class="ticker-dot">●</span>
-        <span class="ticker-text" id="arenaTickerText">Đang tự động chiến đấu...</span>
-        <button class="btn-ticker-log" onclick="toggleFullLog()">📜 Log</button>
-      </div>
-
-      <!-- Collapsible Full Combat Log Overlay -->
-      <div class="full-log-overlay" id="fullLogOverlay" style="display:none;">
-        <div class="full-log-header">
-          <span>📜 NHẬT KÝ CHIẾN ĐẤU CHI TIẾT</span>
-          <button class="btn-close-log" onclick="toggleFullLog()">✕ Đóng</button>
+      <!-- SCREEN 2: THÁP BOSS MA VƯƠNG (BOSS TOWER) -->
+      <div class="screen-view" id="screen-tower">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1b0c12; border:1.5px solid #e74c3c; border-radius:6px; padding:6px 10px;">
+          <div>
+            <div style="font-size:13px; font-weight:900; color:#ff7675; display:flex; align-items:center; gap:5px;">
+              <span>🗼</span> THÁP BOSS MA VƯƠNG
+            </div>
+            <div style="font-size:9px; color:#c8d6e5; margin-top:1px;">Khiêu chiến 100+ Tầng • Rớt Lông Vũ ép cánh & Đồ Thần Thoại!</div>
+          </div>
+          <label class="auto-check-box" style="margin-bottom:0; font-size:9.5px; color:#f1c40f;">
+            <input type="checkbox" id="chkAutoTower" onchange="toggleAutoTower()">
+            <span>🔄 Tự Leo Tháp</span>
+          </label>
         </div>
-        <div class="log-container" id="logBox"></div>
+
+        <!-- Tower Stage Arena Display -->
+        <div class="tower-arena-box">
+          <div class="tower-floor-title" id="txtTowerFloorTitle">TẦNG 1: ĐIỆN THỜ GORGON</div>
+          <div class="tower-boss-name" id="txtTowerBossName">🐍 Ma Vương Gorgon (Lv.150)</div>
+
+          <!-- Boss Avatar Box -->
+          <div class="tower-boss-stage">
+            <div class="tower-boss-sprite-box" id="towerBossSpriteEl"></div>
+            
+            <!-- Real-Time Boss HP Bar -->
+            <div class="tower-hp-bar-bg">
+              <div class="tower-hp-bar-fill" id="txtTowerBossHpFill" style="width: 100%;"></div>
+              <div class="tower-hp-bar-text" id="txtTowerBossHpBar">HP: 80,000 / 80,000 (100%)</div>
+            </div>
+          </div>
+
+          <div style="font-size:10px; color:#c8d6e5; margin-top:6px;" id="txtTowerBossStats">
+            Máu: 80.000 • Sát thương: 800 • Giáp: 350
+          </div>
+          <div style="font-size:10px; color:#f1c40f; margin-top:4px;" id="txtTowerCpRec">
+            Lực chiến đề cử: <b>5.000 CP</b> | Bạn có: <b id="txtTowerPlayerCp" style="color:#2ecc71;">0 CP</b>
+          </div>
+
+          <div class="tower-rewards-box" style="width:100%; max-width:320px;">
+            <b style="color:var(--gold);">🎁 PHẦN THƯỞNG VƯỢT TẦNG CỰC PHẨM:</b><br>
+            • 🪶 <b>3 - 5x Lông Vũ Chaos</b> (Ép Cánh Thần C1, C2, C3)<br>
+            • 🔥 <b>1 - 2x Ngọn Lửa Condor</b> (Tầng 8+) | 🐺 <b>Sừng Sói</b> (Tầng 4+)<br>
+            • 💎 <b>5x Bless • 5x Soul • 5x Chaos • 5x Life</b><br>
+            • 🎁 <b>Trang Bị Thần Thoại</b> (Tự Động Dung Hợp Tinh Hoa)<br>
+            • 🪙 <b>1.000.000 ~ 10.000.000 Zen</b>
+          </div>
+
+          <button class="btn btn-danger" style="width:100%; max-width:320px; padding:10px; font-weight:900; font-size:13px; margin-top:10px; box-shadow:0 0 12px rgba(231,76,60,0.7);" onclick="challengeTowerBoss()">⚔️ KHIÊU CHIẾN BOSS TẦNG NÀY</button>
+          <div id="towerBattleMsg" style="font-size:10.5px; min-height:18px; margin-top:6px; font-weight:bold;"></div>
+        </div>
+
+        <!-- Tower History / Quick Guide -->
+        <div style="background:#111520; border:1px solid #252d42; border-radius:6px; padding:8px; font-size:10px; color:#8fa0b8; line-height:1.5;">
+          ⚡ <b>Quy tắc Tháp Boss:</b> Mỗi tầng tháp trấn giữ bởi một Ma Vương hùng mạnh. Chiến thắng sẽ rơi <b>rất nhiều Lông Vũ Chaos</b> để ép cánh và trang bị Thần Thoại tự động dung hợp vào người giúp tăng vọt hàng ngàn lực chiến!
+        </div>
       </div>
-    </div>
 
-    <!-- 4. Navigation Tabs (6 Tabs) -->
-    <div class="tabs">
-      <button class="tab-btn active" id="tabBtn-gear" onclick="switchTab('gear')">Trang Bị</button>
-      <button class="tab-btn" id="tabBtn-upgrade" onclick="switchTab('upgrade')">Nâng Cấp</button>
-      <button class="tab-btn" id="tabBtn-skill" onclick="switchTab('skill')">Kỹ Năng</button>
-      <button class="tab-btn" id="tabBtn-map" onclick="switchTab('map')">Bản Đồ</button>
-      <button class="tab-btn" id="tabBtn-stats" onclick="switchTab('stats')">Chỉ Số</button>
-      <button class="tab-btn" id="tabBtn-rebirth" onclick="switchTab('rebirth')">Chuyển Sinh</button>
-    </div>
-
-    <!-- 5. Main View Area -->
-    <div class="main-view">
-      <!-- Tab 1: 11 Equipment Paperdoll -->
-      <div class="tab-content active" id="tab-gear">
+      <!-- SCREEN 3: TRANG BỊ (FULL-SCREEN GEAR PAPERDOLL) -->
+      <div class="screen-view" id="screen-gear">
         <div class="paperdoll-container">
           <div class="set-bonus-badge" id="setBonusBadge">★ KÍCH HOẠT SET 4 MÓN: +20% HP & THỦ ★</div>
           
@@ -1754,7 +2004,6 @@
             <!-- Center Column: Glowing Human Mannequin with Helm, Armor, Gloves, Boots -->
             <div class="paperdoll-center-col">
               <div class="mannequin-silhouette-box">
-                <!-- SVG Human Body Silhouette -->
                 <svg viewBox="0 0 120 220" class="human-mannequin-svg">
                   <defs>
                     <linearGradient id="mannequinGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -1763,18 +2012,12 @@
                       <stop offset="100%" stop-color="#0e1118"/>
                     </linearGradient>
                   </defs>
-                  <!-- Head contour -->
                   <circle cx="60" cy="24" r="13" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1.2" opacity="0.65"/>
-                  <!-- Neck & Shoulders -->
                   <path d="M 52 37 L 68 37 L 88 52 L 32 52 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
-                  <!-- Torso -->
                   <path d="M 32 52 L 88 52 L 78 108 L 42 108 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1.2" opacity="0.6"/>
-                  <!-- Belt -->
                   <path d="M 42 108 L 78 108 L 74 125 L 46 125 Z" fill="url(#mannequinGrad)" stroke="#ffd700" stroke-width="1.2" opacity="0.6"/>
-                  <!-- Arms -->
                   <path d="M 30 54 L 16 95 L 24 125 L 30 115 L 22 95 L 32 60 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="0.8" opacity="0.4"/>
                   <path d="M 90 54 L 104 95 L 96 125 L 90 115 L 98 95 L 88 60 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="0.8" opacity="0.4"/>
-                  <!-- Legs -->
                   <path d="M 46 125 L 58 128 L 54 185 L 42 210 L 32 208 L 44 175 L 44 125 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
                   <path d="M 74 125 L 62 128 L 66 185 L 78 210 L 88 208 L 76 175 L 76 125 Z" fill="url(#mannequinGrad)" stroke="#00ffff" stroke-width="1" opacity="0.5"/>
                 </svg>
@@ -1793,24 +2036,43 @@
               <div class="slot-card" id="slot-pet" onclick="selectSlot('pet')" title="Thú Cưng / Thú Cưỡi"></div>
               <div class="slot-card" id="slot-offWeapon" onclick="selectSlot('offWeapon')" title="Vũ Khí Phụ / Khiên"></div>
               <div class="slot-card" id="slot-ring2" onclick="selectSlot('ring2')" title="Nhẫn Phải"></div>
-              <div class="slot-card quick-enhance-card" onclick="switchTab('upgrade')" title="Chuyển sang Nâng Cấp & Chế Tạo">
+              <div class="slot-card quick-enhance-card" onclick="switchTab('upgrade')" title="Chuyển sang Nâng Cấp">
                 <div class="slot-icon-box" style="background:#27ae60; color:#fff;">⚒️</div>
                 <div class="slot-info">
                   <div class="slot-label" style="color:#2ecc71;">NÂNG CẤP</div>
-                  <div class="slot-name" style="color:#fff; font-size:9.5px;">Cường Hóa & Chế Tạo</div>
+                  <div class="slot-name" style="color:#fff; font-size:9px;">Lò Rèn MU</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div style="background:var(--card-bg); padding:5px 8px; border-radius:5px; border:1px solid var(--border); font-size:9.5px; color:#8fa0b8; line-height:1.4; margin-top:4px;">
-          ⚡ <b>Cơ Chế Tự Động:</b> Đồ rơi mạnh hơn sẽ <b>tự động trang bị</b> lên người. Đồ yếu hơn được <b>tự động phân giải</b> thành Zen & Nguyên liệu chế tạo! Cánh, Thú cưng và Thú cưỡi được chế tạo tại Tab <b>Nâng Cấp</b>!
+        <!-- In-Tab Gear Detail Box (Contained inside Gear tab, NEVER blocks other tabs) -->
+        <div class="gear-detail-box" id="gearDetailBox">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div class="detail-item-showcase" id="dItemShowcase" style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:#192030; border-radius:4px;"></div>
+              <div>
+                <div class="detail-title" id="dTitle" style="font-size:12px; font-weight:bold; color:var(--gold);">Chưa chọn trang bị</div>
+                <div class="detail-stats" id="dStats" style="font-size:9.5px; color:#c8d6e5;">Chạm vào ô trang bị để xem chi tiết.</div>
+              </div>
+            </div>
+            <button class="btn btn-sm" onclick="closeGearDetail()" title="Đóng bảng">✕ Đóng</button>
+          </div>
+          <div class="detail-options" id="dOptions" style="font-size:9px; color:#55efc4; margin-top:2px;"></div>
+          <div class="detail-actions" id="dActions" style="display:flex; gap:6px; margin-top:6px;">
+            <button class="btn btn-success btn-sm" style="flex:1;" onclick="switchTab('upgrade')">⚒️ Cường Hóa Món Này</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="switchTab('upgrade')">🌿 Tẩy Dòng (Life)</button>
+          </div>
+        </div>
+
+        <div style="background:var(--card-bg); padding:6px 8px; border-radius:5px; border:1px solid var(--border); font-size:9.5px; color:#8fa0b8; line-height:1.4; margin-top:2px;">
+          🔮 <b>Cơ Chế Dung Hợp:</b> Trang bị mới CP thấp hơn sẽ tự động <b>dung hợp vào trang bị cũ</b> (+15% Công/Thủ/HP). Trang bị mới CP cao hơn sẽ được mặc vào và <b>kế thừa toàn bộ tinh hoa</b> của trang bị cũ!
         </div>
       </div>
 
-      <!-- Tab 2: Nâng Cấp & Chế Tạo Thần Vật (Replaces Inventory & Combines Forge) -->
-      <div class="tab-content" id="tab-upgrade">
+      <!-- SCREEN 4: NÂNG CẤP & CHẾ TẠO (UPGRADE & CRAFTING) -->
+      <div class="screen-view" id="screen-upgrade">
         <!-- Material Storage Dashboard -->
         <div class="craft-mat-bar" id="craftMatBar">
           <div class="mat-badge" title="Lông Vũ Chaos">🪶 Lông Vũ: <b id="craftFeather">0</b></div>
@@ -1845,7 +2107,7 @@
             <!-- Forecast -->
             <div class="upgrade-forecast-box" id="upgradeForecastBox">
               <div style="color:var(--gold); font-weight:bold; font-size:10px;">DỰ ĐOÁN KHI CƯỜNG HÓA LÊN CẤP TIẾP THEO:</div>
-              <div id="forgeForecastText" style="font-size:9.5px; color:#2ecc71; margin-top:2px;">Sát thương & Phòng thủ +12% • Kích hoạt Hào quang ánh sáng!</div>
+              <div id="forgeForecastText" style="font-size:9.5px; color:#2ecc71; margin-top:2px;">Sát thương & Phòng thủ +12% • Kích hoạt Hào quang Thần thoại!</div>
               <div id="forgeSuccessRateText" style="font-size:10px; color:#00ffff; font-weight:bold; margin-top:2px;">Tỷ lệ thành công: 100%</div>
               <div id="forgeCostText" style="font-size:9.5px; color:#ff9f43; margin-top:2px;">Chi phí: 1x Jewel of Bless • 50.000 Zen</div>
             </div>
@@ -1859,52 +2121,28 @@
 
         <!-- Subview 2: Xưởng Chế Tạo Cánh & Thú Cưng / Thú Cưỡi -->
         <div class="upgrade-subview" id="subviewCraft" style="display:none;">
-          <div style="font-size:10px; color:#8fa0b8; margin-bottom:6px;">Cánh, Thú cưng và Thú cưỡi được ghép từ các nguyên liệu thu thập qua đánh quái và boss:</div>
+          <div style="font-size:10px; color:#8fa0b8; margin-bottom:6px;">Cánh, Thú cưng và Thú cưỡi được ghép từ các nguyên liệu thu thập qua đánh quái và Tháp Boss:</div>
           <div class="craft-recipes-list" id="craftRecipesList"></div>
         </div>
       </div>
-<div class="tab-content" id="tab-skill">
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#131722; padding:5px 8px; border-radius:5px; font-size:10.5px; border:1px solid #242c3d;">
-          <span>Điểm Kỹ Năng: <b id="txtSkillPoints" style="color:var(--gold);">0</b></span>
-          <span style="font-size:9.5px; color:#8fa0b8;">(Nhận mỗi khi Lên Cấp & Chuyển Sinh)</span>
-        </div>
-        <div id="skillsListContainer" style="display:flex; flex-direction:column; gap:5px;"></div>
-      </div>
 
-      <!-- Tab 4: Map Selection -->
-      <div class="tab-content" id="tab-map">
-        <!-- Blood Castle Event Card -->
-        <div style="background:linear-gradient(90deg, #2c0b0e 0%, #4a151b 50%, #2c0b0e 100%); border:1.5px solid #e74c3c; border-radius:6px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 0 10px rgba(231,76,60,0.35);">
-          <div>
-            <div style="font-size:11.5px; font-weight:900; color:#ff7675;">🏰 HUYẾT LÂU (BLOOD CASTLE)</div>
-            <div style="font-size:9px; color:#c8d6e5; margin-top:2px;">Phụ bản sinh tồn 60s • Quái dồn dập • Đại thưởng Rương Thần</div>
-            <div style="font-size:9px; color:var(--gold); margin-top:1px;">Lượt hôm nay: <b id="txtBcAttempts">3 / 3</b></div>
-          </div>
-          <button class="btn btn-danger" style="padding:6px 10px; font-weight:bold; box-shadow:0 0 8px rgba(231,76,60,0.6);" onclick="startBloodCastleEvent()">VÀO HUYẾT LÂU</button>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-          <label class="auto-check-box" style="margin-bottom:0; flex:1;">
-            <input type="checkbox" id="chkAutoMap" onchange="toggleAutoMap()">
-            <span>🚩 Tự động tiến vào Bản Đồ mới khi đủ cấp</span>
-          </label>
-        </div>
-        <div style="font-size:10px; color:#8fa0b8; margin-bottom:4px;">10 Vùng đất dã ngoại Lục địa MU (EXP chuẩn):</div>
-        <div id="mapListContainer" style="display:flex; flex-direction:column; gap:4px;"></div>
-      </div>
-
-      <!-- Tab 5: Attributes & Combat Stats -->
-      <div class="tab-content" id="tab-stats">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-          <label class="auto-check-box" style="margin-bottom:0; flex:1;">
+      <!-- SCREEN 5: CHỈ SỐ & CHUYỂN SINH (STATS & REBIRTH) -->
+      <div class="screen-view" id="screen-stats">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#121622; border:1px solid #28324a; border-radius:6px; padding:6px 8px;">
+          <label class="auto-check-box" style="margin-bottom:0; font-size:9.5px;">
             <input type="checkbox" id="chkAutoStats" checked onchange="toggleAutoStats()">
-            <span>Tự động cộng điểm tiềm năng</span>
+            <span>Tự cộng điểm</span>
+          </label>
+          <label class="auto-check-box" style="margin-bottom:0; font-size:9.5px; color:#00ffcc;">
+            <input type="checkbox" id="chkAutoRS" checked onchange="toggleAutoRS()">
+            <span>Tự Chuyển Sinh (Lv.400)</span>
           </label>
           <button class="btn btn-sm btn-primary" onclick="openOverviewStatsModal()">📜 Xem Tổng Hợp</button>
         </div>
 
         <!-- Combat Stats Dashboard -->
-        <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); margin-bottom:5px;">
-          <div style="font-size:10.5px; font-weight:bold; color:var(--gold); margin-bottom:4px;">📊 THỐNG KÊ CHIẾN LỰC</div>
+        <div style="background:var(--card-bg); padding:6px; border-radius:6px; border:1px solid var(--border);">
+          <div style="font-size:10.5px; font-weight:bold; color:var(--gold); margin-bottom:4px;">📊 THỐNG KÊ CHIẾN LỰC HIỆP SĨ</div>
           <div class="combat-stat-grid">
             <div class="stat-chip-box">
               <div class="stat-chip-label">⚔ Sát Thương Vật Lý</div>
@@ -1933,13 +2171,13 @@
           </div>
         </div>
 
-        <!-- Attribute Points Management -->
-        <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
+        <!-- Attribute Points Allocation -->
+        <div style="background:var(--card-bg); padding:6px; border-radius:6px; border:1px solid var(--border); font-size:10.5px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
             <span>Điểm tiềm năng còn: <b id="statFreePoints" style="color:var(--gold)">0</b></span>
             <div style="display:flex; gap:3px;">
               <button class="btn btn-sm btn-primary" onclick="autoDistributeClass()">Theo Phái</button>
-              <button class="btn btn-sm" onclick="autoDistributeEven()">Cộng đều</button>
+              <button class="btn btn-sm" onclick="autoDistributeEven()">Cộng Đều</button>
             </div>
           </div>
 
@@ -2000,7 +2238,20 @@
           </div>
         </div>
 
-        <div style="background:var(--card-bg); padding:6px; border-radius:5px; border:1px solid var(--border); font-size:10.5px; display:flex; justify-content:space-between; align-items:center;">
+        <!-- Chuyển Sinh Checklist Block -->
+        <div style="background:var(--card-bg); padding:8px; border-radius:6px; border:1px solid var(--border); font-size:10.5px;">
+          <div style="font-weight:bold; color:var(--gold); margin-bottom:5px;">🌀 ĐIỀU KIỆN CHUYỂN SINH (RESET CHECKLIST)</div>
+          <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
+            <div class="stat-row"><span id="chkLevel">Cấp độ: Đang tải...</span></div>
+            <div class="stat-row"><span id="chkZen">Phí Zen: Đang tải...</span></div>
+            <div class="stat-row"><span id="chkJowels">Ngọc tế lễ: Đang tải...</span></div>
+          </div>
+          <div id="rsInfoText" style="color:#8fa0b8; font-size:9.5px; margin-bottom:8px; line-height:1.4;"></div>
+          <button class="btn btn-warn" id="btnDoRebirth" style="width:100%; padding:8px; font-weight:bold;" onclick="performRebirth()">CHUYỂN SINH NGAY</button>
+        </div>
+
+        <!-- Gender & Class Switch -->
+        <div style="background:var(--card-bg); padding:6px; border-radius:6px; border:1px solid var(--border); font-size:10.5px; display:flex; justify-content:space-between; align-items:center;">
           <span>Ngoại hình & Hệ phái:</span>
           <div style="display:flex; gap:4px;">
             <button class="btn btn-sm" onclick="toggleGender()">Đổi Nam/Nữ</button>
@@ -2009,44 +2260,55 @@
         </div>
       </div>
 
-      <!-- Tab 6: Leaderboard (BXH) -->
-      <div class="tab-content" id="tab-rebirth">
-        <div style="background:var(--card-bg); padding:8px; border-radius:5px; border:1px solid var(--border); font-size:10.5px;">
-          <div style="font-weight:bold; color:var(--gold); margin-bottom:5px;">ĐIỀU KIỆN CHUYỂN SINH (RESET CHECKLIST)</div>
-          <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:8px;">
-            <div class="stat-row"><span id="chkLevel">Cấp độ: Đang tải...</span></div>
-            <div class="stat-row"><span id="chkZen">Phí Zen: Đang tải...</span></div>
-            <div class="stat-row"><span id="chkJowels">Ngọc tế lễ: Đang tải...</span></div>
+      <!-- SCREEN 6: CỬA HÀNG LORENCIA (SHOP) -->
+      <div class="screen-view" id="screen-shop">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#18120b; border:1.5px solid #f39c12; border-radius:6px; padding:6px 10px;">
+          <div style="font-size:13px; font-weight:900; color:var(--gold); display:flex; align-items:center; gap:5px;">
+            <span>🏪</span> CỬA HÀNG LORENCIA
           </div>
-          <div id="rsInfoText" style="color:#8fa0b8; font-size:9.5px; margin-bottom:8px; line-height:1.4;"></div>
-          <button class="btn btn-warn" id="btnDoRebirth" style="width:100%; padding:8px;" onclick="performRebirth()">CHUYỂN SINH NGAY</button>
+          <span style="color:#ffec8b; font-weight:bold; font-size:11px;">🪙 <span id="shopZenDisplay">0</span> Zen</span>
         </div>
+
+        <!-- Shop Subtabs -->
+        <div class="shop-nav" style="display:flex; gap:4px; margin-top:2px;">
+          <button class="shop-nav-btn active" id="btnShopJewels" onclick="switchShopTab('jewels')">💎 Ngọc Quý</button>
+          <button class="shop-nav-btn" id="btnShopMats" onclick="switchShopTab('mats')">🪶 Nguyên Liệu</button>
+          <button class="shop-nav-btn" id="btnShopPotions" onclick="switchShopTab('potions')">🧪 Dược Phẩm</button>
+        </div>
+
+        <div class="shop-items-container" id="shopItemsContainer" style="display:flex; flex-direction:column; gap:5px; margin-top:4px;"></div>
       </div>
 
-      <!-- Tab 8: Forge Goblin -->
-      <!-- Detail Panel -->
-    <div class="detail-panel" id="detailPanel">
-      <div style="display:flex; gap:8px; align-items:flex-start;">
-        <div class="detail-item-showcase" id="dItemShowcase" style="display:none;"></div>
-        <div style="flex:1; overflow:hidden;">
-          <div class="detail-header">
-            <div class="detail-title" id="dTitle">Chưa chọn trang bị</div>
-            <div id="dLockTag" style="font-size:9.5px; color:#f1c40f;"></div>
-          </div>
-          <div class="detail-stats" id="dStats">Chạm vào bất kỳ món đồ nào để xem chi tiết.</div>
-          <div class="detail-options" id="dOptions"></div>
-        </div>
-      </div>
-      <div class="detail-actions" id="dActions" style="display:none;">
-        <button class="btn btn-primary btn-sm" id="btnEquipInventory" style="display:none;" onclick="equipSelectedItem()">Mặc vào người</button>
-        <button class="btn btn-danger btn-sm" id="btnSellInventory" style="display:none;" onclick="sellSelectedItem()">Bán món này</button>
-        <button class="btn btn-success btn-sm" onclick="quickForgeEnhance()">Cường hóa</button>
-        <button class="btn btn-primary btn-sm" onclick="quickForgeReforge()">Tẩy dòng</button>
-      </div>
     </div>
-  </div>
 
-  <!-- Bảng Chỉ Số Tổng Hợp Modal -->
+    <!-- 4. Bottom Navigation Bar (Fixed 6 Full-Screen Tabs) -->
+    <div class="bottom-nav-bar">
+      <button class="nav-tab-btn active" id="tabBtn-battle" onclick="switchTab('battle')">
+        <span class="nav-icon">⚔️</span>
+        <span>Chiến Đấu</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-tower" onclick="switchTab('tower')">
+        <span class="nav-icon">🗼</span>
+        <span>Tháp Boss</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-gear" onclick="switchTab('gear')">
+        <span class="nav-icon">🛡️</span>
+        <span>Trang Bị</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-upgrade" onclick="switchTab('upgrade')">
+        <span class="nav-icon">⚒️</span>
+        <span>Nâng Cấp</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-stats" onclick="switchTab('stats')">
+        <span class="nav-icon">📊</span>
+        <span>Chỉ Số</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-shop" onclick="switchTab('shop')">
+        <span class="nav-icon">🏪</span>
+        <span>Cửa Hàng</span>
+      </button>
+    </div>
+<!-- Bảng Chỉ Số Tổng Hợp Modal -->
   <div class="modal-overlay" id="overviewStatsModal">
     <div class="modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
