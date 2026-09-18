@@ -1691,7 +1691,9 @@ function getDefaultState(username = "Hero_Lorencia", charClass = "dk") {
     autoPotion: { hpEnabled: true, hpThreshold: 40 },
     autoRS: true,
     towerFloor: 1,
+    autoTower: false,
     shopTab: "jewels",
+    currentActiveTab: "battle",
     feather: 0,
     flame: 0,
     beastSoul: 0,
@@ -2555,7 +2557,16 @@ function runCombatTick() {
     state.quests.daily.killMobs.cur++;
   }
 
-  // Natural Regeneration
+    // Auto Tower Climb Check
+  if (state.autoTower && Math.random() < 0.08) {
+    const tFloor = state.towerFloor || 1;
+    const tBoss = getTowerBossData(tFloor);
+    if (stats.cp >= tBoss.reqCp * 0.90) {
+      challengeTowerBoss(true);
+    }
+  }
+
+// Natural Regeneration
   let petHpRegen = state.activePet === "angel" ? 120 : 0;
   const currentHpRegen = (stats.hpRegen + petHpRegen) * (state.buffs && state.buffs.fortitude > 0 ? 1.5 : 1.0);
   state.currentHp = Math.min(stats.maxHp, state.currentHp + currentHpRegen);
@@ -3401,30 +3412,52 @@ function renderLeaderboard() {
 
 // TABS SWITCHING (8 TABS)
 function switchTab(tabId) {
+  // Normalize legacy tab IDs
   if (tabId === "inventory" || tabId === "forge") tabId = "upgrade";
+  if (tabId === "map") tabId = "battle";
+  if (tabId === "rebirth") tabId = "stats";
   if (tabId === "leaderboard") {
     openLeaderboardModal();
     return;
   }
-  const tabs = ["gear", "upgrade", "skill", "map", "stats", "rebirth"];
-  tabs.forEach(t => {
-    const content = document.getElementById(`tab-${t}`);
-    if (content) content.classList.toggle("active", t === tabId);
-    const btn = document.getElementById(`tabBtn-${t}`);
-    if (btn) btn.classList.toggle("active", t === tabId);
+  if (!["battle", "tower", "gear", "upgrade", "stats", "shop"].includes(tabId)) {
+    tabId = "battle";
+  }
+
+  state.currentActiveTab = tabId;
+
+  const screens = ["battle", "tower", "gear", "upgrade", "stats", "shop"];
+  screens.forEach(s => {
+    const screenEl = document.getElementById(`screen-${s}`);
+    if (screenEl) screenEl.classList.toggle("active", s === tabId);
+    const btn = document.getElementById(`tabBtn-${s}`);
+    if (btn) btn.classList.toggle("active", s === tabId);
   });
+
+  // Automatically close any gear detail panel or modal when switching tabs to prevent view obstruction
+  closeGearDetail();
+
+  // Refresh tab views
+  if (tabId === "tower") renderTowerView();
+  if (tabId === "gear") updateUI();
   if (tabId === "upgrade") renderUpgradeView();
-  if (tabId === "rebirth") renderRebirthView();
-  if (tabId === "stats") renderStatsView();
-  if (tabId === "skill") renderSkillsView();
-  if (tabId === "map") renderMaps();
+  if (tabId === "stats") { renderStatsView(); renderRebirthView(); }
+  if (tabId === "shop") renderShopView();
+  if (tabId === "battle") updateUI();
 }
 
 function selectSlot(slotKey) {
   state.selectedSlotKey = slotKey;
   state.selectedUpgradeKey = slotKey;
-  state.selectedInventoryIndex = null;
+  const gearDetailBox = document.getElementById("gearDetailBox");
+  if (gearDetailBox) gearDetailBox.style.display = "block";
+  renderDetailPanel();
   updateUI();
+}
+
+function closeGearDetail() {
+  const gearDetailBox = document.getElementById("gearDetailBox");
+  if (gearDetailBox) gearDetailBox.style.display = "none";
 }
 
 function renderDetailPanel() {
@@ -3432,28 +3465,21 @@ function renderDetailPanel() {
   const dStats = document.getElementById("dStats");
   const dOptions = document.getElementById("dOptions");
   const dActions = document.getElementById("dActions");
-  const btnEquip = document.getElementById("btnEquipInventory");
-  const btnSell = document.getElementById("btnSellInventory");
-
-  let item = null;
-  let isFromInventory = false;
-
-  if (state.selectedInventoryIndex !== null && state.inventory && state.inventory[state.selectedInventoryIndex]) {
-    item = state.inventory[state.selectedInventoryIndex];
-    isFromInventory = true;
-  } else {
-    item = state.equipped[state.selectedSlotKey];
-  }
-
   const showcase = document.getElementById("dItemShowcase");
+  const gearDetailBox = document.getElementById("gearDetailBox");
+
+  const item = state.equipped[state.selectedSlotKey || "mainWeapon"];
+
   if (!item) {
-    if (dTitle) dTitle.innerText = "Chưa chọn trang bị";
-    if (dStats) dStats.innerText = "Chạm vào ô trang bị hoặc túi đồ để xem chi tiết.";
+    if (dTitle) dTitle.innerText = "Chưa có trang bị";
+    if (dStats) dStats.innerText = "Chạm vào ô trang bị trên mô hình người để xem chi tiết & dung hợp.";
     if (dOptions) dOptions.innerHTML = "";
     if (dActions) dActions.style.display = "none";
     if (showcase) showcase.style.display = "none";
     return;
   }
+
+  if (gearDetailBox) gearDetailBox.style.display = "block";
   if (showcase && RARITIES[item.rarity]) {
     showcase.style.display = "flex";
     showcase.style.borderColor = RARITIES[item.rarity].color;
@@ -3462,38 +3488,24 @@ function renderDetailPanel() {
 
   const r = RARITIES[item.rarity] || RARITIES[0];
   const itemCP = getItemCP(item);
-  let compText = "";
-  if (isFromInventory) {
-    const equippedItem = state.equipped[item.slotKey];
-    if (equippedItem) {
-      const eqCP = getItemCP(equippedItem);
-      const diff = itemCP - eqCP;
-      if (diff > 0) {
-        compText = ` <span style="color:#2ecc71; font-weight:bold;">(+${diff.toLocaleString()} CP ▲)</span>`;
-      } else if (diff < 0) {
-        compText = ` <span style="color:#ff7675; font-weight:bold;">(${diff.toLocaleString()} CP ▼)</span>`;
-      } else {
-        compText = ` <span style="color:#576574;">(Bằng CP)</span>`;
-      }
-    } else {
-      compText = ` <span style="color:#2ecc71; font-weight:bold;">(Ô đang trống ▲)</span>`;
-    }
-  }
 
-  if (dTitle) dTitle.innerHTML = `<span style="color:${r.color}; font-weight:bold;">${isFromInventory ? "[Túi Đồ] " : "[Đang Mặc] "}${item.name} +${item.plus}</span> (CP: ${itemCP.toLocaleString()})${compText}`;
-  if (dStats) dStats.innerText = `Bậc ${item.tier} • Phẩm: ${r.name} | Sát thương: +${item.atk} | Phòng thủ: +${item.def} | Máu: +${item.hp}`;
-  
+  if (dTitle) {
+    dTitle.innerHTML = `<span style="color:${r.color}; font-weight:bold;">${item.name} +${item.plus}</span> (CP: ${itemCP.toLocaleString()})`;
+  }
+  if (dStats) {
+    const fusionText = (item.fusionCount || 0) > 0 ? ` • <b style="color:#a29bfe;">Dung Hợp x${item.fusionCount}</b>` : "";
+    dStats.innerHTML = `Bậc ${item.tier} • Công: +${item.atk || 0} • Thủ: +${item.def || 0} • HP: +${item.hp || 0}${fusionText}`;
+  }
   if (dOptions) {
     if (item.options && item.options.length > 0) {
-      dOptions.innerHTML = item.options.map(o => `<div style="color:#00ffcc;">★ ${o}</div>`).join("");
+      dOptions.innerHTML = item.options.map(opt => `<span style="color:#55efc4;">★ ${opt}</span>`).join(" • ");
     } else {
-      dOptions.innerHTML = `<div style="color:#8fa0b8;">Chưa có dòng Hoàn Hảo (Dùng Jewel of Life ở Lò Rèn để tẩy).</div>`;
+      dOptions.innerHTML = "<span style='color:#8fa0b8;'>Đồ cơ bản chưa có dòng Hoàn Hảo</span>";
     }
   }
-
-  if (dActions) dActions.style.display = "flex";
-  if (btnEquip) btnEquip.style.display = isFromInventory ? "inline-block" : "none";
-  if (btnSell) btnSell.style.display = isFromInventory ? "inline-block" : "none";
+  if (dActions) {
+    dActions.style.display = "flex";
+  }
 }
 
 function renderMaps() {
@@ -4415,6 +4427,14 @@ function closeTowerModal() {
   if (m) m.style.display = "none";
 }
 
+function toggleAutoTower() {
+  state.autoTower = !state.autoTower;
+  const chk = document.getElementById("chkAutoTower");
+  if (chk) chk.checked = !!state.autoTower;
+  addLog(`🔄 [THÁP BOSS] Chế độ Tự Động Leo Tháp đã được ${state.autoTower ? "BẬT" : "TẮT"}!`, "log-buff");
+  saveGameState();
+}
+
 function renderTowerView() {
   const floor = state.towerFloor || 1;
   const boss = getTowerBossData(floor);
@@ -4426,18 +4446,37 @@ function renderTowerView() {
   const cpRecEl = document.getElementById("txtTowerCpRec");
   const playerCpEl = document.getElementById("txtTowerPlayerCp");
   const badgeEl = document.getElementById("txtTowerFloorBadge");
-  const battleMsg = document.getElementById("towerBattleMsg");
+  const hpBarEl = document.getElementById("txtTowerBossHpBar");
+  const hpFillEl = document.getElementById("txtTowerBossHpFill");
+  const spriteEl = document.getElementById("towerBossSpriteEl");
+  const autoChk = document.getElementById("chkAutoTower");
 
   if (titleEl) titleEl.innerText = `TẦNG ${floor}: ${boss.title.toUpperCase()}`;
   if (nameEl) nameEl.innerText = `${boss.icon} ${boss.name} (Lv.${boss.lv})`;
   if (statsEl) statsEl.innerText = `Máu: ${boss.hp.toLocaleString()} • Công: ${boss.dmg.toLocaleString()} • Thủ: ${boss.def.toLocaleString()}`;
   if (playerCpEl) playerCpEl.innerText = `${stats.cp.toLocaleString()} CP`;
   if (badgeEl) badgeEl.innerText = `T.${floor}`;
-  if (battleMsg) battleMsg.innerText = "";
+  if (autoChk) autoChk.checked = !!state.autoTower;
+
+  if (hpBarEl) hpBarEl.innerText = `HP: ${boss.hp.toLocaleString()} / ${boss.hp.toLocaleString()} (100%)`;
+  if (hpFillEl) hpFillEl.style.width = "100%";
+
+  // Render 2.5D Volumetric Boss Sprite based on floor
+  if (spriteEl && typeof CHIBI_MONSTERS !== "undefined") {
+    let bossSvg = CHIBI_MONSTERS.spider;
+    if (floor % 7 === 1) bossSvg = CHIBI_MONSTERS.spider;
+    else if (floor % 7 === 2) bossSvg = CHIBI_MONSTERS.sea;
+    else if (floor % 7 === 3) bossSvg = CHIBI_MONSTERS.demon;
+    else if (floor % 7 === 4) bossSvg = CHIBI_MONSTERS.golem;
+    else if (floor % 7 === 5) bossSvg = CHIBI_MONSTERS.dragon;
+    else if (floor % 7 === 6) bossSvg = CHIBI_MONSTERS.treant;
+    else bossSvg = CHIBI_MONSTERS.void;
+    spriteEl.innerHTML = bossSvg;
+  }
 
   if (cpRecEl) {
     const isReady = stats.cp >= boss.reqCp;
-    cpRecEl.innerHTML = `Lực chiến đề cử: <b>${boss.reqCp.toLocaleString()} CP</b> | Bạn có: <b style="color:${isReady ? "#2ecc71" : "#ff7675"};">${stats.cp.toLocaleString()} CP</b> ${isReady ? "✓ Đủ sức!" : "⚠️ Cần thêm trang bị!"}`;
+    cpRecEl.innerHTML = `Lực chiến đề cử: <b>${boss.reqCp.toLocaleString()} CP</b> | Bạn có: <b style="color:${isReady ? "#2ecc71" : "#ff7675"};">${stats.cp.toLocaleString()} CP</b> ${isReady ? "✓ Đủ sức chiến thắng!" : "⚠️ Cần rèn thêm đồ!"}`;
   }
 }
 
