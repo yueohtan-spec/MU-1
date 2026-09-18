@@ -1382,6 +1382,142 @@
     .cost-met { color: #2ecc71; border-color: #27ae60; }
     .cost-unmet { color: #e74c3c; border-color: #c0392b; }
 
+  
+    /* Shop & Tower Header Badges */
+    .btn-shop-badge {
+      background: linear-gradient(180deg, #e67e22 0%, #d35400 100%);
+      border: 1px solid #f39c12;
+      color: #fff;
+      font-size: 8.5px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      box-shadow: 0 0 5px rgba(230, 126, 34, 0.4);
+    }
+    .btn-shop-badge:hover { background: #f39c12; border-color: #ffd700; }
+
+    .btn-tower-badge {
+      background: linear-gradient(180deg, #8e44ad 0%, #5b2c6f 100%);
+      border: 1px solid #bb8fce;
+      color: #fff;
+      font-size: 8.5px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+      box-shadow: 0 0 5px rgba(142, 68, 173, 0.4);
+    }
+    .btn-tower-badge:hover { background: #9b59b6; border-color: #ffd700; }
+
+    /* EXP x50 Pill */
+    .exp-x50-pill {
+      background: linear-gradient(90deg, #ff4757 0%, #ff6b81 100%);
+      color: #fff;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 10px;
+      border: 1px solid #ff7979;
+      box-shadow: 0 0 8px rgba(255, 71, 87, 0.6);
+      animation: pulseExp 1.5s infinite alternate;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+    }
+    @keyframes pulseExp {
+      0% { transform: scale(0.96); opacity: 0.9; }
+      100% { transform: scale(1.04); opacity: 1; filter: brightness(1.2); }
+    }
+
+    /* Slot Fusion Count Badge */
+    .slot-fusion-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(155, 89, 182, 0.9);
+      border: 1px solid #9b59b6;
+      color: #fff;
+      font-size: 7.5px;
+      font-weight: 900;
+      padding: 0 3px;
+      border-radius: 3px;
+      box-shadow: 0 0 4px rgba(155, 89, 182, 0.6);
+      z-index: 5;
+    }
+
+    /* Shop Item Cards */
+    .shop-item-card {
+      background: #111622;
+      border: 1px solid #28344c;
+      border-radius: 5px;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .shop-item-card:hover { border-color: var(--gold); }
+    .shop-nav-btn {
+      flex: 1;
+      padding: 5px;
+      font-size: 9.5px;
+      font-weight: bold;
+      background: #151a26;
+      border: 1px solid #2c364d;
+      color: #8fa0b8;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .shop-nav-btn.active {
+      background: linear-gradient(180deg, #d35400 0%, #a04000 100%);
+      border-color: #e67e22;
+      color: #fff;
+    }
+
+    /* Tower Modal Styles */
+    .tower-boss-preview {
+      background: radial-gradient(circle, rgba(44, 11, 22, 0.8) 0%, rgba(15, 8, 16, 0.95) 100%);
+      border: 1.5px solid #e74c3c;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      margin-bottom: 10px;
+      position: relative;
+      box-shadow: 0 0 15px rgba(231, 76, 60, 0.35);
+    }
+    .tower-floor-title {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .tower-boss-name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #ff7675;
+      margin-top: 2px;
+    }
+    .tower-rewards-box {
+      background: #0d111a;
+      border: 1px dashed #3a4763;
+      border-radius: 5px;
+      padding: 6px;
+      font-size: 9.5px;
+      color: #c8d6e5;
+      margin-top: 8px;
+      text-align: left;
+    }
+
   </style>
 </head>
 <body>
@@ -1449,6 +1585,9 @@
           <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
           <button class="btn-rename-icon" onclick="openRenameModal()" title="Đổi tên">✏️</button>
           <button class="btn-sound-icon" id="btnSoundToggle" onclick="toggleSound()" title="Bật/Tắt Âm thanh">🔊</button>
+          <button class="btn-shop-badge" onclick="openShopModal()" title="Cửa Hàng Lorencia">🏪 Shop</button>
+          <button class="btn-tower-badge" onclick="openTowerModal()" title="Tháp Boss Ma Vương">🗼 Tháp Boss <span id="txtTowerFloorBadge">T.1</span></button>
+          <div class="exp-x50-pill">🔥 EXP x50</div>
           <button class="btn-bxh-badge" onclick="openLeaderboardModal()" title="Bảng Xếp Hạng Lục Địa MU">🏆 <span id="bxhMiniText">Top 1: SoulMaster (16 RS)</span></button>
           <button class="btn-autors-badge" id="btnAutoRSToggle" onclick="toggleAutoRS()" title="Tự động Chuyển Sinh khi đạt Cấp 400">🔄 Auto RS: BẬT</button>
           <button class="btn-overview-icon" onclick="openOverviewStatsModal()" title="Bảng chỉ số tổng hợp">📜 Chỉ Số</button>
@@ -2058,6 +2197,68 @@
       </div>
 
       <div class="rank-list" id="leaderboardListContainer" style="max-height:55vh; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+
+  <!-- Shop Modal (Cửa Hàng Lorencia) -->
+  <div class="modal-overlay" id="shopModal">
+    <div class="modal-card" style="max-width:390px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
+        <div style="font-size:13.5px; font-weight:900; color:var(--gold); display:flex; align-items:center; gap:5px;">
+          <span>🏪</span> CỬA HÀNG LORENCIA
+        </div>
+        <button class="btn btn-sm" onclick="closeShopModal()">✕ Đóng</button>
+      </div>
+
+      <div style="font-size:10px; color:#8fa0b8; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>Mua ngọc quý, nguyên liệu ép cánh và dược phẩm:</span>
+        <span style="color:#ffec8b; font-weight:bold;">🪙 <span id="shopZenDisplay">0</span> Zen</span>
+      </div>
+
+      <div class="shop-nav" style="display:flex; gap:4px; margin-bottom:8px;">
+        <button class="shop-nav-btn active" id="btnShopJewels" onclick="switchShopTab('jewels')">💎 Ngọc Quý</button>
+        <button class="shop-nav-btn" id="btnShopMats" onclick="switchShopTab('mats')">🪶 Nguyên Liệu</button>
+        <button class="shop-nav-btn" id="btnShopPotions" onclick="switchShopTab('potions')">🧪 Dược Phẩm</button>
+      </div>
+
+      <div class="shop-items-container" id="shopItemsContainer" style="display:flex; flex-direction:column; gap:5px; max-height:55vh; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Tower Modal (Tháp Boss Ma Vương) -->
+  <div class="modal-overlay" id="towerModal">
+    <div class="modal-card" style="max-width:390px; text-align:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
+        <div style="font-size:13.5px; font-weight:900; color:#e74c3c; display:flex; align-items:center; gap:5px;">
+          <span>🗼</span> THÁP BOSS MA VƯƠNG
+        </div>
+        <button class="btn btn-sm" onclick="closeTowerModal()">✕ Đóng</button>
+      </div>
+
+      <div class="tower-boss-preview">
+        <div class="tower-floor-title" id="txtTowerFloorTitle">TẦNG 1: ĐIỆN THỜ GORGON</div>
+        <div class="tower-boss-name" id="txtTowerBossName">💀 Ma Vương Gorgon (Lv.150)</div>
+        <div style="font-size:10px; color:#c8d6e5; margin-top:4px;" id="txtTowerBossStats">
+          Máu: 80.000 • Sát thương: 800 • Giáp: 350
+        </div>
+        <div style="font-size:9.5px; color:#f1c40f; margin-top:4px;" id="txtTowerCpRec">
+          Lực chiến đề cử: 5.000 CP | Bạn có: <b id="txtTowerPlayerCp">0 CP</b>
+        </div>
+
+        <div class="tower-rewards-box">
+          <b style="color:var(--gold);">🎁 PHẦN THƯỞNG VƯỢT TẦNG:</b><br>
+          • 🪶 <b>3 - 5x Lông Vũ Chaos</b> (Ép Cánh Thần)<br>
+          • 💎 <b>3x Bless • 3x Soul • 3x Chaos • 3x Life</b><br>
+          • 🎁 <b>Trang Bị Thần Thoại</b> (Tự Động Dung Hợp Tinh Hoa)<br>
+          • 🪙 <b>1.000.000 Zen</b>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-danger" style="flex:1; padding:10px; font-weight:bold; font-size:12px; box-shadow:0 0 10px rgba(231,76,60,0.6);" onclick="challengeTowerBoss()">⚔️ KHIÊU CHIẾN BOSS</button>
+      </div>
+      <div id="towerBattleMsg" style="font-size:10px; min-height:16px; margin-top:6px; font-weight:bold;"></div>
     </div>
   </div>
 
