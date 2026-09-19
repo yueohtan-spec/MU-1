@@ -1309,18 +1309,18 @@ function playSlashFx(type = "fire", isCrit = false) {
   setTimeout(() => { if (fx.parentNode) fx.remove(); }, 380);
 }
 
-function spawnMonsterDeathBurst() {
+function spawnMonsterDeathBurst(x = "50%", y = "30%") {
   const fxLayer = document.getElementById("arenaFxLayer");
   if (!fxLayer) return;
   const burst = document.createElement("div");
   burst.className = "mob-death-burst";
-  burst.style.left = "75%";
-  burst.style.top = "50%";
+  burst.style.left = typeof x === "number" ? `${x}%` : x;
+  burst.style.top = typeof y === "number" ? `${y}%` : y;
   fxLayer.appendChild(burst);
   setTimeout(() => { if (burst.parentNode) burst.remove(); }, 500);
 }
 
-function spawnFloatingDamage(amount, type, isCrit) {
+function spawnFloatingDamage(amount, type, isCrit, targetX = null, targetY = null) {
   const fxLayer = document.getElementById("arenaFxLayer");
   if (!fxLayer) return;
 
@@ -1331,10 +1331,14 @@ function spawnFloatingDamage(amount, type, isCrit) {
   el.className = `floating-number ${cls}`;
   el.innerText = `${prefix}${amount.toLocaleString()}`;
 
-  const randomX = (Math.random() - 0.5) * 35;
-  const randomY = (Math.random() - 0.5) * 25;
-  el.style.left = `calc(75% + ${randomX}px)`;
-  el.style.top = `calc(40% + ${randomY}px)`;
+  let posX = 50 + (Math.random() - 0.5) * 20;
+  let posY = 25 + (Math.random() - 0.5) * 15;
+  if (targetX !== null && targetY !== null) {
+    posX = (typeof targetX === 'number' ? targetX : parseFloat(targetX)) + (Math.random() - 0.5) * 10;
+    posY = (typeof targetY === 'number' ? targetY : parseFloat(targetY)) + (Math.random() - 0.5) * 8;
+  }
+  el.style.left = `${posX}%`;
+  el.style.top = `${posY}%`;
 
   fxLayer.appendChild(el);
   setTimeout(() => { if (el.parentNode) el.remove(); }, 850);
@@ -1407,16 +1411,16 @@ function toggleFullLog() {
 
 // 10 MU MAPS
 const MAPS = [
-  { id: 1, name: "Lorencia", reqLv: 1, reqRs: 0, tier: 1, mobDmg: [15, 30], mobs: ["Nhện Độc", "Rồng Con", "Trâu Rừng", "Người Xương"], boss: "Chúa Tể Rồng Đen" },
-  { id: 2, name: "Noria", reqLv: 50, reqRs: 0, tier: 2, mobDmg: [60, 120], mobs: ["Bọ Khổng Lồ", "Ma Cây Agon", "Thợ Săn Rừng", "Yêu Tinh Đá"], boss: "Quái Thú Rừng Xanh" },
-  { id: 3, name: "Devias", reqLv: 100, reqRs: 0, tier: 3, mobDmg: [180, 320], mobs: ["Người Tuyết", "Sát Thủ Băng", "Quái Vật Lạnh Giá", "Phù Thủy Tuyết"], boss: "Băng Vương Kundun" },
-  { id: 4, name: "Dungeon", reqLv: 150, reqRs: 0, tier: 4, mobDmg: [450, 750], mobs: ["Ấu Trùng Địa Ngục", "Xương Cầm Rìu", "Bóng Ma Hắc Ám", "Mã Xà Độc"], boss: "Bóng Ma Ngục Tối" },
-  { id: 5, name: "Atlans", reqLv: 200, reqRs: 0, tier: 5, mobDmg: [900, 1500], mobs: ["Quái Vật Biển Baha", "Người Cá Tinh Nghịch", "Thằn Lằn Biển", "Bóng Ma Biển"], boss: "Hải Vương Hydra" },
-  { id: 6, name: "Lost Tower", reqLv: 250, reqRs: 0, tier: 6, mobDmg: [1800, 2800], mobs: ["Quỷ Sa Tăng", "Hắc Ma Tinh", "Kỵ Sĩ Hắc Ám", "Độc Nhãn Ma"], boss: "Ma Vương Balgass" },
-  { id: 7, name: "Tarkan", reqLv: 300, reqRs: 0, tier: 7, mobDmg: [3200, 5000], mobs: ["Bọ Cạp Cát", "Sắt Thiết Ma", "Thiết Tích Thằn Lằn", "Độc Xà Sa Mạc"], boss: "Hoàng Kim Tarkan" },
-  { id: 8, name: "Aida", reqLv: 350, reqRs: 0, tier: 8, mobDmg: [5500, 8500], mobs: ["Cổ Thụ Tà Ác", "Quỷ Rừng Xanh", "Thụ Yêu Cuồng Bạo", "Cung Thủ Rừng Rậm"], boss: "Hell Maine Hắc Ám" },
-  { id: 9, name: "Icarus", reqLv: 380, reqRs: 1, tier: 9, mobDmg: [9000, 14000], mobs: ["Chiến Binh Bầu Trời", "Rồng Đỏ Bay", "Thiên Binh Sa Ngã", "Phượng Hoàng Lửa"], boss: "Phượng Hoàng Bóng Đêm" },
-  { id: 10, name: "Kanturu", reqLv: 400, reqRs: 2, tier: 10, mobDmg: [15000, 24000], mobs: ["Người Máy Huỷ Diệt", "Quái Nhân Đột Biến", "Chiến Binh Sinh Hóa", "Kỵ Sĩ Tận Thế"], boss: "Chúa Tể Ác Mộng Nightmare" }
+  { id: 1, name: "Biên Cảnh Cổ Thôn", reqLv: 1, reqRs: 0, tier: 1, mobDmg: [15, 30], mobs: ["Xích Nhện Ma Thú", "Huyết Tích Thú", "Man Ngưu Cổ Giới", "Khô Lâu Tàn Binh"], boss: "Xích Nhện Cổ Thú" },
+  { id: 2, name: "Thanh Khâu Cổ Lâm", reqLv: 50, reqRs: 0, tier: 2, mobDmg: [60, 120], mobs: ["Mộc Linh Dị Chủng", "Cổ Thụ Ma Hóa", "Thợ Săn Hoang Dã", "Thạch Yêu Thái Cổ"], boss: "Cổ Thụ Tà Linh" },
+  { id: 3, name: "Hàn Băng Tuyệt Địa", reqLv: 100, reqRs: 0, tier: 3, mobDmg: [180, 320], mobs: ["Băng Cốt Dị Nhân", "Sát Thủ Tuyết Cực", "Hàn Sương Tà Thú", "Tuyết Sơn Thuật Sĩ"], boss: "Tuyết Ma Thần Viên" },
+  { id: 4, name: "Thần Ma Phần Trường", reqLv: 150, reqRs: 0, tier: 4, mobDmg: [450, 750], mobs: ["Địa Ngục Cự Trùng", "Cốt Ma Phách Phủ", "Hắc Ám Oán Niệm", "Thần Thi Biến Dị"], boss: "Oán Hồn Dạ Đế" },
+  { id: 5, name: "U Minh Thủy Vực", reqLv: 200, reqRs: 0, tier: 5, mobDmg: [900, 1500], mobs: ["Thâm Hải Cự Thú", "Giao Nhân Khát Máu", "Hải Ma Dị Xà", "U Hồn Sóng Dữ"], boss: "Thâm Hải Giao Long" },
+  { id: 6, name: "Thiên Trụ Phong Ấn", reqLv: 250, reqRs: 0, tier: 6, mobDmg: [1800, 2800], mobs: ["Chấp Pháp Giả Thần Điện", "Hắc Ma Tinh Vệ", "Trấn Giới Kỵ Sĩ", "Độc Nhãn Cự Ma"], boss: "Trấn Sơn Thạch Ma" },
+  { id: 7, name: "Hoang Mạc Cổ Trận", reqLv: 300, reqRs: 0, tier: 7, mobDmg: [3200, 5000], mobs: ["Hoang Sa Hạt Ma", "Thiết Tích Thần Thú", "Trận Pháp Khôi Lỗi", "Xích Xà Sa Mạc"], boss: "Liệt Diễm Ma Điểu" },
+  { id: 8, name: "Thánh Vực Cửu Tiêu", reqLv: 350, reqRs: 0, tier: 8, mobDmg: [5500, 8500], mobs: ["Thánh Điện Chấp Pháp Binh", "Kim Giáp Hộ Vệ", "Thánh Quang Thuật Sĩ", "Cung Thủ Cửu Tiêu"], boss: "Thánh Điện Chấp Pháp Trưởng Lão" },
+  { id: 9, name: "Lõi Hư Không Hỗn Độn", reqLv: 380, reqRs: 1, tier: 9, mobDmg: [9000, 14000], mobs: ["Hư Không Thần Binh", "Hắc Long Thái Cổ", "Thiên Binh Sa Ngã", "Phượng Hoàng Lửa Ma"], boss: "Cự Ma Thao Thiết" },
+  { id: 10, name: "Thiên Trận Tịch Diệt Đài", reqLv: 400, reqRs: 2, tier: 10, mobDmg: [15000, 24000], mobs: ["Cực Diệt Khôi Lỗi", "Hư Vô Thần Sứ", "Tịch Diệt Chiến Tướng", "Chung Cực Hộ Vực"], boss: "Thiên Trận Tôn Giả - Cơ Vô Trần" }
 ];
 
 const TIERS = [
@@ -1920,6 +1924,9 @@ function initGameSession() {
 
   checkOfflineProgress();
   startCombatLoop();
+  if (typeof startWave === "function") {
+    startWave(state.currentMapId || 1, 1);
+  }
 
   const className = state.charClass === "fe" ? "Fairy Elf" : (state.charClass === "dw" ? "Dark Wizard" : "Dark Knight");
   addLog(`★ CHÀO MỪNG HIỆP SĨ [${state.username}] (${className}) BƯỚC VÀO LỤC ĐỊA MU! ★`, "log-boss");
@@ -2873,59 +2880,36 @@ function runCombatTick() {
     state.enemyDebuffs = {};
   }
 
-  // 7 Monster Ranks Persistence & 10x HP System
-  if (!state.currentMob || state.currentMob.tier !== currentMap.tier) {
-    const rank = rollMonsterRank(state.mobsKilled);
-    let rawMobName = "";
+  // ==========================================================================
+  // VERTICAL MULTI-MONSTER COMBAT CORE
+  // ==========================================================================
 
-    if (rank.key === "mythical") {
-      rawMobName = `${currentMap.boss} Thức Tỉnh`;
-    } else if (rank.key === "legendary") {
-      rawMobName = `${currentMap.boss}`;
-    } else if (rank.key === "overlord") {
-      rawMobName = `Thống Soái ${currentMap.boss}`;
-    } else if (rank.key === "golden") {
-      const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-      rawMobName = `${rName} Hoàng Kim`;
-    } else if (rank.key === "dark_gold") {
-      const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-      rawMobName = `${rName} Ám Kim`;
-    } else if (rank.key === "elite") {
-      const rName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-      rawMobName = `${rName} Đột Biến`;
-    } else {
-      rawMobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
-    }
-
-    const fullMobName = `${rank.prefix} ${rawMobName}`;
-    const maxMobHp = Math.floor((currentMap.tier * 220 + 120) * rank.hpMult);
-
-    state.currentMob = {
-      name: fullMobName,
-      rawName: rawMobName,
-      rank: rank,
-      category: rank.key,
-      mult: rank.dmgMult,
-      maxHp: maxMobHp,
-      currentHp: maxMobHp,
-      tier: currentMap.tier
-    };
-
-    if (rank.key === "mythical" || rank.key === "legendary") {
-      audio.playGateOpen();
-      audio.playKeng();
-      addLog(`⚡⚡ [CẢNH BÁO] QUÁI VẬT ${rank.name.toUpperCase()} [${fullMobName}] ĐÃ XUẤT HIỆN! ⚡⚡`, "log-boss");
-    }
+  // 1. Initialize or maintain Wave data
+  if (!state.waveData || state.waveData.currentMapId !== currentMap.id || !state.waveData.monsters || state.waveData.monsters.length === 0) {
+    startWave(currentMap.id, 1);
   }
 
-  const mobName = state.currentMob.name;
-  const mobRank = state.currentMob.rank;
+  let aliveMonsters = state.waveData.monsters.filter(m => m.currentHp > 0);
+
+  // If all monsters in wave are dead, check progression
+  if (aliveMonsters.length === 0) {
+    if (state.waveData.currentWave < state.waveData.maxWaves) {
+      startWave(currentMap.id, state.waveData.currentWave + 1);
+    } else {
+      checkAndAutoProgressMap();
+    }
+    updateUI();
+    return;
+  }
+
+  // Set currentMob compatibility reference (priority on Boss or lowest HP mob)
+  const targetMob = aliveMonsters.find(m => m.isBoss) || aliveMonsters.slice().sort((a,b) => (a.currentHp/a.maxHp) - (b.currentHp/b.maxHp))[0];
+  state.currentMob = targetMob;
+
+  const mobName = targetMob.name;
+  const mobRank = targetMob.rank;
   const mobCategory = mobRank.key;
   const mobMult = mobRank.dmgMult;
-  const mobColorClass = mobRank.colorClass;
-
-  // Update Chibi Arena Visuals with Rank
-  updateChibiArena(currentMap, mobName, mobRank);
 
   // Random Buff Trigger by Stats
   if (state.stats.vit >= 30 && (!state.buffs.fortitude || state.buffs.fortitude <= 0) && (Math.random() < 0.08 || state.currentHp < stats.maxHp * 0.5)) {
@@ -2946,7 +2930,7 @@ function runCombatTick() {
     addLog("🔮 [BUFF] Kích hoạt Khiên Năng Lượng (Mana Shield) hấp thụ 40% ST!", "log-buff");
   }
 
-  // 1. OUTGOING ATTACK
+  // 2. HERO ATTACK CALCULATION
   const critChance = stats.critRate + (state.buffs.speed > 0 ? 20 : 0);
   const isCrit = Math.random() * 100 < critChance;
   const critMult = isCrit ? 1.8 : 1.0;
@@ -2981,32 +2965,25 @@ function runCombatTick() {
 
   const finalPhy = Math.floor(rolledPhy * critMult);
   const finalMag = Math.floor(rolledMag * critMult);
-
-  // Trigger Chibi Attack FX, Deal Damage to Monster, Update HP Bar
   const totalHeroDmg = finalPhy + finalMag;
-  state.currentMob.currentHp -= totalHeroDmg;
 
-  const curMobHp = Math.max(0, state.currentMob.currentHp);
-  const maxMobHp = state.currentMob.maxHp;
-  const mobHpPct = Math.max(0, Math.min(100, (curMobHp / maxMobHp) * 100));
-  const mobHpFillEl = document.getElementById("chibiMobHpFill");
-  const mobHpTextEl = document.getElementById("chibiMobHpText");
-  if (mobHpFillEl) mobHpFillEl.style.width = `${mobHpPct}%`;
-  if (mobHpTextEl) mobHpTextEl.innerText = `HP: ${Math.ceil(curMobHp).toLocaleString()} / ${maxMobHp.toLocaleString()} (${mobHpPct.toFixed(0)}%)`;
-
-  const bossHpFill = document.getElementById("mapleBossHpFill");
-  const bossHpNum = document.getElementById("mapleBossHpNum");
-  if (bossHpFill) bossHpFill.style.width = `${mobHpPct}%`;
-  if (bossHpNum) bossHpNum.innerText = `${Math.ceil(curMobHp).toLocaleString()} / ${maxMobHp.toLocaleString()} (${mobHpPct.toFixed(0)}%)`;
-
+  // 3. MULTI-TARGET OR SINGLE-TARGET HIT DISTRIBUTION
   if (activeSkill) {
+    // AoE Skill: Hits ALL alive monsters in the wave!
     animateHeroAction("cast");
     const skillFxType = state.charClass === "dw" ? "magic" : (state.charClass === "fe" ? "arrow" : "fire");
     playSlashFx(skillFxType, isCrit);
     if (state.charClass === "dw") audio.playMagic(); else audio.playSlash();
-    addLog(`✨ [TUYỆT KỸ] ${activeSkill.icon} ${activeSkill.name.toUpperCase()} (Cấp ${activeSkill.level}) bùng nổ gây ${totalHeroDmg.toLocaleString()} ST lên ${mobName}!`, "log-crit");
+    addLog(`✨ [TUYỆT KỸ LAN] ${activeSkill.icon} ${activeSkill.name.toUpperCase()} quét sạch, gây ${totalHeroDmg.toLocaleString()} ST lên toàn bộ bầy quái!`, "log-crit");
     spawnFloatingSkillBanner(`${activeSkill.icon} ${activeSkill.name}`);
+
+    aliveMonsters.forEach(m => {
+      const mobDmg = Math.floor(totalHeroDmg * (0.85 + Math.random() * 0.3));
+      m.currentHp -= mobDmg;
+      spawnFloatingDamage(mobDmg, state.charClass === "dw" ? "mag" : (isCrit ? "crit" : "phy"), isCrit, m.x, m.y);
+    });
   } else {
+    // Normal attack: Hits primary target
     animateHeroAction(state.charClass === "dw" ? "cast" : "attack");
     const heroSlashType = state.charClass === "dw" ? "magic" : (state.charClass === "fe" ? "arrow" : "fire");
     playSlashFx(heroSlashType, isCrit);
@@ -3023,238 +3000,172 @@ function runCombatTick() {
       const slash = isCrit ? "TWISTING SLASH" : "CHÉM THƯỜNG";
       addLog(`⚔️ [VẬT LÝ] ${slash} gây ${finalPhy.toLocaleString()} ST Vật lý (+${finalMag.toLocaleString()} ST Phép) lên ${mobName}!`, isCrit ? "log-crit" : "log-phy");
     }
-  }
-  animateMonsterReaction(false);
-  spawnFloatingDamage(totalHeroDmg, state.charClass === "dw" ? "mag" : (isCrit ? "crit" : "phy"), isCrit);
 
-  // Proc Debuffs on Enemy
-  if (state.stats.str >= 30 && Math.random() < 0.14 && (!state.enemyDebuffs.armorBreak || state.enemyDebuffs.armorBreak <= 0)) {
-    state.enemyDebuffs.armorBreak = 8;
-    addLog(`🗡️ [DEBUFF] ${mobName} bị Phá Giáp! Nhận thêm 35% sát thương!`, "log-debuff");
-  }
-  if (state.stats.ene >= 30 && Math.random() < 0.14 && (!state.enemyDebuffs.freeze || state.enemyDebuffs.freeze <= 0)) {
-    state.enemyDebuffs.freeze = 6;
-    addLog(`❄️ [DEBUFF] ${mobName} bị Đóng Băng! Giảm 50% sức đánh & tốc độ!`, "log-debuff");
-  } else if (state.stats.ene >= 30 && Math.random() < 0.12 && (!state.enemyDebuffs.burn || state.enemyDebuffs.burn <= 0)) {
-    state.enemyDebuffs.burn = 6;
-    addLog(`🔥 [DEBUFF] ${mobName} bị Thiêu Đốt địa ngục!`, "log-debuff");
-  }
-  if (state.stats.agi >= 30 && Math.random() < 0.12 && (!state.enemyDebuffs.poison || state.enemyDebuffs.poison <= 0)) {
-    state.enemyDebuffs.poison = 6;
-    addLog(`☠️ [DEBUFF] ${mobName} trúng Độc Tố, suy yếu 30% sát thương!`, "log-debuff");
+    targetMob.currentHp -= totalHeroDmg;
+    spawnFloatingDamage(totalHeroDmg, state.charClass === "dw" ? "mag" : (isCrit ? "crit" : "phy"), isCrit, targetMob.x, targetMob.y);
   }
 
-  // Burn tick damage
-  if (state.enemyDebuffs.burn > 0) {
-    const burnDmg = Math.floor(stats.maxMag * 0.4);
-    addLog(`🔥 [THIÊU ĐỐT] Lửa địa ngục thiêu đốt ${mobName} mất thêm -${burnDmg.toLocaleString()} HP!`, "log-debuff");
-  }
+  // 4. CHECK DEATH & DROP REWARDS FOR EACH KILLED MONSTER
+  state.waveData.monsters.forEach(mob => {
+    if (mob.currentHp <= 0 && !mob.lootGiven) {
+      mob.lootGiven = true;
+      spawnMonsterDeathBurst(mob.x, mob.y);
+      state.mobsKilled++;
 
-  // 2. INCOMING ATTACK WITH REBALANCED DEFENSE MITIGATION
-  const dodgeChance = stats.dodgeRate + (state.buffs.speed > 0 ? 15 : 0);
-  const didDodge = Math.random() * 100 < dodgeChance;
-  if (didDodge) {
-    spawnHeroFloatingEffect("💨 MISS!", "float-miss");
-    addLog(`💨 [NÉ TRÁNH] Bạn đã né hoàn toàn đòn phản kích của ${mobName}! (MISS)`, "log-crit");
-  } else {
-    let rawMobDmg = Math.floor(Math.random() * (currentMap.mobDmg[1] - currentMap.mobDmg[0]) + currentMap.mobDmg[0]) * mobMult;
-    
-    // Apply Enemy Debuff Reductions
-    if (state.enemyDebuffs.freeze > 0) rawMobDmg = Math.floor(rawMobDmg * 0.5);
-    if (state.enemyDebuffs.poison > 0) rawMobDmg = Math.floor(rawMobDmg * 0.7);
-
-    // Defense percentage mitigation + flat armor reduction
-    const defBaseline = currentMap.tier * 200 + 120;
-    const defMitigation = Math.min(0.85, stats.totalDef / (stats.totalDef + defBaseline));
-    let damageAfterDef = rawMobDmg * (1 - defMitigation);
-    damageAfterDef = Math.max(1, damageAfterDef - Math.floor(stats.totalDef * 0.15));
-
-    // Apply Damage Reduction % from VIT / Mana Shield
-    const effectiveDmgReduction = stats.dmgReduction + (state.buffs.manaShield > 0 ? 25 : 0);
-    let takenDmg = Math.max(1, Math.floor(damageAfterDef * (1 - effectiveDmgReduction / 100)));
-
-    // Mana Shield Absorption
-    if (state.buffs.manaShield > 0 && state.currentMp > 20) {
-      const absorbed = Math.floor(takenDmg * 0.40);
-      state.currentMp = Math.max(0, state.currentMp - absorbed);
-      takenDmg -= absorbed;
-    }
-
-    takenDmg = Math.max(1, takenDmg);
-    // Cap damage per hit to max 18% of Max HP (bỏ chết ngay lập tức)
-    const maxAllowedDmg = Math.floor(stats.maxHp * 0.18);
-    takenDmg = Math.min(takenDmg, maxAllowedDmg);
-    takenDmg = Math.max(1, takenDmg);
-    state.currentHp -= takenDmg;
-    spawnHeroFloatingEffect(`-${takenDmg.toLocaleString()} HP`, "float-hit");
-    addLog(`🛡 [BỊ ĐÁNH] ${mobName} phản kích, bạn nhận -${takenDmg.toLocaleString()} HP! (Giáp giảm ${Math.round(defMitigation * 100)}%)`, "log-damage-taken");
-
-    // Auto-Potion Check
-    checkAutoPotion(stats);
-
-    // Immortal Ward: Hero never dies instantly or gets kicked to Lorencia
-    if (state.currentHp <= 0) {
-      state.currentHp = Math.floor(stats.maxHp * 0.5);
-      spawnHeroFloatingEffect("🛡️ HỘ MỆNH BẤT TỬ!", "float-crit");
-      addLog(`🛡️ [BẢO HỘ THÁNH] Sinh lực nguy kịch! Khiên thần hộ mệnh kích hoạt, hồi sinh 50% HP và tiếp tục chiến đấu!`, "log-buff");
-      audio.playMagic();
-      updateUI();
-    }
-  }
-
-  if (state.currentMob.currentHp <= 0) {
-    animateMonsterReaction(true);
-    spawnMonsterDeathBurst();
-    state.mobsKilled++;
-
-    // Track Boss & Overlord Kills
-    const isBossTier = ["overlord", "legendary", "mythical"].includes(mobCategory);
-    if (isBossTier) {
-      state.bossKilled = (state.bossKilled || 0) + 1;
-      if (state.quests && state.quests.daily && state.quests.daily.killBosses) {
-        state.quests.daily.killBosses.cur++;
-      }
-    }
-
-    if (mobCategory === "mythical") {
-      addLog(`🏆 [THẦN THOẠI DIỆT ĐẾ] Bạn đã đả bại quái vật [${mobName}] tối thượng!`, "log-crit");
-      audio.playKeng();
-      audio.vibrate(200);
-    }
-
-    // 1. Zen Drop according to 7 Ranks
-    if (Math.random() < mobRank.zenChance) {
-      const earnedZen = Math.floor((Math.random() * 200 + 150) * currentMap.tier * mobRank.zenMult * (1 + state.rs * 0.20));
-      state.zen += earnedZen;
-      spawnFloatingLoot("🪙", `+${earnedZen.toLocaleString()} Zen`, "#ffec8b");
-      addLog(`🪙 [NHẶT ZEN] +${earnedZen.toLocaleString()} Zen!`, "log-zen");
-    }
-
-    // 2. Standard Balanced EXP Gain
-    const earnedExp = Math.floor((Math.random() * 20 + 35) * currentMap.tier * mobRank.hpMult * 50); // EXP x50 BÙNG NỔ
-    state.exp += earnedExp;
-
-    // 3. Jewel & Potion Drops scaled by Rank
-    const rollJewel = Math.random() * 100;
-    const jewelBoost = mobRank.jewelBoost;
-
-    if (rollJewel < 3.0 * jewelBoost) {
-      state.bless++;
-      spawnFloatingLoot("💎", "Jewel of Bless!", "#bf55ec");
-      addLog(`💎 *KENG!* Nhặt được 1x Jewel of Bless từ ${mobName}!`, "log-bless");
-      audio.playKeng();
-      audio.vibrate(60);
-    } else if (rollJewel < (3.0 + 1.2) * jewelBoost) {
-      state.chaos++;
-      spawnFloatingLoot("🔥", "Jewel of Chaos!", "#e74c3c");
-      addLog(`🔥 *KENG!* Nhặt được 1x Jewel of Chaos từ ${mobName}!`, "log-chaos");
-      audio.playKeng();
-    } else if (rollJewel < (3.0 + 1.2 + 0.8) * jewelBoost) {
-      state.life++;
-      spawnFloatingLoot("🌿", "Jewel of Life!", "#2ecc71");
-      addLog(`🌿 *KENG!* Nhặt được 1x Jewel of Life từ ${mobName}!`, "log-life");
-      audio.playKeng();
-    }
-
-    // Potion drop chance
-    if (Math.random() < 0.15) {
-      if (Math.random() < 0.5) {
-        state.potions.hp++;
-        addLog(`🧪 Nhặt được 1x Bình Máu từ ${mobName}!`, "log-buff");
-      } else {
-        state.potions.mp++;
-        addLog(`🧪 Nhặt được 1x Bình Mana từ ${mobName}!`, "log-buff");
-      }
-    }
-
-    // 4. GEAR DROP: Trang bị vũ khí, giáp, nhẫn, dây chuyền
-    if (Math.random() < mobRank.gearChance) {
-      const droppedItem = generateItem(currentMap.tier, mobRank.minRarity, null, mobRank.key);
-      spawnFloatingLoot("🎁", `[${droppedItem.name}]`, RARITIES[droppedItem.rarity].color);
-      handleDroppedItem(droppedItem);
-    }
-
-    // 4c. RƠI CÁNH THẦN & LINH THÚ TỰ ĐỘNG DUNG HỢP TỪ BOSS VÀ TINH ANH
-    if (mobRank.key === "boss" || mobRank.key === "golden" || (mobRank.key === "elite" && Math.random() < 0.15)) {
-      if (Math.random() < 0.35) {
-        const droppedWing = generateWingItem(currentMap.tier, mobRank.minRarity);
-        spawnFloatingLoot("🪽", `[${droppedWing.name}]`, RARITIES[droppedWing.rarity].color);
-        handleDroppedItem(droppedWing);
-      } else if (Math.random() < 0.35) {
-        const droppedPet = generatePetItem(currentMap.tier, mobRank.minRarity);
-        spawnFloatingLoot("🐺", `[${droppedPet.name}]`, RARITIES[droppedPet.rarity].color);
-        handleDroppedItem(droppedPet);
-      }
-    }
-
-    // 4b. CRAFT MATERIALS DROP: RỚT THÊM NHIỀU LÔNG VŨ ĐỂ ÉP CÁNH
-    const rollMat = Math.random() * 100;
-    // Lông Vũ Chaos: Rơi từ Map 1 với tỷ lệ cực cao (25% quái thường, 60% Tinh Anh, 100% Boss)
-    const featherRate = mobRank.key === "normal" ? 25.0 : (mobRank.key === "elite" ? 60.0 : 100.0);
-    if (rollMat < featherRate) {
-      const dropCount = (mobRank.key === "boss" || mobRank.key === "golden") ? Math.floor(Math.random() * 2) + 2 : 1;
-      state.feather = (state.feather || 0) + dropCount;
-      spawnFloatingLoot("🪶", `+${dropCount} Lông Vũ!`, "#7efff5");
-      addLog(`🪶 Nhặt được ${dropCount}x Lông Vũ Chaos từ ${mobName}! (Nguyên liệu ép cánh)`, "log-buff");
-    }
-    if (rollMat < 20.0) {
-      state.beastSoul = (state.beastSoul || 0) + 1;
-      spawnFloatingLoot("🐾", "+1 Hồn Thú!", "#fdcb6e");
-      addLog(`🐾 Nhặt được 1x Hồn Thú từ ${mobName}!`, "log-buff");
-    }
-    if (currentMap.tier >= 4 && rollMat < 8.0) {
-      state.fenrirHorn = (state.fenrirHorn || 0) + 1;
-      spawnFloatingLoot("🐺", "+1 Cốt Sừng Sói!", "#ff7675");
-      addLog(`🐺 Nhặt được 1x Cốt Sừng Sói Tinh từ ${mobName}!`, "log-crit");
-    }
-    if (currentMap.tier >= 6 && rollMat < 6.0) {
-      state.flame = (state.flame || 0) + 1;
-      spawnFloatingLoot("🔥", "+1 Ngọn Lửa Condor!", "#ff9f43");
-      addLog(`🔥 Nhặt được 1x Ngọn Lửa Condor từ ${mobName}!`, "log-crit");
-    }
-    if (isBossTier && Math.random() < 0.35) {
-      state.kirinFragment = (state.kirinFragment || 0) + 1;
-      spawnFloatingLoot("🦄", "+1 Mảnh Kỳ Lân!", "#f1c40f");
-      addLog(`🦄 Nhặt được 1x Mảnh Kỳ Lân Hoàng Kim từ ${mobName}!`, "log-crit");
-    }
-
-    // 5. Level Up Check: CẤP ĐỘ GIỚI HẠN LÀ 400
-    if (state.exp >= state.nextExp && state.level < 400) {
-      let leveledUp = false;
-      while (state.exp >= state.nextExp && state.level < 400) {
-        state.exp -= state.nextExp;
-        state.level++;
-        state.nextExp = getRequiredExpForLevel(state.level);
-        state.freePoints = (state.freePoints || 0) + 5;
-        if (state.level % 5 === 0) {
-          state.skillPoints = (state.skillPoints || 0) + 1;
+      const isBossTier = ["overlord", "legendary", "mythical"].includes(mob.category);
+      if (isBossTier) {
+        state.bossKilled = (state.bossKilled || 0) + 1;
+        if (state.quests && state.quests.daily && state.quests.daily.killBosses) {
+          state.quests.daily.killBosses.cur++;
         }
-        leveledUp = true;
       }
-      if (state.level >= 400) {
-        state.level = 400;
-        state.exp = state.nextExp;
-      }
-      if (leveledUp) {
+
+      if (mob.category === "mythical") {
+        addLog(`🏆 [THẦN THOẠI DIỆT ĐẾ] Bạn đã đả bại thủ lĩnh [${mob.name}] tối thượng!`, "log-crit");
         audio.playKeng();
-        audio.vibrate(150);
-        addLog(`★ LEVEL UP! Bạn đã đạt Cấp ${state.level}! Chỉ số cơ bản & Lực chiến đã tăng mạnh! ★`, "log-crit");
-        if (state.autoStats !== false) {
-          autoDistributeClass();
-        }
-        checkAutoAdvanceMap();
+        audio.vibrate(200);
       }
+
+      // Zen Drop
+      if (Math.random() < (mob.rank.zenChance || 0.5)) {
+        const earnedZen = Math.floor((Math.random() * 200 + 150) * currentMap.tier * (mob.rank.zenMult || 1) * (1 + (state.rs || 0) * 0.20));
+        state.zen += earnedZen;
+        spawnFloatingLoot("🪙", `+${earnedZen.toLocaleString()} Zen`, "#ffec8b");
+        addLog(`🪙 [NHẶT ZEN] +${earnedZen.toLocaleString()} Zen từ ${mob.name}!`, "log-zen");
+      }
+
+      // EXP Gain
+      const earnedExp = Math.floor((Math.random() * 20 + 35) * currentMap.tier * (mob.rank.hpMult || 1) * 50);
+      state.exp += earnedExp;
+
+      // Jewel Drops
+      const rollJewel = Math.random() * 100;
+      const jewelBoost = mob.rank.jewelBoost || 1;
+
+      if (rollJewel < 3.0 * jewelBoost) {
+        state.bless++;
+        spawnFloatingLoot("💎", "Jewel of Bless!", "#bf55ec");
+        addLog(`💎 *KENG!* Nhặt được 1x Ước Nguyện Thần Tinh từ ${mob.name}!`, "log-bless");
+        audio.playKeng();
+        audio.vibrate(60);
+      } else if (rollJewel < (3.0 + 1.2) * jewelBoost) {
+        state.chaos++;
+        spawnFloatingLoot("🔥", "Jewel of Chaos!", "#e74c3c");
+        addLog(`🔥 *KENG!* Nhặt được 1x Hỗn Độn Ma Thạch từ ${mob.name}!`, "log-chaos");
+        audio.playKeng();
+      } else if (rollJewel < (3.0 + 1.2 + 0.8) * jewelBoost) {
+        state.life++;
+        spawnFloatingLoot("🌿", "Jewel of Life!", "#2ecc71");
+        addLog(`🌿 *KENG!* Nhặt được 1x Sinh Mệnh Tiên Lộ từ ${mob.name}!`, "log-life");
+        audio.playKeng();
+      }
+
+      // Potion drop
+      if (Math.random() < 0.15) {
+        if (Math.random() < 0.5) {
+          state.potions.hp++;
+          addLog(`🧪 Nhặt được 1x Bình Máu từ ${mob.name}!`, "log-buff");
+        } else {
+          state.potions.mp++;
+          addLog(`🧪 Nhặt được 1x Bình Mana từ ${mob.name}!`, "log-buff");
+        }
+      }
+
+      // Gear Drop
+      if (Math.random() < (mob.rank.gearChance || 0.25)) {
+        const droppedItem = generateItem(currentMap.tier, mob.rank.minRarity, null, mob.rank.key);
+        spawnFloatingLoot("🎁", `[${droppedItem.name}]`, RARITIES[droppedItem.rarity].color);
+        handleDroppedItem(droppedItem);
+      }
+
+      // Boss special items
+      if (mob.isBoss || isBossTier) {
+        if (Math.random() < 0.35) {
+          state.feather = (state.feather || 0) + 1;
+          spawnFloatingLoot("🪶", "+1 Thái Cổ Phù Thạch!", "#00ffff");
+          addLog(`🪶 Nhặt được 1x Lông Vũ Chaos từ ${mob.name}!`, "log-crit");
+        }
+        if (currentMap.tier >= 4 && Math.random() < 0.25) {
+          state.flame = (state.flame || 0) + 1;
+          spawnFloatingLoot("🔥", "+1 Thái Sơ Hóa Sinh Hỏa!", "#ff9f43");
+          addLog(`🔥 Nhặt được 1x Ngọn Lửa Condor từ ${mob.name}!`, "log-crit");
+        }
+      }
+    }
+  });
+
+  // Level Up Check
+  if (state.exp >= state.nextExp && state.level < 400) {
+    let leveledUp = false;
+    while (state.exp >= state.nextExp && state.level < 400) {
+      state.exp -= state.nextExp;
+      state.level++;
+      state.nextExp = getRequiredExpForLevel(state.level);
+      state.freePoints = (state.freePoints || 0) + 5;
+      if (state.level % 5 === 0) {
+        state.skillPoints = (state.skillPoints || 0) + 1;
+      }
+      leveledUp = true;
     }
     if (state.level >= 400) {
       state.level = 400;
       state.exp = state.nextExp;
-      if (state.autoRS) {
-        checkAndPerformAutoRS();
+    }
+    if (leveledUp) {
+      audio.playKeng();
+      audio.vibrate(150);
+      addLog(`★ LEVEL UP! Bạn đã đạt Cấp ${state.level}! Chỉ số cơ bản & Lực chiến đã tăng mạnh! ★`, "log-crit");
+      if (state.autoStats !== false) {
+        autoDistributeClass();
+      }
+      checkAutoAdvanceMap();
+    }
+  }
+
+  // Render wave arena changes
+  renderWaveMonsters();
+
+  // 5. INCOMING ATTACK FROM SURVIVING MONSTERS
+  aliveMonsters = state.waveData.monsters.filter(m => m.currentHp > 0);
+  if (aliveMonsters.length > 0) {
+    const attacker = aliveMonsters[Math.floor(Math.random() * aliveMonsters.length)];
+    const dodgeChance = stats.dodgeRate + (state.buffs.speed > 0 ? 15 : 0);
+    const didDodge = Math.random() * 100 < dodgeChance;
+
+    if (didDodge) {
+      spawnHeroFloatingEffect("💨 MISS!", "float-miss");
+      addLog(`💨 [NÉ TRÁNH] Bạn đã né hoàn toàn đòn phản kích của ${attacker.name}! (MISS)`, "log-crit");
+    } else {
+      let rawMobDmg = Math.floor(Math.random() * (currentMap.mobDmg[1] - currentMap.mobDmg[0]) + currentMap.mobDmg[0]) * (attacker.mobMult || 1.0);
+      let mitigation = stats.defense * 0.35 + (stats.defense / (stats.defense + 350)) * 0.35;
+      let finalMobDmg = Math.max(1, Math.floor(rawMobDmg * (1 - mitigation)));
+
+      if (state.buffs.manaShield > 0) {
+        finalMobDmg = Math.max(1, Math.floor(finalMobDmg * 0.60));
+      }
+
+      state.currentHp = Math.max(0, state.currentHp - finalMobDmg);
+      spawnHeroFloatingEffect(`-${finalMobDmg}`, "float-dmg");
+      animateHeroAction("hit");
+
+      checkAutoPotion(stats);
+
+      // Immortal Ward
+      if (state.currentHp <= 0) {
+        state.currentHp = Math.floor(stats.maxHp * 0.5);
+        spawnHeroFloatingEffect("🛡️ HỘ MỆNH BẤT TỬ!", "float-crit");
+        addLog("🛡️ [BẢO HỘ THÁNH] Sinh lực nguy kịch! Khiên thần hộ mệnh kích hoạt, hồi sinh 50% HP và tiếp tục chiến đấu!", "log-buff");
+        audio.playMagic();
       }
     }
-
-    // Spawn new monster next tick
-    state.currentMob = null;
+  } else {
+    // All mobs died! Proceed to next wave or next map
+    if (state.waveData.currentWave < state.waveData.maxWaves) {
+      addLog(`✨ [WAVE ${state.waveData.currentWave} CLEARED] Chuẩn bị bước vào Wave ${state.waveData.currentWave + 1}/${state.waveData.maxWaves}...`, "log-crit");
+      startWave(currentMap.id, state.waveData.currentWave + 1);
+    } else {
+      checkAndAutoProgressMap();
+    }
   }
 
   updateUI();
@@ -3305,6 +3216,39 @@ function updateUI() {
 
   const shopZen = document.getElementById("shopZenDisplay");
   if (shopZen) shopZen.innerText = (state.zen || 0).toLocaleString();
+
+  // Currency Dashboard Synchronization
+  const valZen = document.getElementById("valZen");
+  if (valZen) valZen.innerText = `🪙 Linh Thạch: ${(state.zen || 0).toLocaleString()}`;
+  const valBless = document.getElementById("valBless");
+  if (valBless) valBless.innerText = `💎 Thần Tinh: ${(state.bless || 0).toLocaleString()}`;
+  const valChaos = document.getElementById("valChaos");
+  if (valChaos) valChaos.innerText = `🔥 Ma Thạch: ${(state.chaos || 0).toLocaleString()}`;
+  const valLife = document.getElementById("valLife");
+  if (valLife) valLife.innerText = `🌿 Tiên Lộ: ${(state.life || 0).toLocaleString()}`;
+
+  // Hero Class Ancient Name sync
+  const heroBadge = document.getElementById("chibiHeroBadge");
+  if (heroBadge) {
+    const cTitle = (typeof CLASS_ANCIENT_NAMES !== "undefined" && CLASS_ANCIENT_NAMES[state.charClass]) || "Thần Ma Kiếm Tôn";
+    heroBadge.innerHTML = `<span class="maple-leaf-icon">🍁</span> Lv.${state.level} [${cTitle}] ${state.username || 'Dạ Lăng Phong'}`;
+  }
+
+  // Wave UI Progress Sync
+  const waveMapName = document.getElementById("txtWaveMapName");
+  if (waveMapName) {
+    const curMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
+    waveMapName.innerText = curMap.name;
+  }
+  const waveNumber = document.getElementById("txtWaveNumber");
+  if (waveNumber && state.waveData) {
+    waveNumber.innerText = `WAVE ${state.waveData.currentWave || 1}/${state.waveData.maxWaves || 5}`;
+  }
+  const waveProgressFill = document.getElementById("waveProgressFill");
+  if (waveProgressFill && state.waveData) {
+    const pct = Math.min(100, Math.round(((state.waveData.currentWave || 1) / (state.waveData.maxWaves || 5)) * 100));
+    waveProgressFill.style.width = `${pct}%`;
+  }
 
   const heroLvEl = document.getElementById("heroLv");
   if (heroLvEl) heroLvEl.innerText = `Lv.${state.level}`;
@@ -3938,6 +3882,257 @@ function renderMaps() {
   container.innerHTML = html;
 }
 
+
+// ==========================================================================
+// VERTICAL MULTI-MONSTER WAVE-BASED COMBAT SYSTEM
+// ==========================================================================
+
+
+// ==========================================================================
+// STORY NARRATIVE & ANCIENT LORE SYSTEM
+// ==========================================================================
+
+const CLASS_ANCIENT_NAMES = {
+  dk: "Thần Ma Kiếm Tôn",
+  dw: "Thái Sơ Trận Sư",
+  fe: "Thánh Linh Thần Tiễn"
+};
+
+const STORY_MAP_LORE = {
+  1: { speaker: "Dạ Lăng Phong", avatar: "⚔️", text: "Địa mạch Biên Cảnh đang nứt rạn! Cổ trận dưới lòng thôn làng không còn chịu nổi áp lực ma khí!" },
+  2: { speaker: "Lạc Thanh Huyên", avatar: "🌸", text: "Thanh Khâu Cổ Lâm ngập tràn mộc linh khí, nhưng rễ cây cổ thụ đã bị ma sát xâm thực rồi..." },
+  3: { speaker: "Dạ Lăng Phong", avatar: "❄️", text: "Hàn Băng Tuyệt Địa ngàn năm bất biến... nơi đây từng chôn giấu chiến hài của chư Thần!" },
+  4: { speaker: "Lôi Viêm", avatar: "🛡️", text: "Thần Ma Phần Trường! Ta ngửi thấy mùi máu của đồng bào Cự Ma viễn cổ đang gào thét dưới địa mạch!" },
+  5: { speaker: "Lạc Thanh Huyên", avatar: "🌊", text: "U Minh Thủy Vực là lối vào cấm địa phong ấn. Cẩn thận, sóng ngầm nơi đây chứa đầy sát niệm!" },
+  6: { speaker: "Dạ Lăng Phong", avatar: "⚡", text: "Thiên Trụ thứ sáu đã sụp đổ! Chấp Pháp Giả của Thần Điện đang tàn sát phàm nhân để tu bổ trận pháp!" },
+  7: { speaker: "Lôi Viêm", avatar: "🔥", text: "Hoang Mạc Cổ Trận... cả một châu lục tươi tốt năm xưa đã bị rút cạn sinh mệnh làm chất đốt!" },
+  8: { speaker: "Cửu Tiêu Thần Sứ", avatar: "👑", text: "Kẻ mang song huyết nguyền rủa kia! Ngươi dám phạm thượng tiến vào Thánh Vực Cửu Tiêu sao?" },
+  9: { speaker: "Dạ Lăng Phong", avatar: "🌌", text: "Hư Không Hỗn Độn... Lõi càn khôn chỉ còn cách một bước. Dù là Thần hay Ma cản đường, ta đều sẽ phá tan!" },
+  10: { speaker: "Cơ Vô Trần", avatar: "💀", text: "Dạ Lăng Phong! Ngươi rốt cuộc cũng đến trước Đài Tịch Diệt. Hãy chứng kiến cái chết tráng lệ của thế giới này!" }
+};
+
+const STORY_BOSS_LORE = {
+  1: { speaker: "Xích Nhện Cổ Thú", avatar: "👾", text: "Hừ... sinh linh nhỏ bé, xương cốt của ngươi sẽ làm chất dinh dưỡng cho đại trận viễn cổ!" },
+  2: { speaker: "Cổ Thụ Tà Linh", avatar: "🌲", text: "Sinh mệnh là hư ảo... vạn mộc quy tịch, hãy hóa thành tro bụi cùng ta!" },
+  3: { speaker: "Tuyết Ma Thần Viên", avatar: "🦍", text: "Kẻ nào dám kinh động đến giấc ngủ ngàn năm của thần hài tuyết sơn?!" },
+  4: { speaker: "Oán Hồn Dạ Đế", avatar: "👻", text: "Thần thánh phản bội... Ma tộc tận diệt... Oán hận mười vạn năm hôm nay phải trả bằng máu!" },
+  5: { speaker: "Thâm Hải Giao Long", avatar: "🐉", text: "Dưới đáy vực sâu này, không ai có thể lay chuyển được xích sắt phong thiên!" },
+  6: { speaker: "Trấn Sơn Thạch Ma", avatar: "🗿", text: "Mệnh lệnh của Thần Điện: Bất kỳ kẻ nào tiếp cận Thiên Trụ... giết không tha!" },
+  7: { speaker: "Liệt Diễm Ma Điểu", avatar: "🦅", text: "Lửa địa ngục sẽ thiêu rụi thân xác Thần Ma tạp chủng của ngươi!" },
+  8: { speaker: "Chấp Pháp Trưởng Lão", avatar: "⚡", text: "Hiến tế phàm nhân là ý chí của Thiên Đạo! Ngươi nghịch thiên sẽ phải chịu vạn kiếp bất phục!" },
+  9: { speaker: "Cự Ma Thao Thiết", avatar: "👹", text: "Hỗn Độn Chi Tâm sẽ nuốt chửng linh hồn ngươi! Thế giới này sắp trở về hư vô!" },
+  10: { speaker: "Cơ Vô Trần", avatar: "👑", text: "Trận Tịch Diệt đã mở! Dạ Lăng Phong, ngươi lấy cái gì để cứu rỗi vạn linh khi Thiên Đạo đã diệt vong?!" }
+};
+
+let storyBannerTimeout = null;
+function triggerStoryBanner(speaker, text, avatar = "📜", color = "#ffd700") {
+  const overlay = document.getElementById("storyBannerOverlay");
+  const spkEl = document.getElementById("storyBannerSpeaker");
+  const txtEl = document.getElementById("storyBannerText");
+  const iconEl = document.getElementById("storyBannerIcon");
+  if (!overlay || !spkEl || !txtEl) return;
+
+  spkEl.innerText = speaker;
+  spkEl.style.color = color;
+  txtEl.innerText = text;
+  if (iconEl) iconEl.innerText = avatar;
+
+  overlay.style.display = "flex";
+  if (storyBannerTimeout) clearTimeout(storyBannerTimeout);
+  storyBannerTimeout = setTimeout(() => {
+    overlay.style.display = "none";
+  }, 4800);
+}
+
+
+function startWave(mapId, waveIndex = 1) {
+  const currentMap = MAPS.find(m => m.id === mapId) || MAPS[0];
+  if (!state.waveData) {
+    state.waveData = {};
+  }
+  state.waveData.currentMapId = mapId;
+  state.waveData.currentWave = waveIndex;
+  state.waveData.maxWaves = 5;
+  state.waveData.monsters = [];
+
+  const isBossWave = (waveIndex === state.waveData.maxWaves);
+
+  // Scaled monster count: Map 1 has 2-3 mobs; Map 2-4 has 3-4 mobs; Map 5+ has 4-6 mobs
+  let mobCount = 2 + Math.min(3, Math.floor(currentMap.tier / 2));
+  if (isBossWave) {
+    mobCount = Math.max(3, mobCount);
+  }
+
+  for (let i = 0; i < mobCount; i++) {
+    let rank = MONSTER_RANKS[0]; // normal
+    let isBoss = false;
+
+    if (isBossWave && i === 0) {
+      rank = currentMap.tier >= 8 ? MONSTER_RANKS.find(r => r.key === "mythical") :
+             (currentMap.tier >= 5 ? MONSTER_RANKS.find(r => r.key === "legendary") :
+              MONSTER_RANKS.find(r => r.key === "overlord"));
+      if (!rank) rank = MONSTER_RANKS[MONSTER_RANKS.length - 1];
+      isBoss = true;
+    } else {
+      const rRoll = Math.random();
+      if (rRoll < 0.15) rank = MONSTER_RANKS.find(r => r.key === "elite") || MONSTER_RANKS[0];
+      else if (rRoll < 0.22) rank = MONSTER_RANKS.find(r => r.key === "dark_gold") || MONSTER_RANKS[0];
+      else if (rRoll < 0.26) rank = MONSTER_RANKS.find(r => r.key === "golden") || MONSTER_RANKS[0];
+    }
+
+    let rawMobName = currentMap.mobs[Math.floor(Math.random() * currentMap.mobs.length)];
+    if (isBoss) {
+      rawMobName = currentMap.boss;
+    } else if (rank.key === "golden") {
+      rawMobName = `${rawMobName} Hoàng Kim`;
+    } else if (rank.key === "elite") {
+      rawMobName = `${rawMobName} Tinh Anh`;
+    } else if (rank.key === "dark_gold") {
+      rawMobName = `${rawMobName} Ám Kim`;
+    }
+
+    const fullMobName = `${rank.prefix ? rank.prefix + ' ' : ''}${rawMobName}`;
+    const maxMobHp = Math.floor((currentMap.tier * 220 + 120) * (rank.hpMult || 1) * (1 + (waveIndex - 1) * 0.25));
+
+    let archetype = "spider";
+    if (isBoss) {
+      archetype = currentMap.tier >= 6 ? "dragon" : (currentMap.tier >= 3 ? "demon" : "golem");
+    } else {
+      const archList = ["spider", "treant", "golem", "demon", "sea"];
+      archetype = archList[(currentMap.tier + i) % archList.length];
+    }
+
+    // Horizontal placement % across the screen:
+    // Left-to-right spread: 15% to 85%
+    const step = mobCount > 1 ? (70 / (mobCount - 1)) : 0;
+    const posX = 15 + step * i;
+    const posY = isBoss ? 20 : (12 + (i % 2) * 16);
+
+    state.waveData.monsters.push({
+      id: `mob_${Date.now()}_${i}`,
+      name: fullMobName,
+      rawName: rawMobName,
+      rank: rank,
+      category: rank.key,
+      maxHp: maxMobHp,
+      currentHp: maxMobHp,
+      tier: currentMap.tier,
+      isBoss: isBoss,
+      archetype: archetype,
+      mobMult: rank.dmgMult || 1.0,
+      x: posX,
+      y: posY,
+      lootGiven: false
+    });
+  }
+
+  if (isBossWave) {
+    audio.playGateOpen();
+    audio.playKeng();
+    addLog(`⚡⚡ [CẢNH BÁO WAVE ${waveIndex}/${state.waveData.maxWaves}] THỦ LĨNH [${currentMap.boss.toUpperCase()}] ĐÃ XUẤT HIỆN! ⚡⚡`, "log-boss");
+    const bossLore = STORY_BOSS_LORE[currentMap.id];
+    if (bossLore) {
+      triggerStoryBanner(bossLore.speaker, bossLore.text, bossLore.avatar, "#ff7675");
+    }
+  } else {
+    addLog(`⚔️ Bắt đầu Wave ${waveIndex}/${state.waveData.maxWaves} tại [${currentMap.name}]! Đang đối đầu ${state.waveData.monsters.length} quái vật!`, "log-norm");
+  }
+
+  renderWaveMonsters();
+  updateUI();
+}
+
+function renderWaveMonsters() {
+  const container = document.getElementById("monstersWaveContainer");
+  if (!container || !state.waveData) return;
+
+  const currentMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
+  updateArenaBackground(currentMap.id);
+
+  let html = "";
+  state.waveData.monsters.forEach(mob => {
+    const hpPct = Math.max(0, Math.min(100, (mob.currentHp / mob.maxHp) * 100));
+    const rObj = mob.rank || MONSTER_RANKS[0];
+    const isDead = mob.currentHp <= 0;
+    const svgContent = (typeof CHIBI_MONSTERS !== "undefined" && CHIBI_MONSTERS[mob.archetype]) ? CHIBI_MONSTERS[mob.archetype] : (typeof CHIBI_MONSTERS !== "undefined" ? CHIBI_MONSTERS.spider : "👾");
+
+    html += `
+      <div class="wave-mob-card ${rObj.auraClass || ''} ${mob.isBoss ? 'wave-mob-boss' : ''} ${isDead ? 'mob-dead' : ''}" 
+           id="mobCard_${mob.id}" 
+           style="left:${mob.x}%; top:${mob.y}%;">
+        <div class="wave-mob-header">
+          <span class="wave-mob-name" style="color:${rObj.color || '#ffd32a'}">${mob.isBoss ? '👑 ' : ''}${mob.name}</span>
+          <div class="wave-mob-hp-track">
+            <div class="wave-mob-hp-fill" id="mobHpFill_${mob.id}" style="width:${hpPct}%;"></div>
+          </div>
+        </div>
+        <div class="wave-mob-sprite" id="mobSprite_${mob.id}">
+          ${svgContent}
+        </div>
+        <div class="actor-shadow" style="width:40px; height:8px; margin: 0 auto;"></div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  // Boss banner support if boss is alive
+  const bossMob = state.waveData.monsters.find(m => m.isBoss && m.currentHp > 0);
+  const bossBanner = document.getElementById("mapleBossBanner");
+  if (bossBanner) {
+    if (bossMob) {
+      bossBanner.style.display = "flex";
+      const nameTxt = document.getElementById("mapleBossNameText");
+      if (nameTxt) nameTxt.innerText = bossMob.name;
+      const hpFill = document.getElementById("mapleBossHpFill");
+      const hpNum = document.getElementById("mapleBossHpNum");
+      const pct = Math.max(0, Math.min(100, (bossMob.currentHp / bossMob.maxHp) * 100));
+      if (hpFill) hpFill.style.width = `${pct}%`;
+      if (hpNum) hpNum.innerText = `${Math.ceil(bossMob.currentHp).toLocaleString()} / ${bossMob.maxHp.toLocaleString()} (${pct.toFixed(0)}%)`;
+    } else {
+      bossBanner.style.display = "none";
+    }
+  }
+}
+
+function checkAndAutoProgressMap() {
+  const currentMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
+  addLog(`🏆 [ẢI QUÉT SẠCH] Bạn đã dọn sạch toàn bộ 5/5 Wave tại vùng đất [${currentMap.name}]!`, "log-crit");
+  if (currentMap.id === 10) {
+    triggerStoryBanner("Dạ Lăng Phong", "Thái Sơ Hóa Sinh Đại Trận... KHỞI LẬP! Khắp chín châu, vạn linh hãy thức tỉnh, Kỷ Nguyên Tái Sinh bắt đầu!", "🌟", "#2ecc71");
+  } else {
+    triggerStoryBanner("Dạ Lăng Phong", `Đã thanh tẩy xong ma khí tại [${currentMap.name}]. Thu thập thêm linh thạch để tiến vào vùng đất kế tiếp!`, "⚔️", "#00ffcc");
+  }
+  audio.playKeng();
+
+  // Clear map bonus reward
+  const bonusZen = Math.floor(currentMap.tier * 25000 * (1 + (state.rs || 0) * 0.2));
+  const bonusExp = Math.floor(currentMap.tier * 60000);
+  state.zen += bonusZen;
+  state.exp += bonusExp;
+  spawnFloatingLoot("🎁", `+${bonusZen.toLocaleString()} Zen & EXP`, "var(--gold)");
+  addLog(`🎉 [THƯỞNG HOÀN THÀNH MAP] Nhận +${bonusZen.toLocaleString()} Zen & +${bonusExp.toLocaleString()} EXP!`, "log-zen");
+
+  // Check next map auto-progression
+  const nextMap = MAPS.find(m => m.id === state.currentMapId + 1);
+  if (nextMap && state.level >= nextMap.reqLv && (state.rs || 0) >= (nextMap.reqRs || 0)) {
+    state.currentMapId = nextMap.id;
+    addLog(`🚀 [TIẾN LÊN MAP MỚI] Đủ điều kiện! Bạn đã được dịch chuyển đến vùng đất mới [${nextMap.name}]!`, "log-boss");
+    audio.playGateOpen();
+    startWave(nextMap.id, 1);
+  } else {
+    if (nextMap) {
+      addLog(`⚔️ Chưa đủ cấp độ vào [${nextMap.name}] (Yêu cầu Lv.${nextMap.reqLv}). Tiếp tục cày lại từ Wave 1 để tăng cấp!`, "log-buff");
+    } else {
+      addLog(`👑 Bạn đã chinh phục Bản đồ cao nhất lục địa! Tiếp tục càn quét để săn bảo vật!`, "log-crit");
+    }
+    startWave(state.currentMapId, 1);
+  }
+  updateUI();
+  saveGameState();
+}
+
+
 function selectMap(mapId) {
   const m = MAPS.find(x => x.id === mapId);
   if (!m) return;
@@ -3949,7 +4144,12 @@ function selectMap(mapId) {
   state.currentMapId = mapId;
   state.currentMob = null;
   addLog(`🚩 Di chuyển đến vùng đất [${m.name}]! Quái vật cấp ${m.tier} xuất hiện!`, "log-boss");
+  const mapLore = STORY_MAP_LORE[m.id];
+  if (mapLore) {
+    triggerStoryBanner(mapLore.speaker, mapLore.text, mapLore.avatar, "#ffd700");
+  }
   audio.playGateOpen();
+  startWave(mapId, 1);
   updateUI();
   saveGameState();
 }
@@ -4389,12 +4589,16 @@ function renderUpgradeView() {
       const reqChaos = nextPlus >= 10 ? Math.floor(nextPlus / 2) : 0;
       const reqZen = nextPlus * 40000;
 
+      const hasBless = (state.bless || 0) >= reqBless;
+      const hasChaos = reqChaos === 0 || (state.chaos || 0) >= reqChaos;
+      const hasZen = (state.zen || 0) >= reqZen;
+
       if (forecastText) forecastText.innerHTML = `Lên <b>+${nextPlus}</b>: Sát thương & Phòng thủ <b>+12%</b> • Kích hoạt Hào quang Thần thoại!`;
       if (rateText) rateText.innerHTML = `Tỷ lệ thành công: <b style="color:${rate >= 80 ? "#2ecc71" : "#f1c40f"};">${rate}%</b>`;
-      if (costText) costText.innerHTML = `Chi phí: <b>${reqBless}x Bless</b>${reqChaos > 0 ? ` • <b>${reqChaos}x Chaos</b>` : ""} • <b>${reqZen.toLocaleString()} Zen</b>`;
+      if (costText) costText.innerHTML = `Chi phí: <b style="color:${hasBless ? '#2ecc71' : '#e74c3c'};">${reqBless}x Bless</b>${reqChaos > 0 ? ` • <b style="color:${hasChaos ? '#2ecc71' : '#e74c3c'};">${reqChaos}x Chaos</b>` : ""} • <b style="color:${hasZen ? '#2ecc71' : '#e74c3c'};">${reqZen.toLocaleString()} Zen</b>`;
       if (btnEnhance) {
         btnEnhance.disabled = false;
-        btnEnhance.innerText = `CƯỜNG HÓA (+${nextPlus})`;
+        btnEnhance.innerText = `KHAI MỞ PHÙ VÂN (+${nextPlus})`;
       }
     }
   }
@@ -4721,19 +4925,29 @@ function forgeEnhance() {
   const curKey = state.selectedUpgradeKey || state.selectedSlotKey || "mainWeapon";
   let targetItem = state.equipped[curKey];
 
-  if (!targetItem || targetItem.plus >= 15) return;
+  if (!targetItem) {
+    addLog("Vui lòng chọn hoặc mặc trang bị trước khi thao tác!", "log-damage-taken");
+    return;
+  }
+  if (targetItem.plus >= 15) {
+    addLog(`Trang bị [${targetItem.name}] đã đạt cảnh giới tối đa (+15)!`, "log-buff");
+    return;
+  }
 
   const nextPlus = targetItem.plus + 1;
-  const needBless = nextPlus <= 6 ? 1 : (nextPlus <= 9 ? 2 : 3);
-  const needChaos = nextPlus >= 10 ? 1 : 0;
+  const needBless = nextPlus <= 6 ? 1 : (nextPlus <= 9 ? 2 : 4);
+  const needChaos = nextPlus >= 10 ? Math.floor(nextPlus / 2) : 0;
+  const needZen = nextPlus * 40000;
 
-  if (state.bless < needBless || (needChaos > 0 && state.chaos < needChaos)) {
-    addLog("Không đủ ngọc để cường hóa!", "log-damage-taken");
+  if ((state.bless || 0) < needBless || (needChaos > 0 && (state.chaos || 0) < needChaos) || (state.zen || 0) < needZen) {
+    addLog(`❌ Không đủ nguyên liệu! Cần: ${needBless} Bless, ${needChaos} Chaos và ${needZen.toLocaleString()} Zen.`, "log-damage-taken");
+    audio.vibrate(80);
     return;
   }
 
   state.bless -= needBless;
   if (needChaos > 0) state.chaos -= needChaos;
+  state.zen -= needZen;
 
   const successRate = nextPlus <= 6 ? 1.0 : (nextPlus <= 9 ? 0.70 : 0.45);
   audio.playAnvil();
@@ -4747,7 +4961,7 @@ function forgeEnhance() {
     const newStats = calculateStats();
     const cpDiff = newStats.cp - oldStats.cp;
 
-    addLog(`★ CƯỜNG HÓA THÀNH CÔNG! [${targetItem.name}] đã lên cấp +${targetItem.plus}! (Lực chiến tăng: +${cpDiff > 0 ? cpDiff.toLocaleString() : (newItemCP - oldItemCP).toLocaleString()} CP) ★`, "log-crit");
+    addLog(`★ KHAI MỞ PHÙ VÂN THÀNH CÔNG! [${targetItem.name}] đã lên cấp +${targetItem.plus}! (Lực chiến tăng: +${cpDiff > 0 ? cpDiff.toLocaleString() : (newItemCP - oldItemCP).toLocaleString()} CP) ★`, "log-crit");
     audio.playKeng();
     audio.vibrate(100);
   } else {
@@ -4765,10 +4979,11 @@ function forgeEnhance() {
     if (targetItem.plus < oldPlus) {
       addLog(`💀 [THẤT BẠI] Yêu tinh Goblin làm hỏng trang bị! [${targetItem.name}] tụt từ +${oldPlus} xuống +${targetItem.plus} (Lực chiến giảm: -${cpLoss > 0 ? cpLoss.toLocaleString() : (oldItemCP - newItemCP).toLocaleString()} CP)!`, "log-damage-taken");
     } else {
-      addLog(`[THẤT BẠI] Cường hóa thất bại! May mắn trang bị giữ nguyên cấp +${targetItem.plus} (Lực chiến không đổi)!`, "log-damage-taken");
+      addLog(`[THẤT BẠI] Khai mở phù vân thất bại! May mắn trang bị giữ nguyên cấp +${targetItem.plus} (Lực chiến không đổi)!`, "log-damage-taken");
     }
   }
 
+  renderUpgradeView();
   updateUI();
   saveGameState();
 }
