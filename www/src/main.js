@@ -1439,7 +1439,10 @@ const RARITIES = [
   { name: "Cam", color: "#e67e22", class: "r-orange", optCount: 3 },
   { name: "Vàng", color: "#f1c40f", class: "r-yellow", optCount: 4 },
   { name: "Tím", color: "#9b59b6", class: "r-purple", optCount: 5 },
-  { name: "Đỏ Siêu Cấp", color: "#e74c3c", class: "r-red", optCount: 7 }
+  { name: "Đỏ Siêu Cấp", color: "#e74c3c", class: "r-red", optCount: 6 },
+  { name: "Hồng Kim Thần Thoại", color: "#ff007f", class: "r-pink", optCount: 7 },
+  { name: "Hỗn Mang Đa Sắc", color: "#00ffff", class: "r-rainbow", optCount: 8 },
+  { name: "Chí Tôn Vô Cực", color: "#ffd700", class: "r-god", optCount: 10 }
 ];
 
 const OPTION_POOL = [
@@ -2327,6 +2330,45 @@ function generatePetItem(tier = null, forceRarity = null, isFodder = false) {
 }
 
 // INVENTORY & ITEM DROP ENGINE (PRIORITIZING HIGHER RARITY)
+
+// ==================== CƠ CHẾ DUNG HỢP x100 ĐỘT PHÁ NÂNG PHẨM CẤP ====================
+function checkItemRarityUpgrade(targetItem, oldFusionCount, newFusionCount) {
+  if (!targetItem) return;
+  const oldMilestones = Math.floor((oldFusionCount || 0) / 100);
+  const newMilestones = Math.floor((newFusionCount || 0) / 100);
+
+  if (newMilestones > oldMilestones) {
+    const times = newMilestones - oldMilestones;
+    for (let i = 0; i < times; i++) {
+      if (targetItem.rarity < RARITIES.length - 1) {
+        targetItem.rarity++;
+      }
+      // Tăng đột phá +25% chỉ số cơ bản trang bị
+      targetItem.atk = Math.floor((targetItem.atk || 0) * 1.25);
+      targetItem.def = Math.floor((targetItem.def || 0) * 1.25);
+      targetItem.hp = Math.floor((targetItem.hp || 0) * 1.25);
+
+      // Thêm 1 dòng hoàn hảo mới nếu chưa đầy
+      if (!targetItem.options) targetItem.options = [];
+      const pool = targetItem.slotKey === "wings" ? [...WING_SPECIFIC_OPTIONS, ...OPTION_POOL] :
+                   (targetItem.slotKey === "pet" ? [...PET_SPECIFIC_OPTIONS, ...OPTION_POOL] : OPTION_POOL);
+      const availableOpts = pool.filter(opt => !targetItem.options.includes(opt));
+      const maxOpts = (RARITIES[targetItem.rarity] && RARITIES[targetItem.rarity].optCount) || 6;
+      if (availableOpts.length > 0 && targetItem.options.length < maxOpts) {
+        const newOpt = availableOpts[Math.floor(Math.random() * availableOpts.length)];
+        targetItem.options.push(newOpt);
+      }
+    }
+
+    const newRarityObj = RARITIES[targetItem.rarity] || RARITIES[RARITIES.length - 1];
+    audio.playGateOpen();
+    audio.playKeng();
+    audio.vibrate(300);
+    spawnHeroFloatingEffect(`🌟 ĐỘT PHÁ [${newRarityObj.name}]!`, "float-crit");
+    addLog(`🌟 [ĐỘT PHÁ PHẨM CẤP x${newFusionCount}] [${targetItem.name}] đã đạt mốc Dung Hợp x${newFusionCount}, TỰ ĐỘNG NÂNG LÊN PHẨM CẤP [${newRarityObj.name}] (+25% Công, Thủ, HP & Kích hoạt Dòng Hoàn Hảo mới)! 🌟`, "log-crit");
+  }
+}
+
 function handleDroppedItem(droppedItem) {
   if (!droppedItem) return;
   const slotKey = droppedItem.slotKey;
@@ -2354,10 +2396,14 @@ function handleDroppedItem(droppedItem) {
     const absorbedDef = Math.max(1, Math.floor((droppedItem.def || 0) * 0.15));
     const absorbedHp = Math.max(5, Math.floor((droppedItem.hp || 0) * 0.15));
 
+    const oldFusion = currentItem.fusionCount || 0;
     currentItem.atk = (currentItem.atk || 0) + absorbedAtk;
     currentItem.def = (currentItem.def || 0) + absorbedDef;
     currentItem.hp = (currentItem.hp || 0) + absorbedHp;
-    currentItem.fusionCount = (currentItem.fusionCount || 0) + 1;
+    currentItem.fusionCount = oldFusion + 1;
+
+    // Tự động kiểm tra và nâng phẩm cấp khi đạt mốc x100 dung hợp
+    checkItemRarityUpgrade(currentItem, oldFusion, currentItem.fusionCount);
 
     // Dung hợp dòng hoàn hảo nếu còn chỗ (tối đa 6 dòng)
     let newOptionsAdded = [];
@@ -2396,10 +2442,14 @@ function handleDroppedItem(droppedItem) {
     const absorbedDef = Math.max(1, Math.floor((currentItem.def || 0) * 0.15));
     const absorbedHp = Math.max(5, Math.floor((currentItem.hp || 0) * 0.15));
 
+    const oldFusion = droppedItem.fusionCount || 0;
     droppedItem.atk = (droppedItem.atk || 0) + absorbedAtk;
     droppedItem.def = (droppedItem.def || 0) + absorbedDef;
     droppedItem.hp = (droppedItem.hp || 0) + absorbedHp;
-    droppedItem.fusionCount = (currentItem.fusionCount || 0) + (droppedItem.fusionCount || 0) + 1;
+    droppedItem.fusionCount = (currentItem.fusionCount || 0) + oldFusion + 1;
+
+    // Tự động kiểm tra và nâng phẩm cấp khi đạt mốc x100 dung hợp
+    checkItemRarityUpgrade(droppedItem, oldFusion, droppedItem.fusionCount);
 
     // Kế thừa dòng hoàn hảo
     if (!droppedItem.options) droppedItem.options = [];
@@ -2524,13 +2574,13 @@ function sellGarbageItems() {
 // COMPREHENSIVE STATS CALCULATION
 // Base stats are strictly calculated without temporary fluctuating combat buffs to prevent CP bugs
 function calculateStats() {
-  const baseStr = state.stats.str || 0;
-  const baseAgi = state.stats.agi || 0;
-  const baseVit = state.stats.vit || 0;
-  const baseEne = state.stats.ene || 0;
+  const baseStr = Number(state.stats && state.stats.str) || 0;
+  const baseAgi = Number(state.stats && state.stats.agi) || 0;
+  const baseVit = Number(state.stats && state.stats.vit) || 0;
+  const baseEne = Number(state.stats && state.stats.ene) || 0;
 
   // Direct Level Stat Growth
-  const lvlBonus = Math.max(0, (state.level || 1) - 1);
+  const lvlBonus = Math.max(0, (Number(state.level) || 1) - 1);
   const lvlHp = lvlBonus * 35;
   const lvlMp = lvlBonus * 18;
   const lvlPhy = lvlBonus * 5.0;
@@ -2548,21 +2598,28 @@ function calculateStats() {
   let gearHp = 0;
 
   let setTierCounts = {};
-  for (const slotKey in state.equipped) {
-    const item = state.equipped[slotKey];
-    if (item) {
-      const mult = 1 + item.plus * 0.12;
-      gearAtk += item.atk * mult;
-      gearDef += item.def * mult;
-      gearHp += item.hp * mult;
+  if (state.equipped && typeof state.equipped === "object") {
+    for (const slotKey in state.equipped) {
+      const item = state.equipped[slotKey];
+      if (item && typeof item === "object") {
+        const plus = Number(item.plus) || 0;
+        const atk = Number(item.atk) || 0;
+        const def = Number(item.def) || 0;
+        const hp = Number(item.hp) || 0;
+        const mult = 1 + plus * 0.12;
 
-      if (["helm", "armor", "gloves", "boots"].includes(slotKey)) {
-        setTierCounts[item.tier] = (setTierCounts[item.tier] || 0) + 1;
+        gearAtk += atk * mult;
+        gearDef += def * mult;
+        gearHp += hp * mult;
+
+        if (["helm", "armor", "gloves", "boots"].includes(slotKey) && item.tier) {
+          setTierCounts[item.tier] = (setTierCounts[item.tier] || 0) + 1;
+        }
       }
     }
   }
 
-  // Distribute gear attack by class (3 Classes: DK, DW, FE)
+  // Distribute gear attack by class (DK, DW, FE)
   if (state.charClass === "dw") {
     rawMag += gearAtk * 0.90;
     rawPhy += gearAtk * 0.20;
@@ -2570,7 +2627,6 @@ function calculateStats() {
     rawPhy += gearAtk * 0.75;
     rawMag += gearAtk * 0.35;
   } else {
-    // dk
     rawPhy += gearAtk * 0.85;
     rawMag += gearAtk * 0.20;
   }
@@ -2580,12 +2636,10 @@ function calculateStats() {
 
   // Multi-tier Set Bonus (2, 4, 6, 8 pieces)
   let activeSetTier = null;
-  let activeSetCount = 0;
   for (const t in setTierCounts) {
     const count = setTierCounts[t];
     if (count >= 2) {
       activeSetTier = t;
-      activeSetCount = count;
       if (count >= 8) {
         rawPhy *= 1.35; rawMag *= 1.35; rawDef *= 1.35; maxHp *= 1.35;
       } else if (count >= 6) {
@@ -2600,30 +2654,30 @@ function calculateStats() {
   }
 
   // Permanent Reset (RS) Stat Scaling
-  const rsBonus = (state.rs || 0) * 150;
+  const rsBonus = (Number(state.rs) || 0) * 150;
   rawPhy += rsBonus * 2.0;
   rawMag += rsBonus * 2.0;
   rawDef += rsBonus * 1.5;
   maxHp += rsBonus * 12;
 
   // Super Rebirth Multiplier
-  const srsMult = 1 + state.srs * 0.5;
+  const srsMult = 1 + (Number(state.srs) || 0) * 0.5;
   rawPhy *= srsMult;
   rawMag *= srsMult;
   rawDef *= srsMult;
   maxHp *= srsMult;
 
-  // Skill Level Stat Scaling: Mỗi điểm kỹ năng tăng trực tiếp Công, Thủ, Máu
-  const totalSkillLevels = (state.skills || []).reduce((acc, s) => acc + (s.level || 0), 0);
+  // Skill Level Stat Scaling
+  const totalSkillLevels = (state.skills || []).reduce((acc, s) => acc + (Number(s && s.level) || 0), 0);
   rawPhy += totalSkillLevels * 8;
   rawMag += totalSkillLevels * 8;
   rawDef += totalSkillLevels * 5;
   maxHp += totalSkillLevels * 40;
 
   // Active Pet & Wing Fusion Multipliers
-  const petFusionCount = (state.equipped && state.equipped.pet && state.equipped.pet.fusionCount) || 0;
-  const wingFusionCount = (state.equipped && state.equipped.wings && state.equipped.wings.fusionCount) || 0;
-  const petBoost = 1 + petFusionCount * 0.03; // +3% buff per pet fusion level
+  const petFusionCount = Number(state.equipped && state.equipped.pet && state.equipped.pet.fusionCount) || 0;
+  const wingFusionCount = Number(state.equipped && state.equipped.wings && state.equipped.wings.fusionCount) || 0;
+  const petBoost = 1 + petFusionCount * 0.03;
 
   if (state.activePet === "angel") {
     maxHp *= 1.20 * petBoost;
@@ -2653,7 +2707,7 @@ function calculateStats() {
 
   // Wing Fusion Global Stat Boost
   if (wingFusionCount > 0) {
-    const wingBoost = 1 + wingFusionCount * 0.04; // +4% all stats per wing fusion level
+    const wingBoost = 1 + wingFusionCount * 0.04;
     rawPhy *= wingBoost;
     rawMag *= wingBoost;
     rawDef *= wingBoost;
@@ -2662,9 +2716,9 @@ function calculateStats() {
 
   // Skill Level CP Bonus
   let skillBonusCP = 0;
-  if (state.skills) {
+  if (state.skills && Array.isArray(state.skills)) {
     state.skills.forEach(sk => {
-      skillBonusCP += sk.level * 120;
+      skillBonusCP += (Number(sk && sk.level) || 0) * 120;
     });
   }
 
@@ -2681,22 +2735,30 @@ function calculateStats() {
   const hpRegen = Math.floor(baseVit * 1.0 + 15);
   const mpRegen = Math.floor(baseEne * 0.8 + 10);
 
-  // STABLE BASE COMBAT POWER (Not inflated by temporary combat buffs)
-  const cp = Math.floor(rawPhy * 1.5 + rawMag * 1.5 + rawDef * 1.4 + maxHp * 0.35 + (critRate + dodgeRate) * 25 + skillBonusCP + lvlBonus * 40);
+  // STABLE BASE COMBAT POWER (Always valid positive integer)
+  let cp = Math.floor(rawPhy * 1.5 + rawMag * 1.5 + rawDef * 1.4 + maxHp * 0.35 + (critRate + dodgeRate) * 25 + skillBonusCP + lvlBonus * 40);
+  if (!isFinite(cp) || isNaN(cp) || cp <= 0) {
+    cp = 100;
+  }
 
   return {
-    minPhy, maxPhy,
-    minMag, maxMag,
-    totalDef: Math.floor(rawDef),
-    maxHp: Math.floor(maxHp),
-    maxMp: Math.floor(maxMp),
-    hpRegen, mpRegen,
-    dodgeRate, critRate, dmgReduction,
-    cp, activeSetTier
+    minPhy: isFinite(minPhy) ? minPhy : 10,
+    maxPhy: isFinite(maxPhy) ? maxPhy : 20,
+    minMag: isFinite(minMag) ? minMag : 10,
+    maxMag: isFinite(maxMag) ? maxMag : 20,
+    totalDef: isFinite(rawDef) ? Math.floor(rawDef) : 10,
+    maxHp: isFinite(maxHp) ? Math.floor(maxHp) : 500,
+    maxMp: isFinite(maxMp) ? Math.floor(maxMp) : 200,
+    hpRegen,
+    mpRegen,
+    dodgeRate,
+    critRate,
+    dmgReduction,
+    cp,
+    activeSetTier
   };
 }
 
-// COMBAT TICK ENGINE (0.5s/tick)
 function startCombatLoop() {
   if (combatInterval) clearInterval(combatInterval);
   combatInterval = setInterval(() => { runCombatTick(); }, 500);
@@ -2706,7 +2768,7 @@ function runCombatTick() {
   const currentMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
   const stats = calculateStats();
 
-  // Blood Castle Event Tick
+  // Multi-Events Active Ticks
   if (state.bloodCastle && state.bloodCastle.inEvent) {
     state.bloodCastle.timeLeft -= 0.5;
     state.bloodCastle.kills++;
@@ -2714,14 +2776,59 @@ function runCombatTick() {
     const killsTxt = document.getElementById("txtBcKills");
     if (timerTxt) timerTxt.innerText = `⏱️ ${Math.ceil(state.bloodCastle.timeLeft)}s`;
     if (killsTxt) killsTxt.innerText = state.bloodCastle.kills;
+    if (state.bloodCastle.kills >= 30) { finishBloodCastle(true); return; }
+    if (state.bloodCastle.timeLeft <= 0) { finishBloodCastle(false); return; }
+  }
 
-    if (state.bloodCastle.kills >= 30) {
-      finishBloodCastle(true);
-      return;
+  if (state.events) {
+    const ds = state.events.devilSquare;
+    if (ds && ds.inEvent) {
+      ds.timeLeft -= 0.5;
+      ds.kills++;
+      const timerTxt = document.getElementById("txtBcTimer");
+      const killsTxt = document.getElementById("txtBcKills");
+      if (timerTxt) timerTxt.innerText = `⏱️ ${Math.ceil(ds.timeLeft)}s`;
+      if (killsTxt) killsTxt.innerText = ds.kills;
+      if (ds.kills >= 40) { finishDevilSquare(true); return; }
+      if (ds.timeLeft <= 0) { finishDevilSquare(false); return; }
     }
-    if (state.bloodCastle.timeLeft <= 0) {
-      finishBloodCastle(false);
-      return;
+
+    const cc = state.events.chaosCastle;
+    if (cc && cc.inEvent) {
+      cc.timeLeft -= 0.5;
+      cc.kills++;
+      const timerTxt = document.getElementById("txtBcTimer");
+      const killsTxt = document.getElementById("txtBcKills");
+      if (timerTxt) timerTxt.innerText = `⏱️ ${Math.ceil(cc.timeLeft)}s`;
+      if (killsTxt) killsTxt.innerText = cc.kills;
+      if (cc.kills >= 25) { finishChaosCastle(true); return; }
+      if (cc.timeLeft <= 0) { finishChaosCastle(false); return; }
+    }
+
+    const gd = state.events.goldenDragon;
+    if (gd && gd.inEvent) {
+      gd.timeLeft -= 0.5;
+      const dmg = Math.floor(stats.cp * 0.8 + Math.random() * 5000);
+      gd.bossHp = Math.max(0, gd.bossHp - dmg);
+      const timerTxt = document.getElementById("txtBcTimer");
+      const killsTxt = document.getElementById("txtBcKills");
+      if (timerTxt) timerTxt.innerText = `⏱️ ${Math.ceil(gd.timeLeft)}s`;
+      if (killsTxt) killsTxt.innerText = `${Math.floor((gd.bossHp / gd.maxHp) * 100)}%`;
+      if (gd.bossHp <= 0) { finishGoldenDragon(true); return; }
+      if (gd.timeLeft <= 0) { finishGoldenDragon(false); return; }
+    }
+
+    const wb = state.events.worldBoss;
+    if (wb && wb.inEvent) {
+      wb.timeLeft -= 0.5;
+      const dmg = Math.floor(stats.cp * 0.6 + Math.random() * 8000);
+      wb.bossHp = Math.max(0, wb.bossHp - dmg);
+      const timerTxt = document.getElementById("txtBcTimer");
+      const killsTxt = document.getElementById("txtBcKills");
+      if (timerTxt) timerTxt.innerText = `⏱️ ${Math.ceil(wb.timeLeft)}s`;
+      if (killsTxt) killsTxt.innerText = `${Math.floor((wb.bossHp / wb.maxHp) * 100)}%`;
+      if (wb.bossHp <= 0) { finishWorldBoss(true); return; }
+      if (wb.timeLeft <= 0) { finishWorldBoss(false); return; }
     }
   }
 
@@ -3177,7 +3284,7 @@ function updateUI() {
   renderHeroSprite();
   
   // 1. Level, Name, RS
-    const bxhMini = document.getElementById("bxhMiniText");
+  const bxhMini = document.getElementById("bxhMiniText");
   if (bxhMini && typeof LEGEND_RANKS !== "undefined" && LEGEND_RANKS[0]) {
     bxhMini.innerText = `Top 1: ${LEGEND_RANKS[0].name} (${LEGEND_RANKS[0].rs} RS)`;
   }
@@ -3187,20 +3294,24 @@ function updateUI() {
   }
   const chkAutoRsEl = document.getElementById("chkAutoRS");
   if (chkAutoRsEl) chkAutoRsEl.checked = !!state.autoRS;
-    const towerBadge = document.getElementById("txtTowerFloorBadge");
-  if (towerBadge) {
-    towerBadge.innerText = `T.${state.towerFloor || 1}`;
-  }
+  const chkAutoStatsEl = document.getElementById("chkAutoStats");
+  if (chkAutoStatsEl) chkAutoStatsEl.checked = !!state.autoStats;
+
+  const towerBadge = document.getElementById("txtTowerFloorBadge");
+  if (towerBadge) towerBadge.innerText = `T.${state.towerFloor || 1}`;
+
+  const eventTowerTxt = document.getElementById("eventTowerFloorTxt");
+  if (eventTowerTxt) eventTowerTxt.innerText = `${state.towerFloor || 1}`;
+
   const shopZen = document.getElementById("shopZenDisplay");
-  if (shopZen) {
-    shopZen.innerText = (state.zen || 0).toLocaleString();
-  }
+  if (shopZen) shopZen.innerText = (state.zen || 0).toLocaleString();
+
   const heroLvEl = document.getElementById("heroLv");
   if (heroLvEl) heroLvEl.innerText = `Lv.${state.level}`;
+
   const avatarIcon = document.getElementById("heroAvatarIcon");
   if (avatarIcon) avatarIcon.innerText = state.charClass === "fe" ? "🏹" : (state.charClass === "dw" ? "🧙" : "⚔️");
 
-  // Active Pet Visual
   const petEl = document.getElementById("chibiPetEl");
   if (petEl) {
     initPetsState();
@@ -3217,9 +3328,10 @@ function updateUI() {
   const heroRsEl = document.getElementById("heroRs");
   if (heroRsEl) heroRsEl.innerText = `(RS: ${state.rs}${state.srs > 0 ? " | S-RS: " + state.srs : ""})`;
 
-  // 2. Total CP
+  // 2. TOTAL CP (Guaranteed error-free format)
+  const safeCP = Math.max(10, Math.floor(stats.cp || 0));
   const valTotalCP = document.getElementById("valTotalCP");
-  if (valTotalCP) valTotalCP.innerText = `${stats.cp.toLocaleString()} CP`;
+  if (valTotalCP) valTotalCP.innerText = `${safeCP.toLocaleString()} CP`;
 
   // 3. Physical & Magic Damage Sub-bar
   const subbarPhyDmg = document.getElementById("subbarPhyDmg");
@@ -3227,64 +3339,95 @@ function updateUI() {
   const subbarMagDmg = document.getElementById("subbarMagDmg");
   if (subbarMagDmg) subbarMagDmg.innerText = `🔮 Pháp Thuật: ${stats.minMag.toLocaleString()} ~ ${stats.maxMag.toLocaleString()}`;
 
-  // 4. Map Badge & Blood Castle Sync
-  const curMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
+  // 4. Map Badges
   const mapBadge = document.getElementById("currentMapBadge");
+  const curMap = MAPS.find(m => m.id === state.currentMapId) || MAPS[0];
   if (mapBadge) mapBadge.innerText = `Map ${curMap.id}: ${curMap.name}`;
-  const bcAttemptsEl = document.getElementById("txtBcAttempts");
-  if (bcAttemptsEl && state.bloodCastle) {
-    bcAttemptsEl.innerText = `${state.bloodCastle.attempts} / 3`;
+
+  // 5. HP & MP Bars
+  const barHp = document.getElementById("barHpFill");
+  const txtHp = document.getElementById("txtHpBar");
+  if (barHp && txtHp) {
+    const curHp = Math.min(stats.maxHp, Math.max(0, state.currentHp || stats.maxHp));
+    const pct = Math.max(0, Math.min(100, Math.floor((curHp / stats.maxHp) * 100)));
+    barHp.style.width = `${pct}%`;
+    txtHp.innerText = `❤️ HP: ${curHp.toLocaleString()} / ${stats.maxHp.toLocaleString()}`;
   }
 
-  // 5. Currencies
-  const valZen = document.getElementById("valZen");
-  if (valZen) valZen.innerText = `🪙 Zen: ${state.zen.toLocaleString()}`;
-  const valBless = document.getElementById("valBless");
-  if (valBless) valBless.innerText = `💎 B: ${state.bless}`;
-  const valChaos = document.getElementById("valChaos");
-  if (valChaos) valChaos.innerText = `🔥 C: ${state.chaos}`;
-  const valLife = document.getElementById("valLife");
-  if (valLife) valLife.innerText = `🌿 L: ${state.life}`;
+  const barMp = document.getElementById("barMpFill");
+  const txtMp = document.getElementById("txtMpBar");
+  if (barMp && txtMp) {
+    const curMp = Math.min(stats.maxMp, Math.max(0, state.currentMp || stats.maxMp));
+    const pct = Math.max(0, Math.min(100, Math.floor((curMp / stats.maxMp) * 100)));
+    barMp.style.width = `${pct}%`;
+    txtMp.innerText = `💙 MP: ${curMp.toLocaleString()} / ${stats.maxMp.toLocaleString()}`;
+  }
 
-  // 6. HP & MP Bars
-  state.currentHp = Math.max(0, Math.min(stats.maxHp, state.currentHp));
-  state.currentMp = Math.max(0, Math.min(stats.maxMp, state.currentMp));
-  const hpPercent = Math.max(0, Math.min(100, (state.currentHp / stats.maxHp) * 100));
-  const mpPercent = Math.max(0, Math.min(100, (state.currentMp / stats.maxMp) * 100));
+  // 6. EXP Bar
+  const barExp = document.getElementById("barExpFill");
+  const txtExp = document.getElementById("txtExpBar");
+  if (barExp && txtExp) {
+    const expCur = state.exp || 0;
+    const expNeed = state.nextExp || 100;
+    const pct = Math.max(0, Math.min(100, Math.floor((expCur / expNeed) * 100)));
+    barExp.style.width = `${pct}%`;
+    txtExp.innerText = `EXP: ${expCur.toLocaleString()} / ${expNeed.toLocaleString()} (${pct}%)`;
+  }
 
-  const barHpFill = document.getElementById("barHpFill");
-  if (barHpFill) barHpFill.style.width = `${hpPercent}%`;
-  const txtHpBar = document.getElementById("txtHpBar");
-  if (txtHpBar) txtHpBar.innerText = `❤️ HP: ${state.currentHp.toLocaleString()} / ${stats.maxHp.toLocaleString()} (${hpPercent.toFixed(0)}%)`;
+  // 7. Potion Counts
+  const hpPotTxt = document.getElementById("txtCountHpPotion");
+  const mpPotTxt = document.getElementById("txtCountMpPotion");
+  if (hpPotTxt) hpPotTxt.innerText = state.potions.hp;
+  if (mpPotTxt) mpPotTxt.innerText = state.potions.mp;
 
-  const barMpFill = document.getElementById("barMpFill");
-  if (barMpFill) barMpFill.style.width = `${mpPercent}%`;
-  const txtMpBar = document.getElementById("txtMpBar");
-  if (txtMpBar) txtMpBar.innerText = `💙 MP: ${state.currentMp.toLocaleString()} / ${stats.maxMp.toLocaleString()} (${mpPercent.toFixed(0)}%)`;
+  // 8. TÍCH HỢP CHỈ SỐ PHỤ TRỰC TIẾP TRÊN MÀN HÌNH CHIẾN ĐẤU
+  const bPhy = document.getElementById("battleStatPhyDmg");
+  if (bPhy) bPhy.innerText = `${stats.minPhy.toLocaleString()} ~ ${stats.maxPhy.toLocaleString()}`;
+  const bMag = document.getElementById("battleStatMagDmg");
+  if (bMag) bMag.innerText = `${stats.minMag.toLocaleString()} ~ ${stats.maxMag.toLocaleString()}`;
+  const bDef = document.getElementById("battleStatDef");
+  if (bDef) bDef.innerText = `${stats.totalDef.toLocaleString()}`;
+  const bDodge = document.getElementById("battleStatDodge");
+  if (bDodge) bDodge.innerText = `${stats.dodgeRate}%`;
+  const bCrit = document.getElementById("battleStatCrit");
+  if (bCrit) bCrit.innerText = `${stats.critRate}%`;
+  const bRed = document.getElementById("battleStatDmgRed");
+  if (bRed) bRed.innerText = `${stats.dmgReduction}%`;
+  const bHpReg = document.getElementById("battleStatHpRegen");
+  if (bHpReg) bHpReg.innerText = `+${stats.hpRegen.toLocaleString()}/s`;
+  const bMpReg = document.getElementById("battleStatMpRegen");
+  if (bMpReg) bMpReg.innerText = `+${stats.mpRegen.toLocaleString()}/s`;
 
-  // 7. Potions Bar
-  if (!state.potions) state.potions = { hp: 50, mp: 50 };
-  const txtCountHpPotion = document.getElementById("txtCountHpPotion");
-  if (txtCountHpPotion) txtCountHpPotion.innerText = state.potions.hp;
-  const txtCountMpPotion = document.getElementById("txtCountMpPotion");
-  if (txtCountMpPotion) txtCountMpPotion.innerText = state.potions.mp;
-  const chkAutoHp = document.getElementById("chkAutoHpPotion");
-  if (chkAutoHp) chkAutoHp.checked = !!(state.autoPotion && state.autoPotion.hpEnabled);
+  const bStr = document.getElementById("bValStr");
+  if (bStr) bStr.innerText = state.stats.str;
+  const bAgi = document.getElementById("bValAgi");
+  if (bAgi) bAgi.innerText = state.stats.agi;
+  const bVit = document.getElementById("bValVit");
+  if (bVit) bVit.innerText = state.stats.vit;
+  const bEne = document.getElementById("bValEne");
+  if (bEne) bEne.innerText = state.stats.ene;
+  const bIgn = document.getElementById("bValIgnoreDef");
+  if (bIgn) bIgn.innerText = `+${Math.min(40, Math.floor(state.stats.str / 150))}%`;
+  const bDbl = document.getElementById("bValDoubleDmg");
+  if (bDbl) bDbl.innerText = `+${Math.min(30, Math.floor(state.stats.agi / 200))}%`;
 
-  // 8. EXP Bar
-  const expPercent = Math.max(0, Math.min(100, (state.exp / state.nextExp) * 100));
-  const barExpFill = document.getElementById("barExpFill");
-  if (barExpFill) barExpFill.style.width = `${expPercent}%`;
-  const txtExpBar = document.getElementById("txtExpBar");
-  if (txtExpBar) txtExpBar.innerText = `EXP: ${state.exp.toLocaleString()} / ${state.nextExp.toLocaleString()} (${expPercent.toFixed(1)}%)`;
+  const bFree = document.getElementById("valFreePointsBattle");
+  if (bFree) bFree.innerText = (state.freePoints || 0).toLocaleString();
 
-  // 9. Buff / Debuff Chips
-  renderStatusEffects();
+  // 9. Update Events Attempts in Events Tab
+  const bcTabAtt = document.getElementById("txtBcAttemptsTab");
+  if (bcTabAtt) bcTabAtt.innerText = `${state.bloodCastle ? state.bloodCastle.attempts : 3}/3`;
+  const dsTabAtt = document.getElementById("txtDsAttemptsTab");
+  if (dsTabAtt) dsTabAtt.innerText = `${state.events && state.events.devilSquare ? state.events.devilSquare.attempts : 3}/3`;
+  const ccTabAtt = document.getElementById("txtCcAttemptsTab");
+  if (ccTabAtt) ccTabAtt.innerText = `${state.events && state.events.chaosCastle ? state.events.chaosCastle.attempts : 3}/3`;
+  const gdTabAtt = document.getElementById("txtGdAttemptsTab");
+  if (gdTabAtt) gdTabAtt.innerText = `${state.events && state.events.goldenDragon ? state.events.goldenDragon.attempts : 3}/3`;
+  const wbTabAtt = document.getElementById("txtWbAttemptsTab");
+  if (wbTabAtt) wbTabAtt.innerText = `${state.events && state.events.worldBoss ? state.events.worldBoss.attempts : 3}/3`;
 
-  // 10. Combat Stats Grid (Tab Stats)
-  renderCombatStatsGrid(stats);
 
-  // 11. Paperdoll Slots
+  // Paperdoll Avatar Slots
   SLOT_TYPES.forEach(s => {
     const el = document.getElementById(`slot-${s.key}`);
     if (!el) return;
@@ -3296,50 +3439,29 @@ function updateUI() {
     if (item && RARITIES[item.rarity]) {
       const r = RARITIES[item.rarity];
       el.className = `slot-card ${r.class} ${isSelected ? "selected" : ""} ${aura}`;
+      el.style.borderColor = r.color;
+      el.style.boxShadow = `0 0 8px ${r.color}66`;
       el.innerHTML = `
-        <div class="slot-icon-box" style="background:rgba(20,24,34,0.9); border:1.5px solid ${r.color}; box-shadow:0 0 8px ${r.color}55;">${itemArt}</div>
-        <div class="slot-info">
-          <div class="slot-label">${s.name} ${item.fusionCount > 0 ? `<span style="color:#a29bfe; font-size:7.5px;">(Dung Hợp x${item.fusionCount})</span>` : ""}</div>
-          <div class="slot-name" style="color:${r.color};">${item.name}</div>
-          <div class="slot-opt">${item.options.length > 0 ? "★ " + item.options[0] : (item.atk ? "Công: +" + item.atk : "Thủ: +" + item.def)}</div>
-        </div>
-        ${item.plus > 0 ? `<div class="slot-plus-tag" style="color:${item.plus >= 9 ? "var(--gold)" : "#fff"}; font-size:${item.plus >= 13 ? "9px" : "8px"};">+${item.plus}</div>` : ""}
+        <div class="slot-art-box">${itemArt}</div>
+        <div class="slot-label">${s.name} ${item.fusionCount > 0 ? `<span style="color:#a29bfe; font-size:7.5px;">x${item.fusionCount}</span>` : ""}</div>
+        <div class="slot-name" style="color:${r.color};">${item.name}</div>
+        ${item.plus > 0 ? `<div class="slot-plus-badge">+${item.plus}</div>` : ""}
         ${item.fusionCount > 0 ? `<div class="slot-fusion-badge">x${item.fusionCount}</div>` : ""}
       `;
     } else {
-      el.className = `slot-card ${isSelected ? "selected" : ""}`;
+      el.className = `slot-card empty-slot ${isSelected ? "selected" : ""}`;
+      el.style.borderColor = "#242c3d";
+      el.style.boxShadow = "none";
       el.innerHTML = `
-        <div class="slot-icon-box" style="color:#576574;">${itemArt}</div>
-        <div class="slot-info">
-          <div class="slot-label">${s.name}</div>
-          <div class="slot-name" style="color:#576574;">Chưa Trang Bị</div>
-        </div>
+        <div class="slot-art-box">${itemArt}</div>
+        <div class="slot-label">${s.name}</div>
+        <div class="slot-empty-text">Trống</div>
       `;
     }
   });
 
-  // Set Bonus Badge
-  const setBadge = document.getElementById("setBonusBadge");
-  if (setBadge) {
-    if (stats.activeSetTier) {
-      setBadge.style.display = "block";
-      setBadge.innerText = `★ KÍCH HOẠT SET 4 MÓN BẬC ${stats.activeSetTier}: +20% HP & THỦ ★`;
-    } else {
-      setBadge.style.display = "none";
-    }
-  }
-
-  // Render Subviews
-  renderDetailPanel();
-  renderSkillsView();
-  // renderInventory removed
-  renderUpgradeView();
-  renderSkillsView();
-  renderMaps();
-  renderStatsView();
-  renderRebirthView();
-  // renderForgeView merged into renderUpgradeView
-  renderLeaderboard();
+  // 10. Update Equipped Slots Grid in Gear tab
+    renderSkillsView();
 }
 
 function renderStatusEffects() {
@@ -3695,38 +3817,32 @@ function renderLeaderboard() {
 
 // TABS SWITCHING (8 TABS)
 function switchTab(tabId) {
-  // Normalize legacy tab IDs
+  if (tabId === "map") tabId = "maps";
+  if (tabId === "tower") tabId = "events";
+  if (tabId === "stats" || tabId === "rebirth") tabId = "battle";
   if (tabId === "inventory" || tabId === "forge") tabId = "upgrade";
-  if (tabId === "map") tabId = "battle";
-  if (tabId === "rebirth") tabId = "stats";
-  if (tabId === "leaderboard") {
-    openLeaderboardModal();
-    return;
-  }
-  if (!["battle", "tower", "gear", "upgrade", "stats", "shop"].includes(tabId)) {
-    tabId = "battle";
-  }
+  if (tabId === "leaderboard") { openLeaderboardModal(); return; }
+
+  const validTabs = ["battle", "maps", "events", "gear", "upgrade", "shop"];
+  if (!validTabs.includes(tabId)) tabId = "battle";
 
   state.currentActiveTab = tabId;
 
-  const screens = ["battle", "tower", "gear", "upgrade", "stats", "shop"];
-  screens.forEach(s => {
+  validTabs.forEach(s => {
     const screenEl = document.getElementById(`screen-${s}`);
     if (screenEl) screenEl.classList.toggle("active", s === tabId);
     const btn = document.getElementById(`tabBtn-${s}`);
     if (btn) btn.classList.toggle("active", s === tabId);
   });
 
-  // Automatically close any gear detail panel or modal when switching tabs to prevent view obstruction
   closeGearDetail();
 
-  // Refresh tab views
-  if (tabId === "tower") renderTowerView();
+  if (tabId === "battle") updateUI();
+  if (tabId === "maps") renderMaps();
+  if (tabId === "events") renderEventsView();
   if (tabId === "gear") updateUI();
   if (tabId === "upgrade") renderUpgradeView();
-  if (tabId === "stats") { renderStatsView(); renderRebirthView(); }
   if (tabId === "shop") renderShopView();
-  if (tabId === "battle") updateUI();
 }
 
 function selectSlot(slotKey) {
@@ -3776,8 +3892,12 @@ function renderDetailPanel() {
     dTitle.innerHTML = `<span style="color:${r.color}; font-weight:bold;">${item.name} +${item.plus}</span> (CP: ${itemCP.toLocaleString()})`;
   }
   if (dStats) {
-    const fusionText = (item.fusionCount || 0) > 0 ? ` • <b style="color:#a29bfe;">Dung Hợp x${item.fusionCount}</b>` : "";
-    dStats.innerHTML = `Bậc ${item.tier} • Công: +${item.atk || 0} • Thủ: +${item.def || 0} • HP: +${item.hp || 0}${fusionText}`;
+    const fusionCount = Number(item.fusionCount) || 0;
+    const fusionText = fusionCount > 0 ? ` • <b style="color:#a29bfe;">Dung Hợp x${fusionCount}</b>` : "";
+    const nextMilestone = (Math.floor(fusionCount / 100) + 1) * 100;
+    const remaining = nextMilestone - fusionCount;
+    const milestoneInfo = ` • <span style="color:#f1c40f; font-size:8.5px;">(Tiến độ: ${fusionCount % 100}/100 - Còn ${remaining} lần dung hợp để nâng Phẩm Cấp [${RARITIES[Math.min(RARITIES.length - 1, item.rarity + 1)]?.name || 'Tối Thượng'}])</span>`;
+    dStats.innerHTML = `[${r.name}] • Bậc ${item.tier} • Công: +${item.atk || 0} • Thủ: +${item.def || 0} • HP: +${item.hp || 0}${fusionText}${milestoneInfo}`;
   }
   if (dOptions) {
     if (item.options && item.options.length > 0) {
@@ -4404,8 +4524,9 @@ function renderUpgradeView() {
           <div class="fusion-bonus-box">
             <b style="color:var(--gold);">CƠ CHẾ DUNG HỢP TRANG BỊ:</b><br>
             • Hấp thụ <b style="color:#2ecc71;">15% Công, Thủ, HP</b> từ Phôi Cánh Thần Thoại vào Cánh đang mặc.<br>
-            • Kế thừa và mở khóa thêm <b style="color:#00ffff;">Dòng Hoàn Hảo mới</b> (tối đa 6 dòng hoàn hảo).<br>
-            • Tăng vĩnh viễn: <b style="color:#f1c40f;">+4% Lực Chiến Toàn Diện</b> mỗi cấp Dung Hợp.
+            • Kế thừa và mở khóa thêm <b style="color:#00ffff;">Dòng Hoàn Hảo mới</b>.<br>
+            • Tăng vĩnh viễn: <b style="color:#f1c40f;">+4% Lực Chiến Toàn Diện</b> mỗi cấp Dung Hợp.<br>
+            • <b style="color:#ff007f;">🌟 ĐỘT PHÁ PHẨM CẤP:</b> Đạt mốc <b style="color:#fff;">Dung Hợp x100</b> tự động nâng phẩm cấp (+25% Công, Thủ, HP)!
           </div>
 
           <div style="font-size:9px; color:#8fa0b8; margin-top:1px;">Chi phí đúc phôi & dung hợp mỗi cấp:</div>
@@ -4804,7 +4925,7 @@ function closeShopModal() {
 
 function switchShopTab(tab) {
   state.shopTab = tab;
-  ["jewels", "mats", "potions"].forEach(t => {
+  ["jewels", "mats", "potions", "gacha"].forEach(t => {
     const btn = document.getElementById(`btnShop${t.charAt(0).toUpperCase() + t.slice(1)}`);
     if (btn) btn.classList.toggle("active", t === tab);
   });
@@ -4819,6 +4940,7 @@ function renderShopView() {
   const container = document.getElementById("shopItemsContainer");
   if (!container) return;
 
+  if (curTab === "gacha") { renderGachaView(container); return; }
   const items = SHOP_ITEMS[curTab] || SHOP_ITEMS.jewels;
   let html = "";
 
@@ -4884,6 +5006,404 @@ function buyShopItem(category, itemId) {
   updateUI();
   saveGameState();
 }
+
+// ==================== GACHA LOTTERY SYSTEM ====================
+function renderGachaView(container) {
+  const isFreeAvailable = state.lastFreeGachaDate !== new Date().toDateString();
+  const canAffordNorm1 = (state.zen || 0) >= 200000 || isFreeAvailable;
+  const canAffordNorm10 = (state.zen || 0) >= 1800000;
+  const canAffordMyth1 = (state.bless || 0) >= 3 && (state.chaos || 0) >= 3;
+  const canAffordMyth10 = (state.bless || 0) >= 25 && (state.chaos || 0) >= 25;
+
+  const pityNormal = state.gachaPity || 0;
+  const pityMythic = state.mythicGachaPity || 0;
+
+  let html = `
+    <div class="gacha-view-wrapper" style="display:flex; flex-direction:column; gap:6px;">
+      <!-- Header Currency Info Bar -->
+      <div style="background:#111726; border:1px solid #2a3754; border-radius:6px; padding:6px 10px; display:flex; justify-content:space-between; align-items:center; font-size:10px;">
+        <span style="color:var(--gold); font-weight:bold;">🎰 TÀI NGUYÊN RÚT THƯỞNG:</span>
+        <div style="display:flex; gap:8px; font-size:9.5px; font-weight:bold;">
+          <span style="color:#ffec8b;">🪙 ${(state.zen || 0).toLocaleString()}</span>
+          <span style="color:#74b9ff;">💎 ${state.bless || 0} Bless</span>
+          <span style="color:#e74c3c;">🔥 ${state.chaos || 0} Chaos</span>
+        </div>
+      </div>
+
+      <!-- BANNER 1: HÒM BÁU HOÀNG KIM LORENCIA -->
+      <div class="gacha-banner-card">
+        <div class="gacha-banner-header">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:18px;">🎁</span>
+            <div>
+              <b style="color:var(--gold); font-size:11.5px;">HÒM BÁU HOÀNG KIM LORENCIA</b>
+              <div style="font-size:8.5px; color:#8fa0b8;">Cơ hội nhận Cánh Cấp 1, Thú Cưng, Ngọc Quý & Trang Bị Bậc 6-8</div>
+            </div>
+          </div>
+          ${isFreeAvailable ? `<span class="badge" style="background:#2ecc71; color:#fff; font-size:8px; padding:2px 5px; border-radius:3px; font-weight:bold;">1 LƯỢT MIỄN PHÍ</span>` : ''}
+        </div>
+
+        <div style="background:#0b0f19; border:1px dashed #34495e; border-radius:4px; padding:4px 6px; font-size:8.5px; color:#c8d6e5; display:flex; justify-content:space-between; align-items:center;">
+          <span>Bảo hiểm Cực Phẩm: <b style="color:#f1c40f;">${pityNormal}/10 lượt</b></span>
+          <span style="color:#a29bfe; font-size:8px;">(Đạt 10 lượt chắc chắn nhận đồ Tím/Đỏ hoặc Cánh/Thú)</span>
+        </div>
+
+        <div class="gacha-btn-group">
+          ${isFreeAvailable ? `
+            <button class="btn btn-sm btn-success" style="flex:1; padding:7px; font-weight:bold; font-size:10px;" onclick="drawGacha('normal', 1)">🎁 QUAY MIỄN PHÍ HÔM NAY</button>
+          ` : `
+            <button class="btn btn-sm ${canAffordNorm1 ? 'btn-warn' : ''}" ${canAffordNorm1 ? '' : 'disabled'} style="flex:1; padding:7px; font-weight:bold; font-size:10px;" onclick="drawGacha('normal', 1)">🎰 QUAY 1 LẦN (200k Zen)</button>
+          `}
+          <button class="btn btn-sm ${canAffordNorm10 ? 'btn-primary' : ''}" ${canAffordNorm10 ? '' : 'disabled'} style="flex:1; padding:7px; font-weight:bold; font-size:10px;" onclick="drawGacha('normal', 10)">🎰 QUAY x10 (1.800k Zen)</button>
+        </div>
+      </div>
+
+      <!-- BANNER 2: ĐÀI TRIỆU HỒI THẦN MA CHÍ TÔN -->
+      <div class="gacha-banner-card mythic">
+        <div class="gacha-banner-header">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:18px;">👑</span>
+            <div>
+              <b style="color:#d0bcf1; font-size:11.5px;">ĐÀI TRIỆU HỒI THẦN MA CHÍ TÔN</b>
+              <div style="font-size:8.5px; color:#a29bfe;">Cực Phẩm: Cánh Cấp 3, Cánh Cấp 2, Kỳ Lân, Fenrir & Đồ Bậc 10 Đỏ Siêu Cấp</div>
+            </div>
+          </div>
+          <span class="badge" style="background:#8e44ad; color:#fff; font-size:8px; padding:2px 5px; border-radius:3px; font-weight:bold;">TỐI THƯỢNG</span>
+        </div>
+
+        <div style="background:#0e0b17; border:1px dashed #5b2c6f; border-radius:4px; padding:4px 6px; font-size:8.5px; color:#c8d6e5; display:flex; justify-content:space-between; align-items:center;">
+          <span>Bảo hiểm Thần Thoại: <b style="color:#e056fd;">${pityMythic}/20 lượt</b></span>
+          <span style="color:#f1c40f; font-size:8px;">(Đạt 20 lượt chắc chắn ra Cánh 3 / Kỳ Lân / Đồ Bậc 10)</span>
+        </div>
+
+        <div class="gacha-btn-group">
+          <button class="btn btn-sm ${canAffordMyth1 ? 'btn-warn' : ''}" ${canAffordMyth1 ? '' : 'disabled'} style="flex:1; padding:7px; font-weight:bold; font-size:10px; background:linear-gradient(180deg, #8e44ad 0%, #5b2c6f 100%); border-color:#9b59b6;" onclick="drawGacha('mythic', 1)">👑 TRIỆU HỒI x1 (3💎+3🔥)</button>
+          <button class="btn btn-sm ${canAffordMyth10 ? 'btn-primary' : ''}" ${canAffordMyth10 ? '' : 'disabled'} style="flex:1; padding:7px; font-weight:bold; font-size:10px; background:linear-gradient(180deg, #d35400 0%, #8e44ad 100%); border-color:#e67e22;" onclick="drawGacha('mythic', 10)">👑 TRIỆU HỒI x10 (25💎+25🔥)</button>
+        </div>
+      </div>
+
+      <!-- Auto Fusion Mechanism Banner -->
+      <div style="background:#090d16; border:1px solid #1f2a40; border-radius:5px; padding:6px 8px; font-size:8.5px; color:#8fa0b8; line-height:1.4;">
+        <b style="color:#00ffcc;">🔮 CƠ CHẾ DUNG HỢP TỰ ĐỘNG KHI RÚT THƯỞNG:</b><br>
+        Toàn bộ Trang Bị, Cánh Thần và Linh Thú rút được sẽ <b style="color:#fff;">TỰ ĐỘNG DUNG HỢP TRỰC TIẾP</b> vào nhân vật! Tự động hấp thụ 15% Công, Thủ, HP, kế thừa dòng Hoàn Hảo mới và tăng ngay Lực Chiến (CP)!
+      </div>
+
+      <!-- Drop Rates Summary Table -->
+      <div style="background:#0c101a; border:1px solid #232d42; border-radius:5px; padding:5px 8px; font-size:8px; color:#8fa0b8; display:flex; justify-content:space-between;">
+        <span>Tỷ lệ: <b style="color:#e74c3c;">Đỏ 3.5%</b> • <b style="color:#9b59b6;">Tím 12.5%</b> • <b style="color:#f1c40f;">Vàng 28%</b> • <b style="color:#3498db;">Ngọc & Nguyên Liệu 36%</b> • <b style="color:#95a5a6;">Khác 20%</b></span>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function rollGachaReward(bannerType, isPityTrigger) {
+  if (bannerType === "normal") {
+    if (isPityTrigger) {
+      const pRoll = Math.random();
+      if (pRoll < 0.3) {
+        const wing = generateWingItem(5, 4);
+        return { type: "item", item: wing, name: wing.name, desc: "Cánh Thần Cấp 1", icon: "🪽", rarity: 4, isEquip: true };
+      } else if (pRoll < 0.6) {
+        const pet = generatePetItem(4, 4);
+        return { type: "item", item: pet, name: pet.name, desc: "Linh Thú Trợ Chiến", icon: "🐺", rarity: 4, isEquip: true };
+      } else if (pRoll < 0.85) {
+        const gear = generateItem(Math.floor(Math.random() * 3) + 6, 4, null, "boss");
+        return { type: "item", item: gear, name: `${gear.name} (Bậc ${gear.tier})`, desc: "Trang bị Hoàng Kim", icon: "🛡️", rarity: 4, isEquip: true };
+      } else {
+        return { type: "jewel_bundle", name: "Túi Ngọc Quý (5x Bless & 5x Chaos)", qtyBless: 5, qtyChaos: 5, desc: "Gói ngọc cao cấp", icon: "💎", rarity: 4 };
+      }
+    }
+
+    const roll = Math.random() * 100;
+    if (roll < 3.0) {
+      // 3% Wing or Pet
+      if (Math.random() < 0.5) {
+        const wing = generateWingItem(5, 4);
+        return { type: "item", item: wing, name: wing.name, desc: "Cánh Thần Cấp 1", icon: "🪽", rarity: 4, isEquip: true };
+      } else {
+        const pet = generatePetItem(4, 4);
+        return { type: "item", item: pet, name: pet.name, desc: "Linh Thú Trợ Chiến", icon: "🐺", rarity: 4, isEquip: true };
+      }
+    } else if (roll < 15.0) {
+      // 12% Gear Bậc 6-8
+      const gear = generateItem(Math.floor(Math.random() * 3) + 6, 3, null, "boss");
+      return { type: "item", item: gear, name: `${gear.name} (Bậc ${gear.tier})`, desc: "Trang bị Hoàn Hảo", icon: "🛡️", rarity: 3, isEquip: true };
+    } else if (roll < 40.0) {
+      // 25% Jewels
+      const jTypes = [
+        { type: "bless", name: "Jewel of Bless x2", qty: 2, icon: "💎", rarity: 2 },
+        { type: "soul", name: "Jewel of Soul x2", qty: 2, icon: "🔮", rarity: 2 },
+        { type: "chaos", name: "Jewel of Chaos x2", qty: 2, icon: "🔥", rarity: 2 },
+        { type: "life", name: "Jewel of Life x1", qty: 1, icon: "🌿", rarity: 3 }
+      ];
+      const picked = jTypes[Math.floor(Math.random() * jTypes.length)];
+      return { ...picked, desc: "Ngọc Quý Lorencia" };
+    } else if (roll < 65.0) {
+      // 25% Mats
+      if (Math.random() < 0.5) {
+        return { type: "feather", name: "Lông Vũ Chaos x3", qty: 3, icon: "🪶", desc: "Nguyên liệu ép cánh", rarity: 2 };
+      } else {
+        return { type: "beastSoul", name: "Hồn Thú x3", qty: 3, icon: "🐾", desc: "Nguyên liệu ép thú", rarity: 2 };
+      }
+    } else if (roll < 85.0) {
+      // 20% Zen
+      const zenAmounts = [300000, 500000, 1000000];
+      const zenQty = zenAmounts[Math.floor(Math.random() * zenAmounts.length)];
+      return { type: "zen", name: `${zenQty.toLocaleString()} Zen`, qty: zenQty, icon: "🪙", desc: "Túi vàng may mắn", rarity: 1 };
+    } else {
+      // 15% Potions
+      if (Math.random() < 0.5) {
+        return { type: "hp_pot", name: "Bình Máu Lớn x25", qty: 25, icon: "🧪", desc: "Dược phẩm hồi sinh lực", rarity: 1 };
+      } else {
+        return { type: "mp_pot", name: "Bình Mana Lớn x25", qty: 25, icon: "🧪", desc: "Dược phẩm hồi ma pháp", rarity: 1 };
+      }
+    }
+  } else {
+    // MYTHIC BANNER
+    if (isPityTrigger) {
+      const pRoll = Math.random();
+      if (pRoll < 0.35) {
+        const wing3 = generateWingItem(10, 5);
+        return { type: "item", item: wing3, name: wing3.name, desc: "Cánh Thần Tối Thượng Cấp 3", icon: "🪽", rarity: 6, isEquip: true };
+      } else if (pRoll < 0.70) {
+        const kirin = generatePetItem(10, 5);
+        kirin.name = "Thần Thú Kỳ Lân Hoàng Kim";
+        kirin.petKey = "kirin";
+        return { type: "item", item: kirin, name: kirin.name, desc: "Thần Thú Cưỡi Tối Thượng", icon: "🐺", rarity: 6, isEquip: true };
+      } else {
+        const mythicGear = generateItem(10, 6, null, "boss");
+        return { type: "item", item: mythicGear, name: `${mythicGear.name} (Bậc 10 Đỏ)`, desc: "Trang Bị Đỏ Thần Thoại", icon: "⚔️", rarity: 6, isEquip: true };
+      }
+    }
+
+    const roll = Math.random() * 100;
+    if (roll < 7.0) {
+      // 7% Supreme Mythic Wings & Pets
+      const sRoll = Math.random();
+      if (sRoll < 0.25) {
+        const wing3 = generateWingItem(10, 5);
+        return { type: "item", item: wing3, name: wing3.name, desc: "Cánh Thần Tối Thượng Cấp 3", icon: "🪽", rarity: 6, isEquip: true };
+      } else if (sRoll < 0.50) {
+        const kirin = generatePetItem(10, 5);
+        kirin.name = "Thần Thú Kỳ Lân Hoàng Kim";
+        kirin.petKey = "kirin";
+        return { type: "item", item: kirin, name: kirin.name, desc: "Thần Thú Cưỡi Tối Thượng", icon: "🐺", rarity: 6, isEquip: true };
+      } else if (sRoll < 0.75) {
+        const wing2 = generateWingItem(8, 4);
+        return { type: "item", item: wing2, name: wing2.name, desc: "Cánh Tinh Thể Cấp 2", icon: "🪽", rarity: 5, isEquip: true };
+      } else {
+        const fenrir = generatePetItem(8, 4);
+        fenrir.name = "Chiến Lang Sói Tinh Fenrir";
+        fenrir.petKey = "fenrir";
+        return { type: "item", item: fenrir, name: fenrir.name, desc: "Thú Cưỡi Chiến Lang", icon: "🐺", rarity: 5, isEquip: true };
+      }
+    } else if (roll < 26.0) {
+      // 19% Mythic Gear Bậc 9-10
+      const tier = Math.random() < 0.5 ? 9 : 10;
+      const rar = Math.random() < 0.35 ? 6 : 5;
+      const gear = generateItem(tier, rar, null, "boss");
+      return { type: "item", item: gear, name: `${gear.name} (Bậc ${tier})`, desc: "Trang Bị Thần Thoại", icon: "⚔️", rarity: rar, isEquip: true };
+    } else if (roll < 48.0) {
+      // 22% Priceless Materials
+      const mats = [
+        { type: "flame", name: "Ngọn Lửa Condor x1", qty: 1, icon: "🔥", desc: "Bảo vật ép Cánh Cấp 3", rarity: 5 },
+        { type: "fenrirHorn", name: "Cốt Sừng Sói Tinh x1", qty: 1, icon: "🐺", desc: "Bảo vật ép Sói Tinh Fenrir", rarity: 5 },
+        { type: "kirinFragment", name: "Mảnh Kỳ Lân x1", qty: 1, icon: "✨", desc: "Mảnh ghép Thần Thú Kỳ Lân", rarity: 5 },
+        { type: "feather", name: "Lông Vũ Chaos x6", qty: 6, icon: "🪶", desc: "Túi Lông Vũ cực đại", rarity: 3 }
+      ];
+      const picked = mats[Math.floor(Math.random() * mats.length)];
+      return { ...picked };
+    } else if (roll < 76.0) {
+      // 28% Big Jewels
+      const jewels = [
+        { type: "bless", name: "Jewel of Bless x10", qty: 10, icon: "💎", rarity: 4 },
+        { type: "soul", name: "Jewel of Soul x10", qty: 10, icon: "🔮", rarity: 4 },
+        { type: "chaos", name: "Jewel of Chaos x10", qty: 10, icon: "🔥", rarity: 4 },
+        { type: "life", name: "Jewel of Life x5", qty: 5, icon: "🌿", rarity: 4 }
+      ];
+      const picked = jewels[Math.floor(Math.random() * jewels.length)];
+      return { ...picked, desc: "Rương ngọc đại phú quý" };
+    } else {
+      // 24% Big Zen
+      const zenAmounts = [3000000, 5000000, 10000000];
+      const zenQty = zenAmounts[Math.floor(Math.random() * zenAmounts.length)];
+      return { type: "zen", name: `Hũ Vàng ${zenQty.toLocaleString()} Zen`, qty: zenQty, icon: "🪙", desc: "Bảo khố Lorencia", rarity: 3 };
+    }
+  }
+}
+
+function applyGachaReward(reward) {
+  if (reward.type === "item") {
+    // Tự động dung hợp trang bị / cánh / thú vào nhân vật!
+    handleDroppedItem(reward.item);
+  } else if (reward.type === "jewel_bundle") {
+    state.bless = (state.bless || 0) + (reward.qtyBless || 0);
+    state.chaos = (state.chaos || 0) + (reward.qtyChaos || 0);
+  } else if (reward.type === "zen") {
+    state.zen = (state.zen || 0) + reward.qty;
+  } else if (reward.type === "bless") {
+    state.bless = (state.bless || 0) + reward.qty;
+  } else if (reward.type === "soul") {
+    state.soul = (state.soul || 0) + reward.qty;
+  } else if (reward.type === "chaos") {
+    state.chaos = (state.chaos || 0) + reward.qty;
+  } else if (reward.type === "life") {
+    state.life = (state.life || 0) + reward.qty;
+  } else if (reward.type === "feather") {
+    state.feather = (state.feather || 0) + reward.qty;
+  } else if (reward.type === "beastSoul") {
+    state.beastSoul = (state.beastSoul || 0) + reward.qty;
+  } else if (reward.type === "flame") {
+    state.flame = (state.flame || 0) + reward.qty;
+  } else if (reward.type === "fenrirHorn") {
+    state.fenrirHorn = (state.fenrirHorn || 0) + reward.qty;
+  } else if (reward.type === "kirinFragment") {
+    state.kirinFragment = (state.kirinFragment || 0) + reward.qty;
+  } else if (reward.type === "hp_pot") {
+    state.potions.hp = (state.potions.hp || 0) + reward.qty;
+  } else if (reward.type === "mp_pot") {
+    state.potions.mp = (state.potions.mp || 0) + reward.qty;
+  }
+
+  if (reward.rarity >= 4) {
+    addLog(`🎰 [RÚT THƯỞNG GACHA] May mắn trúng [${reward.name}]!`, "log-crit");
+  }
+}
+
+function drawGacha(bannerType = "normal", count = 1) {
+  const isFree = (bannerType === "normal" && count === 1 && state.lastFreeGachaDate !== new Date().toDateString());
+
+  if (bannerType === "normal") {
+    if (isFree) {
+      state.lastFreeGachaDate = new Date().toDateString();
+    } else {
+      const costZen = count === 10 ? 1800000 : 200000;
+      if ((state.zen || 0) < costZen) {
+        addLog(`Không đủ Zen để quay Gacha! Cần ${costZen.toLocaleString()} Zen.`, "log-boss");
+        return;
+      }
+      state.zen -= costZen;
+    }
+  } else if (bannerType === "mythic") {
+    const costBless = count === 10 ? 25 : 3;
+    const costChaos = count === 10 ? 25 : 3;
+    if ((state.bless || 0) < costBless || (state.chaos || 0) < costChaos) {
+      addLog(`Không đủ ngọc để Triệu Hồi Thần Ma! Cần ${costBless}x Bless & ${costChaos}x Chaos.`, "log-boss");
+      return;
+    }
+    state.bless -= costBless;
+    state.chaos -= costChaos;
+  }
+
+  const results = [];
+  let highestRarity = 0;
+
+  for (let i = 0; i < count; i++) {
+    const isPityTrigger = (bannerType === "normal" && (state.gachaPity || 0) >= 9) ||
+                          (bannerType === "mythic" && (state.mythicGachaPity || 0) >= 19) ||
+                          (count === 10 && i === 9);
+
+    const reward = rollGachaReward(bannerType, isPityTrigger);
+
+    if (bannerType === "normal") {
+      if (reward.rarity >= 4) state.gachaPity = 0;
+      else state.gachaPity = (state.gachaPity || 0) + 1;
+    } else if (bannerType === "mythic") {
+      if (reward.rarity >= 5) state.mythicGachaPity = 0;
+      else state.mythicGachaPity = (state.mythicGachaPity || 0) + 1;
+    }
+
+    if (reward.rarity > highestRarity) highestRarity = reward.rarity;
+
+    applyGachaReward(reward);
+    results.push(reward);
+  }
+
+  if (highestRarity >= 5) {
+    audio.playGateOpen();
+    audio.playKeng();
+    audio.vibrate(300);
+    spawnHeroFloatingEffect("🌟 SIÊU CỰC PHẨM GACHA!", "float-crit");
+  } else if (highestRarity >= 4) {
+    audio.playKeng();
+    audio.vibrate(200);
+    spawnHeroFloatingEffect("✨ CỰC PHẨM GACHA!", "float-crit");
+  } else {
+    audio.playMagic();
+    audio.vibrate(100);
+  }
+
+  renderShopView();
+  updateUI();
+  saveGameState();
+
+  showGachaResultModal(bannerType, count, results);
+}
+
+function showGachaResultModal(bannerType, count, results) {
+  const m = document.getElementById("gachaResultModal");
+  if (!m) return;
+
+  const bannerEl = document.getElementById("gachaResultBanner");
+  const gridEl = document.getElementById("gachaRewardGrid");
+  const summaryEl = document.getElementById("gachaResultSummary");
+  const btnAgain1 = document.getElementById("btnGachaAgain1");
+  const btnAgain10 = document.getElementById("btnGachaAgain10");
+
+  const titleBanner = bannerType === "normal" ? "🎁 HÒM BÁU HOÀNG KIM LORENCIA" : "👑 ĐÀI TRIỆU HỒI THẦN MA CHÍ TÔN";
+  if (bannerEl) bannerEl.innerHTML = `<b style="color:var(--gold); font-size:11px;">${titleBanner}</b> (Đã rút ${count} lượt)`;
+
+  if (gridEl) {
+    let gridHtml = "";
+    results.forEach(r => {
+      let rClass = "";
+      let rColor = "#bdc3c7";
+      if (r.rarity >= 6) { rClass = "r-red"; rColor = "#e74c3c"; }
+      else if (r.rarity === 5) { rClass = "r-purple"; rColor = "#9b59b6"; }
+      else if (r.rarity === 4) { rClass = "r-gold"; rColor = "#f1c40f"; }
+      else if (r.rarity === 3) { rClass = "r-orange"; rColor = "#e67e22"; }
+      else if (r.rarity === 2) { rClass = "r-blue"; rColor = "#3498db"; }
+
+      const fusionBadge = r.isEquip ? `<div style="font-size:7.5px; color:#00ffcc; font-weight:bold; margin-top:2px;">🔮 Đã Tự Động Dung Hợp</div>` : "";
+
+      gridHtml += `
+        <div class="gacha-reward-item ${rClass}">
+          <div style="font-size:22px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; background:#192030; border-radius:4px;">${r.icon}</div>
+          <div style="flex:1; text-align:left; overflow:hidden;">
+            <div style="font-size:10px; font-weight:bold; color:${rColor}; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${r.name}</div>
+            <div style="font-size:8px; color:#8fa0b8;">${r.desc || `Số lượng: x${r.qty || 1}`}</div>
+            ${fusionBadge}
+          </div>
+        </div>
+      `;
+    });
+    gridEl.innerHTML = gridHtml;
+  }
+
+  if (summaryEl) {
+    summaryEl.innerHTML = `✨ Các vật phẩm đã được chuyển trực tiếp vào túi đồ & trang bị của bạn!`;
+  }
+
+  if (btnAgain1) {
+    btnAgain1.innerText = bannerType === "normal" ? "Quay lại x1 (200k)" : "Triệu hồi x1 (3💎+3🔥)";
+    btnAgain1.onclick = () => { closeGachaResultModal(); drawGacha(bannerType, 1); };
+  }
+  if (btnAgain10) {
+    btnAgain10.innerText = bannerType === "normal" ? "Quay lại x10 (1.8M)" : "Triệu hồi x10 (25💎+25🔥)";
+    btnAgain10.onclick = () => { closeGachaResultModal(); drawGacha(bannerType, 10); };
+  }
+
+  m.style.display = "flex";
+}
+
+function closeGachaResultModal() {
+  const m = document.getElementById("gachaResultModal");
+  if (m) m.style.display = "none";
+}
+
+
 
 // THÁP BOSS MA VƯƠNG (BOSS TOWER)
 const TOWER_BOSSES = [
@@ -5304,6 +5824,337 @@ function finishBloodCastle(victory) {
     addLog(`⏱️ [HẾT GIỜ HUYẾT LÂU] Rời khỏi Huyết Lâu! Nhận thưởng an ủi: +150.000 Zen & 1x Bless!`, "log-norm");
   }
 
+  updateUI();
+  saveGameState();
+}
+
+
+
+function addPlayerExp(amount) {
+  state.exp = (state.exp || 0) + amount;
+  let leveledUp = false;
+  while (state.exp >= state.nextExp && state.level < 400) {
+    state.exp -= state.nextExp;
+    state.level++;
+    state.nextExp = getRequiredExpForLevel(state.level);
+    state.freePoints = (state.freePoints || 0) + 5;
+    if (state.level % 5 === 0) {
+      state.skillPoints = (state.skillPoints || 0) + 1;
+    }
+    leveledUp = true;
+  }
+  if (state.level >= 400) {
+    state.level = 400;
+    state.exp = state.nextExp;
+  }
+  if (leveledUp) {
+    audio.playKeng();
+    audio.vibrate(150);
+    addLog(`★ LEVEL UP! Bạn đã đạt Cấp ${state.level}! Chỉ số cơ bản & Lực chiến đã tăng mạnh! ★`, "log-crit");
+  }
+}
+
+// ==================== MULTI-EVENTS SYSTEM ====================
+function initEventsState() {
+  if (!state.events) {
+    state.events = {};
+  }
+  const today = new Date().toDateString();
+  if (state.events.lastDate !== today) {
+    state.events.lastDate = today;
+    state.events.devilSquare = { attempts: 3, inEvent: false, timeLeft: 60, kills: 0 };
+    state.events.chaosCastle = { attempts: 3, inEvent: false, timeLeft: 60, kills: 0 };
+    state.events.goldenDragon = { attempts: 3, inEvent: false, timeLeft: 45, bossHp: 500000, maxHp: 500000 };
+    state.events.worldBoss = { attempts: 3, inEvent: false, timeLeft: 60, bossHp: 2500000, maxHp: 2500000 };
+    if (state.bloodCastle) state.bloodCastle.attempts = 3;
+  }
+}
+
+function renderEventsView() {
+  initEventsState();
+  updateUI();
+}
+
+function startDevilSquareEvent() {
+  initEventsState();
+  const ds = state.events.devilSquare;
+  if (ds.attempts <= 0) {
+    addLog("Đã hết 3 lượt tham gia Quảng Trường Quỷ hôm nay!", "log-boss");
+    return;
+  }
+  if (ds.inEvent || (state.bloodCastle && state.bloodCastle.inEvent)) {
+    addLog("Đang trong một sự kiện khác! Hãy hoàn thành trước.", "log-boss");
+    return;
+  }
+
+  ds.attempts--;
+  ds.inEvent = true;
+  ds.timeLeft = 60;
+  ds.kills = 0;
+
+  switchTab("battle");
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) {
+    timerBanner.style.display = "flex";
+    const titleEl = document.getElementById("txtBcEventTitle");
+    if (titleEl) titleEl.innerText = "😈 QUẢNG TRƯỜNG QUỶ:";
+    const goalEl = document.getElementById("txtBcGoalLabel");
+    if (goalEl) goalEl.innerText = "Diệt";
+  }
+
+  const bg = document.getElementById("arenaBg");
+  if (bg) bg.style.background = "linear-gradient(180deg, #2c003e 0%, #150020 70%, #000000 100%)";
+
+  audio.playGateOpen();
+  audio.playKeng();
+  audio.vibrate(180);
+  addLog("😈 [QUẢNG TRƯỜNG QUỶ] QUỶ THẦN TRỖI DẬY! 60 GIÂY QUÉT QUÁI THU THẬP SIÊU CẤP EXP BẮT ĐẦU!", "log-crit");
+  updateUI();
+  saveGameState();
+}
+
+function finishDevilSquare(victory) {
+  const ds = state.events && state.events.devilSquare;
+  if (!ds) return;
+  ds.inEvent = false;
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) timerBanner.style.display = "none";
+  updateArenaBackground(state.currentMapId);
+
+  if (victory || ds.kills >= 35) {
+    const zenReward = 800000 + state.currentMapId * 80000;
+    state.zen += zenReward;
+    state.soul = (state.soul || 0) + 2;
+    state.chaos = (state.chaos || 0) + 2;
+    state.feather = (state.feather || 0) + 3;
+    const expGain = 150000 + state.level * 1000;
+    addPlayerExp(expGain);
+
+    audio.playKeng();
+    audio.vibrate(250);
+    spawnHeroFloatingEffect("🏆 ĐẠI THẮNG QUẢNG TRƯỜNG QUỶ!", "float-crit");
+    addLog(`🏆 [QUẢNG TRƯỜNG QUỶ] ĐẠI THẮNG! Quét sạch quái vật, nhận +${zenReward.toLocaleString()} Zen, +2x Soul, +2x Chaos, +3x Lông Vũ & +${expGain.toLocaleString()} EXP!`, "log-crit");
+  } else {
+    state.zen += 200000;
+    addLog("⏱️ [HẾT GIỜ QUẢNG TRƯỜNG QUỶ] Nhận thưởng an ủi: +200.000 Zen!", "log-norm");
+  }
+  updateUI();
+  saveGameState();
+}
+
+function startChaosCastleEvent() {
+  initEventsState();
+  const cc = state.events.chaosCastle;
+  if (cc.attempts <= 0) {
+    addLog("Đã hết 3 lượt tham gia Hỗn Nguyên Lâu hôm nay!", "log-boss");
+    return;
+  }
+  if (cc.inEvent || (state.bloodCastle && state.bloodCastle.inEvent)) {
+    addLog("Đang trong một sự kiện khác!", "log-boss");
+    return;
+  }
+
+  cc.attempts--;
+  cc.inEvent = true;
+  cc.timeLeft = 60;
+  cc.kills = 0;
+
+  switchTab("battle");
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) {
+    timerBanner.style.display = "flex";
+    const titleEl = document.getElementById("txtBcEventTitle");
+    if (titleEl) titleEl.innerText = "⚔️ HỖN NGUYÊN LÂU:";
+    const goalEl = document.getElementById("txtBcGoalLabel");
+    if (goalEl) goalEl.innerText = "Hạ";
+  }
+
+  const bg = document.getElementById("arenaBg");
+  if (bg) bg.style.background = "linear-gradient(180deg, #16a085 0%, #0e6655 50%, #07352c 100%)";
+
+  audio.playGateOpen();
+  audio.playKeng();
+  audio.vibrate(180);
+  addLog("⚔️ [HỖN NGUYÊN LÂU] SÀN ĐẤU SINH TỬ BẮT ĐẦU! SỐNG SÓT ĐẾN CUỐI CÙNG ĐỂ GIÀNH THÁNH KHÍ!", "log-crit");
+  updateUI();
+  saveGameState();
+}
+
+function finishChaosCastle(victory) {
+  const cc = state.events && state.events.chaosCastle;
+  if (!cc) return;
+  cc.inEvent = false;
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) timerBanner.style.display = "none";
+  updateArenaBackground(state.currentMapId);
+
+  if (victory || cc.kills >= 25) {
+    const zenReward = 1200000;
+    state.zen += zenReward;
+    state.life = (state.life || 0) + 2;
+    state.bless = (state.bless || 0) + 2;
+    state.beastSoul = (state.beastSoul || 0) + 5;
+
+    // Rớt trang bị Thần Thoại và tự động dung hợp
+    const mythicGear = generateItem(Math.min(10, state.currentMapId + 3), 4, null, "boss");
+    handleDroppedItem(mythicGear);
+
+    audio.playKeng();
+    audio.vibrate(250);
+    spawnHeroFloatingEffect("🏆 ĐỆ NHẤT HỖN NGUYÊN LÂU!", "float-crit");
+    addLog(`🏆 [HỖN NGUYÊN LÂU] CHIẾN THẮNG TUYỆT ĐỐI! Nhận +${zenReward.toLocaleString()} Zen, +2x Life, +2x Bless, +5x Hồn Thú & Trang Bị Cực Phẩm!`, "log-crit");
+  } else {
+    state.zen += 250000;
+    addLog("⏱️ [HẾT GIỜ HỖN NGUYÊN LÂU] Nhận thưởng an ủi: +250.000 Zen!", "log-norm");
+  }
+  updateUI();
+  saveGameState();
+}
+
+function startGoldenDragonEvent() {
+  initEventsState();
+  const gd = state.events.goldenDragon;
+  if (gd.attempts <= 0) {
+    addLog("Đã hết 3 lượt săn Binh Đoàn Rồng Vàng hôm nay!", "log-boss");
+    return;
+  }
+  if (gd.inEvent) return;
+
+  gd.attempts--;
+  gd.inEvent = true;
+  gd.timeLeft = 45;
+  gd.maxHp = 500000;
+  gd.bossHp = 500000;
+
+  switchTab("battle");
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) {
+    timerBanner.style.display = "flex";
+    const titleEl = document.getElementById("txtBcEventTitle");
+    if (titleEl) titleEl.innerText = "🐉 RỒNG VÀNG:";
+    const goalEl = document.getElementById("txtBcGoalLabel");
+    if (goalEl) goalEl.innerText = "HP";
+  }
+
+  const bg = document.getElementById("arenaBg");
+  if (bg) bg.style.background = "linear-gradient(180deg, #b7791f 0%, #744210 50%, #1a1005 100%)";
+
+  audio.playGateOpen();
+  audio.playKeng();
+  audio.vibrate(200);
+  addLog("🐉 [BINH ĐOÀN RỒNG VÀNG] RỒNG VÀNG HOÀNG KIM XUẤT HIỆN! TIÊU DIỆT NHẬN HỘP VÀNG MAY MẮN!", "log-crit");
+  updateUI();
+  saveGameState();
+}
+
+function finishGoldenDragon(victory) {
+  const gd = state.events && state.events.goldenDragon;
+  if (!gd) return;
+  gd.inEvent = false;
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) timerBanner.style.display = "none";
+  updateArenaBackground(state.currentMapId);
+
+  if (victory) {
+    const zenReward = 2000000;
+    state.zen += zenReward;
+    state.bless = (state.bless || 0) + 3;
+    state.chaos = (state.chaos || 0) + 3;
+
+    // Tỷ lệ rơi Cánh Thần hoặc Linh Thú
+    if (Math.random() < 0.5) {
+      const wing = generateWingItem(6, 4);
+      handleDroppedItem(wing);
+    } else {
+      const pet = generatePetItem(5, 4);
+      handleDroppedItem(pet);
+    }
+
+    audio.playKeng();
+    audio.vibrate(250);
+    spawnHeroFloatingEffect("🐉 HẠ GỤC RỒNG VÀNG!", "float-crit");
+    addLog(`🏆 [ĐẠI THẮNG RỒNG VÀNG] Nhận +${zenReward.toLocaleString()} Zen, +3x Bless, +3x Chaos & Mở Hòm Vàng Rơi Cực Phẩm!`, "log-crit");
+  } else {
+    state.zen += 300000;
+    addLog("⏱️ [HẾT GIỜ] Rồng Vàng đã bay mất! Nhận thưởng an ủi +300.000 Zen!", "log-norm");
+  }
+  updateUI();
+  saveGameState();
+}
+
+function startWorldBossEvent() {
+  initEventsState();
+  const wb = state.events.worldBoss;
+  if (wb.attempts <= 0) {
+    addLog("Đã hết 3 lượt khiêu chiến Boss Thế Giới hôm nay!", "log-boss");
+    return;
+  }
+  if (wb.inEvent) return;
+
+  wb.attempts--;
+  wb.inEvent = true;
+  wb.timeLeft = 60;
+  wb.maxHp = 2500000;
+  wb.bossHp = 2500000;
+
+  switchTab("battle");
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) {
+    timerBanner.style.display = "flex";
+    const titleEl = document.getElementById("txtBcEventTitle");
+    if (titleEl) titleEl.innerText = "👑 BOSS KUNDUN:";
+    const goalEl = document.getElementById("txtBcGoalLabel");
+    if (goalEl) goalEl.innerText = "HP";
+  }
+
+  const bg = document.getElementById("arenaBg");
+  if (bg) bg.style.background = "linear-gradient(180deg, #780206 0%, #061161 100%)";
+
+  audio.playGateOpen();
+  audio.playKeng();
+  audio.vibrate(250);
+  addLog("👑 [BOSS THẾ GIỚI] CHÚA TỂ BÓNG TỐI KUNDUN THỨC TỈNH! TOÀN LỤC ĐỊA MU TẬP KẾT TIÊU DIỆT!", "log-crit");
+  updateUI();
+  saveGameState();
+}
+
+function finishWorldBoss(victory) {
+  const wb = state.events && state.events.worldBoss;
+  if (!wb) return;
+  wb.inEvent = false;
+
+  const timerBanner = document.getElementById("bcTimerBanner");
+  if (timerBanner) timerBanner.style.display = "none";
+  updateArenaBackground(state.currentMapId);
+
+  if (victory) {
+    const zenReward = 5000000;
+    state.zen += zenReward;
+    state.flame = (state.flame || 0) + 1;
+    state.kirinFragment = (state.kirinFragment || 0) + 1;
+    state.bless = (state.bless || 0) + 5;
+    state.chaos = (state.chaos || 0) + 5;
+
+    // Rơi trang bị Đỏ Thần Thoại Bậc 10
+    const mythicGear = generateItem(10, 6, null, "boss");
+    handleDroppedItem(mythicGear);
+
+    audio.playGateOpen();
+    audio.playKeng();
+    audio.vibrate(300);
+    spawnHeroFloatingEffect("👑 ĐẠI THẮNG CHÚA TỂ KUNDUN!", "float-crit");
+    addLog(`🏆 [ĐẠI THẮNG BOSS THẾ GIỚI] ĐÃ CHÉM GỤC MA VƯƠNG KUNDUN! Nhận +${zenReward.toLocaleString()} Zen, +1x Ngọn Lửa Condor, +1x Mảnh Kỳ Lân, +5x Bless & Trang Bị Đỏ Bậc 10!`, "log-crit");
+  } else {
+    state.zen += 500000;
+    addLog("⏱️ [HẾT GIỜ] Ma Vương Kundun đã rút lui vào hư không! Nhận thưởng an ủi +500.000 Zen!", "log-norm");
+  }
   updateUI();
   saveGameState();
 }
