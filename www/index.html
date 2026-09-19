@@ -2144,6 +2144,204 @@
     .r-pink { color: #ff007f; border-color: #ff007f; box-shadow: 0 0 12px rgba(255, 0, 127, 0.7); background: #260a18; }
     .r-rainbow { color: #00ffff; border-color: #00ffff; box-shadow: 0 0 14px rgba(0, 255, 255, 0.8); background: #061a1f; }
     .r-god { color: #ffd700; border-color: #ffd700; box-shadow: 0 0 16px rgba(255, 215, 0, 0.9); background: #261f06; }
+
+    /* ==========================================================================
+       VERTICAL WAVE-BASED COMBAT ARENA STYLES
+       ========================================================================== */
+    .battle-arena-container.vertical-arena {
+      min-height: 220px;
+      max-height: 270px;
+      height: 32%;
+    }
+    .arena-wave-banner {
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(10, 14, 22, 0.88);
+      border: 1px solid #28324a;
+      border-radius: 6px;
+      padding: 3px 8px;
+      z-index: 12;
+      font-size: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .wave-map-title {
+      font-weight: bold;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .wave-progress-bar {
+      width: 90px;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid #334155;
+    }
+    .wave-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .arena-stage.vertical-stage {
+      position: absolute;
+      inset: 0;
+      top: 28px;
+      bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 6px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .monsters-wave-container {
+      width: 100%;
+      height: 60%;
+      position: relative;
+      display: block;
+      pointer-events: none;
+    }
+    .wave-mob-card {
+      position: absolute;
+      transform: translate(-50%, 0);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.25s ease-out;
+      pointer-events: auto;
+      z-index: 6;
+    }
+    .wave-mob-card.mob-dead {
+      opacity: 0;
+      transform: translate(-50%, 15px) scale(0.5);
+      pointer-events: none;
+    }
+    .wave-mob-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2px;
+      background: rgba(12, 16, 24, 0.85);
+      padding: 1px 4px;
+      border-radius: 4px;
+      border: 0.5px solid rgba(255,255,255,0.15);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    }
+    .wave-mob-name {
+      font-size: 8px;
+      font-weight: bold;
+      text-shadow: 0 1px 2px #000;
+      white-space: nowrap;
+      max-width: 75px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+    .wave-mob-hp-track {
+      width: 44px;
+      height: 4px;
+      background: rgba(0,0,0,0.85);
+      border: 0.5px solid #334155;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 1px;
+    }
+    .wave-mob-hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f87171);
+      transition: width 0.2s ease;
+    }
+    .wave-mob-boss .wave-mob-hp-track {
+      width: 60px;
+      height: 5px;
+      border-color: #f59e0b;
+    }
+    .wave-mob-boss .wave-mob-hp-fill {
+      background: linear-gradient(90deg, #e11d48, #fb7185);
+    }
+    .wave-mob-sprite {
+      width: 52px;
+      height: 56px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: heroOrganicIdle 2.2s infinite ease-in-out;
+    }
+    .wave-mob-boss .wave-mob-sprite {
+      width: 68px;
+      height: 72px;
+      transform: scale(1.18);
+    }
+    .vertical-hero {
+      position: absolute !important;
+      bottom: 2px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 10 !important;
+    }
+    .vertical-hero .actor-sprite-box {
+      width: 88px !important;
+      height: 98px !important;
+    }
+    .vertical-hero .actor-shadow {
+      bottom: -4px !important;
+      width: 65px !important;
+    }
+    
+    /* ==========================================================================
+       NON-INTRUSIVE STORY BANNER OVERLAY STYLES
+       ========================================================================== */
+    .story-banner-overlay {
+      position: absolute;
+      top: 34px;
+      left: 8px;
+      right: 8px;
+      background: linear-gradient(135deg, rgba(14, 18, 30, 0.95), rgba(30, 16, 22, 0.94));
+      border: 1.5px solid #ffd700;
+      border-radius: 6px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 30;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85), 0 0 12px rgba(255, 215, 0, 0.35);
+      animation: storySlideIn 0.35s ease-out;
+      pointer-events: none;
+    }
+    @keyframes storySlideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .story-banner-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .story-banner-content {
+      flex: 1;
+      overflow: hidden;
+    }
+    .story-banner-speaker {
+      font-size: 9px;
+      font-weight: 900;
+      color: #ffd700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .story-banner-text {
+      font-size: 9.5px;
+      color: #f1f5f9;
+      line-height: 1.25;
+      white-space: normal;
+    }
 </style>
 </head>
 <body>
@@ -2227,10 +2425,10 @@
 
       <!-- Compact Currency Dashboard -->
       <div class="currency-dashboard" style="margin-top:2px;">
-        <div class="curr-badge curr-zen" id="valZen">🪙 Zen: 0</div>
-        <div class="curr-badge curr-bless" id="valBless">💎 B: 0</div>
-        <div class="curr-badge curr-chaos" id="valChaos">🔥 C: 0</div>
-        <div class="curr-badge curr-life" id="valLife">🌿 L: 0</div>
+        <div class="curr-badge curr-zen" id="valZen">🪙 Linh Thạch: 0</div>
+        <div class="curr-badge curr-bless" id="valBless">💎 Thần Tinh: 0</div>
+        <div class="curr-badge curr-chaos" id="valChaos">🔥 Ma Thạch: 0</div>
+        <div class="curr-badge curr-life" id="valLife">🌿 Tiên Lộ: 0</div>
       </div>
     </div>
 
@@ -2321,12 +2519,29 @@
         </div>
 
         <!-- 2.5D Chibi Battle Arena Stage -->
-        <div class="battle-arena-container" id="battleArena" style="margin-top:2px;">
+        <div class="battle-arena-container vertical-arena" id="battleArena" style="margin-top:2px;">
           <div class="arena-background" id="arenaBg"></div>
           <div class="arena-weather-layer" id="arenaWeatherLayer"></div>
           
           <div class="arena-pedestal">
             <div class="arena-runic-circle"></div>
+          </div>
+
+          <!-- Wave Progress Header Banner -->
+          
+          <!-- Non-intrusive Floating Story Banner -->
+          <div class="story-banner-overlay" id="storyBannerOverlay" style="display:none;">
+            <div class="story-banner-icon" id="storyBannerIcon">📜</div>
+            <div class="story-banner-content">
+              <div class="story-banner-speaker" id="storyBannerSpeaker">Dạ Lăng Phong</div>
+              <div class="story-banner-text" id="storyBannerText">Địa mạch rung chuyển...</div>
+            </div>
+          </div>
+<div class="arena-wave-banner" id="arenaWaveBanner">
+            <div class="wave-map-title">🚩 <span id="txtWaveMapName">Lorencia</span> • <b style="color:var(--gold);" id="txtWaveNumber">WAVE 1/5</b></div>
+            <div class="wave-progress-bar">
+              <div class="wave-progress-fill" id="waveProgressFill" style="width: 20%;"></div>
+            </div>
           </div>
           
           <div class="bc-timer-banner" id="bcTimerBanner" style="display:none;">
@@ -2352,28 +2567,29 @@
             </div>
           </div>
 
-          <div class="arena-stage">
-            <!-- Hero Chibi in Maple Frame -->
-            <div class="chibi-actor hero-actor" id="chibiHeroActor">
-              <div class="maple-actor-plate" id="chibiHeroBadge"><span class="maple-leaf-icon">🍁</span> Lv.1 Dark Knight</div>
+          <div class="arena-stage vertical-stage">
+            <!-- Monsters Wave Area (Top - Multi-Target Horde) -->
+            <div class="monsters-wave-container" id="monstersWaveContainer"></div>
+
+            <!-- Hero Chibi in Maple Frame (Bottom Center - Attacking Upwards) -->
+            <div class="chibi-actor hero-actor vertical-hero" id="chibiHeroActor">
+              <div class="maple-actor-plate" id="chibiHeroBadge"><span class="maple-leaf-icon">🍁</span> Lv.1 Thần Ma Kiếm Tôn (Dạ Lăng Phong)</div>
               <div class="actor-sprite-box" id="heroSpriteEl"></div>
               <div class="hero-foot-ring" id="heroFootRing"></div>
               <div class="actor-shadow"></div>
               <div class="chibi-pet-box" id="chibiPetEl" onclick="switchTab('upgrade')" title="Trợ thủ Nấm Lùn"></div>
             </div>
 
-            <!-- VS Center Badge -->
-            <div class="arena-vs-badge" id="arenaVsBadge">VS</div>
-
-            <!-- Monster Chibi in Maple Frame -->
-            <div class="chibi-actor monster-actor" id="chibiMonsterActor">
+            <!-- Legacy fallback elements kept hidden to avoid any null references -->
+            <div class="arena-vs-badge" id="arenaVsBadge" style="display:none;">VS</div>
+            <div class="chibi-actor monster-actor" id="chibiMonsterActor" style="display:none;">
               <div class="maple-mob-plate-box">
-                <div class="maple-mob-name" id="chibiMobName"><span class="mob-type-icon">👾</span> Nhện Độc</div>
+                <div class="maple-mob-name" id="chibiMobName"><span class="mob-type-icon">👾</span> Quái</div>
                 <div class="maple-capsule-hp-bg">
                   <div class="maple-capsule-hp-fill" id="chibiMobHpFill" style="width: 100%;"></div>
                   <div class="maple-capsule-shine"></div>
                 </div>
-                <div class="maple-mob-hp-text" id="chibiMobHpText">HP: 1,500 / 1,500 (100%)</div>
+                <div class="maple-mob-hp-text" id="chibiMobHpText"></div>
               </div>
               <div class="actor-sprite-box" id="monsterSpriteEl"></div>
               <div class="mob-foot-ring" id="mobFootRing"></div>
@@ -2757,18 +2973,18 @@
       <div class="screen-view" id="screen-upgrade">
         <!-- Material Storage Dashboard -->
         <div class="craft-mat-bar" id="craftMatBar">
-          <div class="mat-badge" title="Lông Vũ Chaos">🪶 Lông Vũ: <b id="craftFeather">0</b></div>
-          <div class="mat-badge" title="Ngọn Lửa Condor">🔥 Lửa Condor: <b id="craftFlame">0</b></div>
-          <div class="mat-badge" title="Hồn Thú">🐾 Hồn Thú: <b id="craftBeastSoul">0</b></div>
-          <div class="mat-badge" title="Cốt Sừng Sói Tinh">🐺 Sừng Sói: <b id="craftFenrirHorn">0</b></div>
-          <div class="mat-badge" title="Mảnh Kỳ Lân Hoàng Kim">🦄 Kỳ Lân: <b id="craftKirin">0</b></div>
+          <div class="mat-badge" title="Lông Vũ Chaos">🪶 Phù Thạch: <b id="craftFeather">0</b></div>
+          <div class="mat-badge" title="Ngọn Lửa Condor">🔥 Sinh Hỏa: <b id="craftFlame">0</b></div>
+          <div class="mat-badge" title="Hồn Thú">🐾 Tinh Huyết: <b id="craftBeastSoul">0</b></div>
+          <div class="mat-badge" title="Cốt Sừng Sói Tinh">🐺 Sừng Ma Thú: <b id="craftFenrirHorn">0</b></div>
+          <div class="mat-badge" title="Mảnh Kỳ Lân Hoàng Kim">🦄 Mảnh Kỳ Lân: <b id="craftKirin">0</b></div>
         </div>
 
         <!-- Subnav: 1. Cường Hóa | 2. Xưởng Chế Tạo -->
         <div class="upgrade-subnav">
-          <button class="upgrade-subnav-btn active" id="btnSubnavEnhance" onclick="switchUpgradeSubtab('enhance')">⚒️ Cường Hóa (+15)</button>
-          <button class="upgrade-subnav-btn" id="btnSubnavFusion" onclick="switchUpgradeSubtab('fusion')">🔮 Dung Hợp Cánh & Thú</button>
-          <button class="upgrade-subnav-btn" id="btnSubnavCraft" onclick="switchUpgradeSubtab('craft')">🧙 Xưởng Chế Tạo</button>
+          <button class="upgrade-subnav-btn active" id="btnSubnavEnhance" onclick="switchUpgradeSubtab('enhance')">⚒️ Khai Mở Phù Vân (+15)</button>
+          <button class="upgrade-subnav-btn" id="btnSubnavFusion" onclick="switchUpgradeSubtab('fusion')">🔮 Tế Luyện Thần Ma</button>
+          <button class="upgrade-subnav-btn" id="btnSubnavCraft" onclick="switchUpgradeSubtab('craft')">🧙 Cổ Trận Đúc Tạo</button>
         </div>
 
         <!-- Subview 2: Dung Hợp Cánh Thần & Thú Cưng / Thú Cưỡi -->
@@ -2807,7 +3023,7 @@
             </div>
 
             <div style="display:flex; gap:6px; margin-top:8px;">
-              <button class="btn btn-success" id="btnForgeEnhance" style="flex:1; padding:8px; font-weight:bold;" onclick="forgeEnhance()">CƯỜNG HÓA (+1)</button>
+              <button class="btn btn-success" id="btnForgeEnhance" style="flex:1; padding:8px; font-weight:bold;" onclick="forgeEnhance()">KHAI MỞ PHÙ VÂN (+1)</button>
               <button class="btn btn-primary" id="btnForgeReforge" style="flex:1; padding:8px;" onclick="forgeReforge()">TẨY DÒNG (LIFE)</button>
             </div>
           </div>
