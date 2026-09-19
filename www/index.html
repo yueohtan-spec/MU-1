@@ -1708,6 +1708,368 @@
       text-shadow: 0 1px 2px #000, 0 0 3px #000;
     }
 
+  
+    /* --- MAPLESTORY M (NẤM LÙN) STYLED FRAMES & UI --- */
+    .maple-avatar-frame {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff275 0%, #f39c12 70%, #d35400 100%);
+      border: 1.8px solid #fff;
+      box-shadow: 0 0 8px rgba(243, 156, 18, 0.8), 0 2px 4px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .maple-avatar-inner {
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      background: #1e272e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+    .maple-star-ribbon {
+      position: absolute;
+      bottom: -3px;
+      right: -3px;
+      font-size: 9px;
+      line-height: 1;
+      filter: drop-shadow(0 1px 2px #000);
+    }
+
+    /* Maple Character Plate & Bouncy Idle */
+    .maple-actor-plate {
+      background: linear-gradient(180deg, #4a2d11 0%, #2e1a08 100%);
+      border: 1.8px solid #f1c40f;
+      border-radius: 12px;
+      padding: 1.5px 8px;
+      font-size: 9px;
+      font-weight: 900;
+      color: #fff;
+      -webkit-text-stroke: 0.5px #000;
+      text-shadow: 0 1px 2px #000, 0 0 4px #000;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,255,255,0.45);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .maple-leaf-icon {
+      font-size: 10px;
+      animation: leafSpin 4s infinite linear alternate;
+    }
+    @keyframes leafSpin {
+      0% { transform: rotate(-10deg) scale(0.95); }
+      100% { transform: rotate(10deg) scale(1.05); }
+    }
+    .actor-sprite-box {
+      width: 114px;
+      height: 130px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      animation: mapleHeroBouncyIdle 1.4s infinite ease-in-out;
+      z-index: 4;
+    }
+    @keyframes mapleHeroBouncyIdle {
+      0%, 100% { transform: translateY(0) scale(1, 1); }
+      30% { transform: translateY(-7px) scale(0.97, 1.05); }
+      65% { transform: translateY(1.5px) scale(1.04, 0.96); }
+    }
+
+    /* Maple Monster Plate & Capsule HP Bar */
+    .maple-mob-plate-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2px;
+      min-width: 100px;
+      z-index: 5;
+      background: rgba(22, 16, 28, 0.9);
+      border: 1.5px solid #e67e22;
+      border-radius: 9px;
+      padding: 2.5px 6px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.85), inset 0 1px 2px rgba(255,255,255,0.25);
+    }
+    .maple-mob-name {
+      font-size: 8.5px;
+      font-weight: 900;
+      color: #ffd32a;
+      -webkit-text-stroke: 0.5px #000;
+      text-shadow: 0 1px 2px #000;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .maple-capsule-hp-bg {
+      width: 100%;
+      min-width: 90px;
+      height: 9px;
+      background: #24080e;
+      border: 1.2px solid #f39c12;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+      margin-top: 2px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.9), 0 0 5px rgba(243, 156, 18, 0.35);
+    }
+    .maple-capsule-hp-fill {
+      height: 100%;
+      background: linear-gradient(180deg, #ff9f43 0%, #ee5253 45%, #b71540 100%);
+      border-radius: 4px;
+      box-shadow: inset 0 1.5px 2px rgba(255,255,255,0.55);
+      transition: width 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .maple-capsule-shine {
+      position: absolute;
+      top: 1px;
+      left: 2px;
+      right: 2px;
+      height: 2.5px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 3px;
+      pointer-events: none;
+    }
+    .maple-mob-hp-text {
+      font-size: 8px;
+      font-weight: 900;
+      color: #fff;
+      -webkit-text-stroke: 0.4px #000;
+      text-shadow: 0 1px 2px #000;
+      margin-top: 1px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* MapleStory M Iconic Boss Banner */
+    .maple-boss-banner {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      background: linear-gradient(180deg, rgba(44, 11, 22, 0.95) 0%, rgba(15, 6, 12, 0.95) 100%);
+      border: 1.8px solid #f1c40f;
+      border-radius: 8px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 15;
+      box-shadow: 0 0 15px rgba(231, 76, 60, 0.6), inset 0 1px 2px rgba(255,255,255,0.4);
+      animation: bossBannerDrop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+    @keyframes bossBannerDrop {
+      0% { transform: translateY(-30px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .maple-boss-skull-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #e74c3c 0%, #881337 70%, #2a040a 100%);
+      border: 1.5px solid #f1c40f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px rgba(241, 196, 15, 0.6);
+      animation: skullPulse 1.5s infinite alternate;
+    }
+    @keyframes skullPulse {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.08); filter: drop-shadow(0 0 6px #f1c40f); }
+    }
+    .maple-boss-content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .maple-boss-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .maple-boss-tag {
+      font-size: 7.5px;
+      font-weight: 900;
+      color: #ff7675;
+      background: #380a10;
+      border: 1px solid #c0392b;
+      padding: 0 4px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+    }
+    .maple-boss-name-text {
+      font-size: 10.5px;
+      font-weight: 900;
+      color: #ffd32a;
+      -webkit-text-stroke: 0.5px #000;
+      text-shadow: 0 1px 3px #000;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .maple-boss-bar-count {
+      font-size: 9px;
+      font-weight: 900;
+      color: #ff4757;
+      background: #000;
+      padding: 0 4px;
+      border-radius: 3px;
+      border: 1px solid #f1c40f;
+    }
+    .maple-boss-hp-track {
+      width: 100%;
+      height: 10px;
+      background: #1e0508;
+      border: 1.2px solid #e74c3c;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.9);
+    }
+    .maple-boss-hp-fill-layer {
+      height: 100%;
+      background: linear-gradient(180deg, #ff9f43 0%, #ff4757 45%, #96122d 100%);
+      transition: width 0.25s ease;
+    }
+    .maple-boss-hp-shine {
+      position: absolute;
+      top: 1px;
+      left: 2px;
+      right: 2px;
+      height: 3px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 100%);
+      border-radius: 3px;
+      pointer-events: none;
+    }
+    .maple-boss-hp-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7.5px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 1px 2px #000, 0 0 3px #000;
+    }
+
+    /* Floating Grass Island Pedestal (Bệ Cỏ Nổi Nấm Lùn) */
+    .arena-pedestal {
+      position: absolute;
+      bottom: 16px;
+      left: 4%;
+      right: 4%;
+      height: 62px;
+      background: linear-gradient(180deg, #27ae60 0%, #2ecc71 16%, #8d6e63 18%, #5d4037 60%, #2d1810 100%);
+      border-radius: 28px;
+      border: 2px solid #f1c40f;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.95), inset 0 3px 3px rgba(255,255,255,0.6), 0 0 15px rgba(46, 204, 113, 0.4);
+      transform: rotateX(46deg);
+      transform-style: preserve-3d;
+      z-index: 3;
+    }
+    .arena-pedestal::before {
+      content: "🌱 🌸 🍄 🌿";
+      position: absolute;
+      top: -12px;
+      left: 15%;
+      font-size: 11px;
+      letter-spacing: 25px;
+      opacity: 0.9;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.8));
+    }
+
+  
+    /* Quick Skill Bar in Battle Screen */
+    .quick-skill-badge {
+      background: #192030;
+      border: 1px solid #3d4c6b;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 8.5px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: #c8d6e5;
+    }
+    .quick-skill-badge b { color: var(--gold); }
+
+    /* Fusion Card Styles */
+    .fusion-card-box {
+      background: #111624;
+      border: 1.5px solid #8e44ad;
+      border-radius: 7px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 0 10px rgba(142, 68, 173, 0.25);
+      margin-bottom: 6px;
+    }
+    .fusion-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .fusion-bonus-box {
+      background: #0b0e16;
+      border: 1px dashed #5b2c6f;
+      border-radius: 5px;
+      padding: 6px;
+      font-size: 9.5px;
+      color: #c8d6e5;
+      line-height: 1.4;
+    }
+    .fusion-empty-card {
+      background: #121724;
+      border: 1px dashed #3a4763;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 10px;
+      color: #8fa0b8;
+      text-align: center;
+    }
+    .fusion-opts-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .fusion-opt-badge {
+      background: #141a29;
+      border: 1px solid #3d4e73;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 8.5px;
+      color: #74b9ff;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .fusion-opt-badge.opt-purple {
+      border-color: #8e44ad;
+      color: #d0bcf1;
+      background: #191226;
+    }
+    .fusion-opt-badge.opt-gold {
+      border-color: #f1c40f;
+      color: #f6e58d;
+      background: #241d0e;
+    }
+
   </style>
 </head>
 <body>
@@ -1771,6 +2133,10 @@
     <div class="top-header">
       <div class="top-header-row">
         <div class="top-header-left">
+          <div class="maple-avatar-frame" title="Hiệp Sĩ Nấm Lùn">
+            <div class="maple-avatar-inner" id="heroAvatarIcon">⚔️</div>
+            <div class="maple-star-ribbon">⭐</div>
+          </div>
           <span class="hero-lv" id="heroLv">Lv.1</span>
           <span class="hero-title" id="heroName">Dark Knight [Nam]</span>
           <span class="hero-rs" id="heroRs">(RS: 0)</span>
@@ -1862,6 +2228,15 @@
           <span style="font-size:9px; color:#576574;">Hiệu ứng: Bình Thường</span>
         </div>
 
+        <!-- Quick Skill Bar (Chạm để xem & nâng kỹ năng) -->
+        <div class="quick-skill-bar" style="display:flex; justify-content:space-between; align-items:center; background:#121622; border:1px solid #28324a; border-radius:6px; padding:3px 8px; margin-top:2px;">
+          <div style="display:flex; align-items:center; gap:5px;">
+            <span style="font-size:9.5px; font-weight:bold; color:var(--gold);">⚡ KỸ NĂNG:</span>
+            <div id="quickSkillsIconsRow" style="display:flex; gap:3px;"></div>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="openSkillsModal()" style="font-weight:bold; font-size:9px; padding:2px 7px;">✨ Nâng Cấp (<span id="txtQuickSkillPts" style="color:var(--gold);">0đ</span>)</button>
+        </div>
+
         <!-- 2.5D Chibi Battle Arena Stage -->
         <div class="battle-arena-container" id="battleArena" style="margin-top:2px;">
           <div class="arena-background" id="arenaBg"></div>
@@ -1877,27 +2252,45 @@
             <span>| Diệt: <b id="txtBcKills" style="color:#00ffcc;">0</b></span>
           </div>
 
+          <!-- Iconic MapleStory M Boss Frame (Appears on Boss fight) -->
+          <div class="maple-boss-banner" id="mapleBossBanner" style="display:none;">
+            <div class="maple-boss-skull-badge">👑💀</div>
+            <div class="maple-boss-content">
+              <div class="maple-boss-title-row">
+                <span class="maple-boss-tag">BOSS MA VƯƠNG</span>
+                <span class="maple-boss-name-text" id="mapleBossNameText">Ma Vương Gorgon</span>
+                <span class="maple-boss-bar-count" id="mapleBossBarCount">x5</span>
+              </div>
+              <div class="maple-boss-hp-track">
+                <div class="maple-boss-hp-fill-layer" id="mapleBossHpFill" style="width: 100%;"></div>
+                <div class="maple-boss-hp-shine"></div>
+                <div class="maple-boss-hp-num" id="mapleBossHpNum">80,000 / 80,000 (100%)</div>
+              </div>
+            </div>
+          </div>
+
           <div class="arena-stage">
-            <!-- Hero Chibi -->
+            <!-- Hero Chibi in Maple Frame -->
             <div class="chibi-actor hero-actor" id="chibiHeroActor">
-              <div class="actor-badge" id="chibiHeroBadge">Lv.1 Dark Knight</div>
+              <div class="maple-actor-plate" id="chibiHeroBadge"><span class="maple-leaf-icon">🍁</span> Lv.1 Dark Knight</div>
               <div class="actor-sprite-box" id="heroSpriteEl"></div>
               <div class="hero-foot-ring" id="heroFootRing"></div>
               <div class="actor-shadow"></div>
-              <div class="chibi-pet-box" id="chibiPetEl" onclick="switchTab('upgrade')" title="Trợ thủ MU"></div>
+              <div class="chibi-pet-box" id="chibiPetEl" onclick="switchTab('upgrade')" title="Trợ thủ Nấm Lùn"></div>
             </div>
 
             <!-- VS Center Badge -->
             <div class="arena-vs-badge" id="arenaVsBadge">VS</div>
 
-            <!-- Monster Chibi -->
+            <!-- Monster Chibi in Maple Frame -->
             <div class="chibi-actor monster-actor" id="chibiMonsterActor">
-              <div class="mob-header-badge">
-                <div class="mob-name-text" id="chibiMobName">Nhện Độc</div>
-                <div class="mob-hp-bar-bg">
-                  <div class="mob-hp-bar-fill" id="chibiMobHpFill" style="width: 100%;"></div>
+              <div class="maple-mob-plate-box">
+                <div class="maple-mob-name" id="chibiMobName"><span class="mob-type-icon">👾</span> Nhện Độc</div>
+                <div class="maple-capsule-hp-bg">
+                  <div class="maple-capsule-hp-fill" id="chibiMobHpFill" style="width: 100%;"></div>
+                  <div class="maple-capsule-shine"></div>
                 </div>
-                <div class="mob-hp-text" id="chibiMobHpText">HP: 1,500 / 1,500 (100%)</div>
+                <div class="maple-mob-hp-text" id="chibiMobHpText">HP: 1,500 / 1,500 (100%)</div>
               </div>
               <div class="actor-sprite-box" id="monsterSpriteEl"></div>
               <div class="mob-foot-ring" id="mobFootRing"></div>
@@ -2084,8 +2477,20 @@
 
         <!-- Subnav: 1. Cường Hóa | 2. Xưởng Chế Tạo -->
         <div class="upgrade-subnav">
-          <button class="upgrade-subnav-btn active" id="btnSubnavEnhance" onclick="switchUpgradeSubtab('enhance')">⚒️ Cường Hóa Trang Bị (+15)</button>
-          <button class="upgrade-subnav-btn" id="btnSubnavCraft" onclick="switchUpgradeSubtab('craft')">🧙 Xưởng Chế Tạo Cánh & Thú</button>
+          <button class="upgrade-subnav-btn active" id="btnSubnavEnhance" onclick="switchUpgradeSubtab('enhance')">⚒️ Cường Hóa (+15)</button>
+          <button class="upgrade-subnav-btn" id="btnSubnavFusion" onclick="switchUpgradeSubtab('fusion')">🔮 Dung Hợp Cánh & Thú</button>
+          <button class="upgrade-subnav-btn" id="btnSubnavCraft" onclick="switchUpgradeSubtab('craft')">🧙 Xưởng Chế Tạo</button>
+        </div>
+
+        <!-- Subview 2: Dung Hợp Cánh Thần & Thú Cưng / Thú Cưỡi -->
+        <div class="upgrade-subview" id="subviewFusion" style="display:none;">
+          <div style="font-size:10px; color:#8fa0b8; margin-bottom:5px;">Dung hợp tiêu hao Lông Vũ, Hồn Thú và Ngọc quý để thăng cấp vĩnh viễn sức mạnh cho Cánh & Thú:</div>
+          
+          <!-- Wing Fusion Section -->
+          <div id="wingFusionCardContainer"></div>
+
+          <!-- Pet Fusion Section -->
+          <div id="petFusionCardContainer"></div>
         </div>
 
         <!-- Subview 1: Cường Hóa Trang Bị Đang Mặc -->
@@ -2236,6 +2641,15 @@
               <button class="btn btn-sm btn-stat" onclick="addStat('ene', 100)">+100</button>
             </div>
           </div>
+        </div>
+
+        <!-- Kỹ Năng Chiến Đấu Section in Stats Tab -->
+        <div style="background:var(--card-bg); padding:6px; border-radius:6px; border:1px solid var(--border); font-size:10.5px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <div style="font-weight:bold; color:var(--gold); font-size:11px;">✨ KỸ NĂNG CHIẾN ĐẤU (Điểm còn: <b id="txtSkillPointsStats" style="color:var(--gold)">0</b>)</div>
+            <button class="btn btn-sm btn-primary" onclick="autoDistributeSkillPoints()" style="font-weight:bold;">⚡ Nâng Đều</button>
+          </div>
+          <div id="skillsListStatsContainer" style="display:flex; flex-direction:column; gap:4px;"></div>
         </div>
 
         <!-- Chuyển Sinh Checklist Block -->
@@ -2521,6 +2935,29 @@
         <button class="btn btn-danger" style="flex:1; padding:10px; font-weight:bold; font-size:12px; box-shadow:0 0 10px rgba(231,76,60,0.6);" onclick="challengeTowerBoss()">⚔️ KHIÊU CHIẾN BOSS</button>
       </div>
       <div id="towerBattleMsg" style="font-size:10px; min-height:16px; margin-top:6px; font-weight:bold;"></div>
+    </div>
+  </div>
+
+
+  <!-- Skills Modal (Bảng Kỹ Năng Chiến Đấu) -->
+  <div class="modal-overlay" id="skillsModal">
+    <div class="modal-card" style="max-width:390px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #2e3547; padding-bottom:6px; margin-bottom:8px;">
+        <div style="font-size:13px; font-weight:900; color:var(--gold); display:flex; align-items:center; gap:5px;">
+          <span>✨</span> BẢNG KỸ NĂNG CHIẾN ĐẤU
+        </div>
+        <button class="btn btn-sm" onclick="closeSkillsModal()">✕ Đóng</button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#121622; padding:6px 8px; border-radius:5px; margin-bottom:8px; border:1px solid #252d42;">
+        <div>
+          <span style="font-size:10px; color:#8fa0b8;">Điểm Kỹ Năng còn:</span>
+          <b id="txtSkillPointsModal" style="color:var(--gold); font-size:12px; margin-left:3px;">0</b>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="autoDistributeSkillPoints()" style="font-weight:bold;">⚡ Cộng Đều Kỹ Năng</button>
+      </div>
+
+      <div id="skillsListContainer" style="display:flex; flex-direction:column; gap:4px; max-height:55vh; overflow-y:auto;"></div>
     </div>
   </div>
 
